@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { Model } from '@/data/model-utils';
 import { discountRate, displayContextWindow, formatTokens, formatUsd, usdPrice } from '@/data/model-utils';
+import { displayStateLabel, providerDisplayStatus } from '@/data/provider-availability';
 import { SearchIcon } from './icons';
 import { CatalogNotice } from './catalog-notice';
 import { ProviderLogo, providerLabel } from './provider-logo';
@@ -29,7 +30,7 @@ export function PricingComparison({ models }: { models: Model[] }) {
             <button key={item} onClick={() => setProvider(item)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] ${provider === item ? 'border-primary bg-primary text-white' : 'border-border text-muted-foreground'}`}>
               {item !== 'all' && <ProviderLogo provider={item} className="h-3.5 w-3.5" />}
               {item === 'all' ? 'All models' : providerLabel(item)}
-              {item !== 'all' && <span className="text-[9px] opacity-70">{item === 'openai' ? 'PARTIAL' : 'PLANNED'}</span>}
+              {item !== 'all' && <span className="text-[9px] opacity-70">{displayStateLabel(providerDisplayStatus(item).modelAccessState).toUpperCase()}</span>}
             </button>
           ))}
         </div>

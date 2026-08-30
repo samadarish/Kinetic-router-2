@@ -270,6 +270,47 @@ textarea:focus-visible {
 .catalog-notice-link { margin-left: auto; flex: 0 0 auto; color: var(--primary); font-size: .68rem; font-weight: 600; }
 .catalog-notice-compact { margin-bottom: 1rem; padding: .75rem .9rem; }
 
+.docs-navigation { scrollbar-gutter: stable; }
+.docs-navigation-group { margin-bottom: 1.65rem; }
+.docs-navigation-group:last-child { margin-bottom: .5rem; }
+.docs-navigation-group > h2 {
+  margin-bottom: .55rem;
+  padding: 0 .55rem;
+  color: var(--muted-foreground);
+  font-size: .625rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.docs-navigation-group nav { display: grid; gap: .125rem; }
+.docs-navigation-link {
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: .65rem;
+  border: 1px solid transparent;
+  border-radius: .45rem;
+  padding: .32rem .55rem;
+  color: var(--muted-foreground);
+  font-size: .75rem;
+  line-height: 1.25rem;
+  text-decoration: none;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+}
+.docs-navigation-link:hover { background: color-mix(in oklab, var(--muted) 60%, transparent); color: var(--foreground); }
+.docs-navigation-link.active {
+  border-color: var(--brand-soft-border);
+  background: var(--brand-soft-bg);
+  color: var(--foreground);
+  font-weight: 650;
+}
+.docs-navigation-link[data-depth='1'] { min-height: 1.8rem; margin-left: 1.65rem; padding-left: .5rem; font-size: .7rem; }
+.docs-navigation-link[data-depth='1']::before { content: ''; width: .7rem; border-top: 1px solid color-mix(in oklab, var(--muted-foreground) 30%, transparent); }
+.docs-navigation-icon { display: grid; width: 1.15rem; height: 1.15rem; flex: 0 0 1.15rem; place-items: center; }
+.docs-navigation-icon svg { display: block; width: 1.1rem; height: 1.1rem; max-width: 100%; max-height: 100%; }
+.docs-navigation-link[data-depth='1'] .docs-navigation-icon { display: none; }
+.docs-mobile-menu { max-height: calc(100dvh - 5rem); overscroll-behavior: contain; }
+
 @media (max-width: 767px) {
   .hero-glow::before, .hero-glow::after { width: 18rem; height: 18rem; }
   .catalog-notice { align-items: flex-start; flex-wrap: wrap; }

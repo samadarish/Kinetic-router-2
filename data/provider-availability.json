@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "checkedAt": "2026-08-30",
+  "displayOnly": true,
+  "providers": {
+    "openai": {
+      "label": "OpenAI",
+      "aliases": ["gpt", "codex"],
+      "catalogState": "reference",
+      "modelAccessState": "partial",
+      "apiState": "partial",
+      "interactionMode": "validation",
+      "badgeLabel": "Partial",
+      "protocolLabel": "OpenAI-compatible",
+      "baseUrl": "https://api.kineticrouter.com/v1",
+      "summary": "The OpenAI-compatible base route is detected and available for authenticated validation.",
+      "evidenceNote": "Validate the exact model, endpoint, streaming mode, and tool behavior used by your application before production use.",
+      "protocolSources": ["https://developers.openai.com/api/docs"]
+    },
+    "anthropic": {
+      "label": "Anthropic",
+      "aliases": ["claude"],
+      "catalogState": "reference",
+      "modelAccessState": "reference",
+      "apiState": "planned",
+      "interactionMode": "reference-only",
+      "badgeLabel": "Planned",
+      "protocolLabel": "Anthropic native",
+      "previewBaseUrl": "https://api.kineticrouter.com/anthropic",
+      "summary": "The Anthropic-native route is planned and its configuration is shown only as a reference.",
+      "evidenceNote": "Enable and test the native adapter in the original Sub2API administrator interface before changing this display state.",
+      "protocolSources": ["https://platform.claude.com/docs/en/api/messages/create"]
+    },
+    "grok": {
+      "label": "Grok",
+      "aliases": ["xai", "x-ai", "x.ai"],
+      "catalogState": "reference",
+      "modelAccessState": "reference",
+      "apiState": "planned",
+      "interactionMode": "reference-only",
+      "badgeLabel": "Planned",
+      "protocolLabel": "xAI-compatible",
+      "previewBaseUrl": "https://api.kineticrouter.com/grok/v1",
+      "summary": "The dedicated Grok route is planned and its configuration is shown only as a reference.",
+      "evidenceNote": "Enable and test the dedicated adapter in the original Sub2API administrator interface before changing this display state.",
+      "protocolSources": ["https://docs.x.ai/developers/model-capabilities/text/generate-text"]
+    }
+  }
+}

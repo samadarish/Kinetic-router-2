@@ -1,4 +1,5 @@
 import { AnthropicIcon, ClaudeIcon, GrokIcon, OpenAIIcon, UnknownProviderIcon } from './icons';
+import { providerDisplayStatus, resolveProviderId } from '@/data/provider-availability';
 
 export type ProviderId = 'openai' | 'anthropic' | 'claude' | 'grok' | 'unknown';
 
@@ -24,9 +25,8 @@ export function ProviderLogo({ provider, model, className = 'h-7 w-7', label }: 
 }
 
 export function providerLabel(provider: string) {
-  if (provider === 'anthropic') return 'Anthropic';
   if (provider === 'claude') return 'Claude';
-  if (provider === 'grok') return 'xAI';
-  if (provider === 'openai') return 'OpenAI';
+  const id = resolveProviderId(provider);
+  if (id) return providerDisplayStatus(id).label;
   return 'Unknown provider';
 }

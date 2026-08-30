@@ -1,3 +1,9 @@
+import { providerAvailability } from './provider-availability';
+
+const openAiBaseUrl = providerAvailability.openai.baseUrl!;
+const anthropicBaseUrl = providerAvailability.anthropic.previewBaseUrl!;
+const grokBaseUrl = providerAvailability.grok.previewBaseUrl!;
+
 export const BRAND = {
   name: 'Kinetic Router',
   legalName: 'Kinetic Router',
@@ -7,10 +13,10 @@ export const BRAND = {
   providerId: 'kineticrouter',
   api: {
     root: 'https://api.kineticrouter.com',
-    openai: 'https://api.kineticrouter.com/v1',
-    anthropic: 'https://api.kineticrouter.com/anthropic',
-    grokRoot: 'https://api.kineticrouter.com/grok',
-    grok: 'https://api.kineticrouter.com/grok/v1',
+    openai: openAiBaseUrl,
+    anthropic: anthropicBaseUrl,
+    grokRoot: grokBaseUrl.replace(/\/v1$/, ''),
+    grok: grokBaseUrl,
   },
 } as const;
 

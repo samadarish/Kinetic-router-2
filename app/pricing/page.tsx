@@ -4,6 +4,7 @@ import { PricingComparison } from '@/components/pricing-comparison';
 import { SiteFrame } from '@/components/site-frame';
 import { catalogSnapshot } from '@/data/documentation';
 import { discountRate, getPageMeta, models } from '@/data/content';
+import { providerDisplayStatus } from '@/data/provider-availability';
 
 const page = getPageMeta('/pricing');
 export const metadata: Metadata = { title: page?.title ?? 'API Pricing Reference', description: 'Exact Hao.ai model and price snapshot with Kinetic Router route availability clearly marked.' };
@@ -14,6 +15,9 @@ const activePriceRows = models.reduce((count, model) => count + model.prices.fil
 const metrics = [[rateRange, 'Snapshot multiplier range'], [String(models.length), 'Reference models'], [String(activePriceRows), 'Active snapshot price rows'], [catalogSnapshot.capturedAt, 'Snapshot captured']];
 
 export default function PricingPage() {
+  const openAi = providerDisplayStatus('openai');
+  const anthropic = providerDisplayStatus('anthropic');
+  const grok = providerDisplayStatus('grok');
   return <SiteFrame>
     <section className="px-4 pb-12 pt-16 text-center md:pb-16 md:pt-24">
       <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-primary">Pricing reference</p>
@@ -25,7 +29,7 @@ export default function PricingPage() {
     <section className="border-y border-border bg-muted/20 py-12 md:py-16"><div className="page-container"><div className="grid gap-3 md:grid-cols-3">{[
       ['Exact values', 'No rounded-away micro-prices', 'Snapshot prices display up to six decimal places so values such as $0.075/M and $3.125/M remain exact.'],
       ['Separated facts', 'Upstream vs gateway limits', 'Updated upstream context facts are shown separately from the gateway limits recorded in the imported snapshot.'],
-      ['Availability', 'Routes are status-marked', 'OpenAI is partially verified. Anthropic and Grok native routes stay clearly labeled Planned until they are enabled and tested.'],
+      ['Availability', 'Routes are status-marked', `${openAi.label} is ${openAi.badgeLabel}. ${anthropic.label} is ${anthropic.badgeLabel}, and ${grok.label} is ${grok.badgeLabel}.`],
     ].map(([lead, title, copy]) => <article key={lead} className="surface p-6"><p className="text-[10px] font-semibold uppercase tracking-wider text-primary">{lead}</p><h2 className="mt-3 text-lg font-semibold">{title}</h2><p className="mt-3 text-xs leading-6 text-muted-foreground">{copy}</p></article>)}</div></div></section>
     <PricingComparison models={models} />
     <section className="border-t border-border py-16 text-center"><div className="page-container"><h2 className="text-3xl font-semibold tracking-tight">Check your actual balance and billing in the console</h2><p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">The public catalog is for comparison. Account-specific prices, subscriptions, balances, and usage come from the connected Sub2API customer portal.</p><div className="mt-7 flex justify-center gap-3"><a href="/models" className="rounded-lg border border-border px-6 py-3 text-sm font-semibold">Browse models</a><a href="https://console.kineticrouter.com/sign-in" className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white">Open console</a></div></div></section>

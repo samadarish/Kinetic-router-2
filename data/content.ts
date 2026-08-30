@@ -2,6 +2,7 @@ import rawManifest from './hao-manifest.json';
 import type { Model } from './model-utils';
 import { PENDING_PORTAL_ROUTES, pendingPortalHtml, rebrandValue } from './brand';
 import { correctMirroredDocumentation, documentationStatusFor } from './documentation';
+import { providerDisplayStatus } from './provider-availability';
 export type { Model } from './model-utils';
 export { discountRate, formatTokens, formatUsd, priceFor, usdPrice } from './model-utils';
 
@@ -49,7 +50,7 @@ export const models = manifest.modelFixture.models.map((model) => {
     gatewayMaxInput: model.contextWindow,
     gatewayMaxOutput: model.maxOutput,
     sourceVerifiedAt: '2026-08-30',
-    availability: model.provider === 'openai' ? 'partial' : 'planned',
+    availability: providerDisplayStatus(model.provider).modelAccessState,
     ...upstream,
     ...(model.id === 'openai/gpt-5.3-codex' ? { inputModalities: ['text', 'image'], outputModalities: ['text'] } : {}),
   };

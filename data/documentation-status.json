@@ -17,48 +17,28 @@
   "rules": [
     {
       "prefix": "/docs/api/openai/",
-      "status": "partial",
-      "label": "OpenAI route detected",
-      "summary": "The Kinetic Router OpenAI API surface responds at /v1. Individual model features still require authenticated conformance testing.",
-      "verifiedAt": "2026-08-30",
-      "provider": "openai",
-      "sources": ["https://developers.openai.com/api/docs/models"]
+      "summary": "This page documents the OpenAI-compatible protocol shape used by Kinetic Router.",
+      "provider": "openai"
     },
     {
       "prefix": "/docs/api/anthropic/",
-      "status": "planned",
-      "label": "Planned native route",
-      "summary": "The Anthropic-native Kinetic Router route is not active yet. The examples below are retained as a future integration reference.",
-      "verifiedAt": "2026-08-30",
-      "provider": "anthropic",
-      "sources": ["https://platform.claude.com/docs/en/api/messages/create"]
+      "summary": "This page preserves the Anthropic-native request shape as an integration reference.",
+      "provider": "anthropic"
     },
     {
       "prefix": "/docs/api/grok/",
-      "status": "planned",
-      "label": "Planned native route",
-      "summary": "The dedicated Grok Kinetic Router route is not active yet. The examples below are retained as a future integration reference.",
-      "verifiedAt": "2026-08-30",
-      "provider": "grok",
-      "sources": ["https://docs.x.ai/developers/model-capabilities/text/generate-text"]
+      "summary": "This page preserves the dedicated Grok request shape as an integration reference.",
+      "provider": "grok"
     },
     {
       "prefix": "/docs/integrations/claude-",
-      "status": "planned",
-      "label": "Planned native route",
-      "summary": "This integration depends on the Anthropic-native Kinetic Router route, which is not active yet.",
-      "verifiedAt": "2026-08-30",
-      "provider": "claude",
-      "sources": ["https://platform.claude.com/docs/en/api/messages/create"]
+      "summary": "This page preserves configuration steps for the Anthropic-native protocol.",
+      "provider": "claude"
     },
     {
       "prefix": "/docs/integrations/codex",
-      "status": "partial",
-      "label": "Partially verified",
-      "summary": "The OpenAI-compatible base route is present. WebSocket and advanced tool behavior must be validated with your account before production use.",
-      "verifiedAt": "2026-08-30",
-      "provider": "openai",
-      "sources": ["https://developers.openai.com/api/docs/models"]
+      "summary": "This page preserves the Codex configuration workflow for the OpenAI-compatible route.",
+      "provider": "openai"
     },
     {
       "route": "/docs/api/openapi/balance",

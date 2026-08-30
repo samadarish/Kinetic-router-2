@@ -1,4 +1,5 @@
 import statusConfig from './documentation-status.json';
+import { providerAllowsInteraction, providerAvailabilityCheckedAt, providerDisplayStatus } from './provider-availability';
 
 export type DocumentationStatusKind = 'verified' | 'partial' | 'planned' | 'reference';
 
@@ -11,7 +12,7 @@ export type DocumentationStatus = {
   sources: string[];
 };
 
-type StatusRule = DocumentationStatus & { route?: string; prefix?: string };
+type StatusRule = Partial<DocumentationStatus> & { route?: string; prefix?: string };
 
 export const catalogSnapshot = statusConfig.snapshot;
 
@@ -19,13 +20,14 @@ export function documentationStatusFor(route: string): DocumentationStatus {
   const rules = statusConfig.rules as StatusRule[];
   const matched = rules.find((rule) => rule.route === route) ?? rules.find((rule) => rule.prefix && route.startsWith(rule.prefix));
   const value = matched ?? (statusConfig.default as DocumentationStatus);
+  const provider = value.provider ? providerDisplayStatus(value.provider) : undefined;
   return {
-    status: value.status,
-    label: value.label,
-    summary: value.summary,
-    verifiedAt: value.verifiedAt,
+    status: provider?.apiState ?? value.status ?? 'reference',
+    label: provider?.badgeLabel ?? value.label ?? 'Reference snapshot',
+    summary: provider ? [provider.summary, value.summary].filter(Boolean).join(' ') : value.summary ?? statusConfig.default.summary,
+    verifiedAt: provider ? providerAvailabilityCheckedAt : value.verifiedAt ?? statusConfig.default.verifiedAt,
     provider: value.provider,
-    sources: value.sources,
+    sources: provider?.protocolSources ?? value.sources ?? [],
   };
 }
 
@@ -45,9 +47,10 @@ export function correctMirroredDocumentation(route: string, html: string) {
     .replaceAll('No Rate Limits', 'Account-specific rate limits');
 
   if (route === '/docs/api/grok/responses') {
+    const grok = providerDisplayStatus('grok');
     corrected = corrected.replace(
       'It is a Kinetic Router bridge to xAI HTTP/SSE for each turn. It does not indicate that xAI provides a native WebSocket transport.',
-      'xAI now provides a native Responses WebSocket transport. The dedicated Kinetic Router Grok route remains planned until its gateway adapter is enabled and verified.',
+      `xAI now provides a native Responses WebSocket transport. ${grok.summary}`,
     );
   }
 
@@ -69,12 +72,17 @@ export function correctMirroredDocumentation(route: string, html: string) {
 
   const status = documentationStatusFor(route);
   corrected = corrected.replace(/<pre\b[\s\S]*?<\/pre>/gi, (block) => {
-    const plannedProviderExample =
-      status.status === 'planned'
-      || /api\.kineticrouter\.com\/(?:anthropic|grok)(?:\/|&|&amp;|\s|<)/i.test(block)
-      || /(?:anthropic\/claude|grok\/grok)/i.test(block);
+    const blockProvider = /api\.kineticrouter\.com\/anthropic|anthropic\/claude/i.test(block)
+      ? 'anthropic'
+      : /api\.kineticrouter\.com\/grok|grok\/grok/i.test(block)
+        ? 'grok'
+        : undefined;
+    const plannedProviderExample = blockProvider
+      ? !providerAllowsInteraction(blockProvider)
+      : status.status === 'planned';
     if (!plannedProviderExample) return block;
-    return '<div class="docs-pending-example"><strong>Planned example</strong><p>This request example depends on a Kinetic Router provider route that is not active yet. It is intentionally not copyable until the route is enabled and authenticated conformance tests pass.</p></div>';
+    const provider = blockProvider ? providerDisplayStatus(blockProvider) : undefined;
+    return `<div class="docs-pending-example"><strong>${provider?.badgeLabel ?? status.label} example</strong><p>${provider?.summary ?? status.summary} This example is intentionally not copyable in its current display state.</p></div>`;
   });
 
   return corrected;
