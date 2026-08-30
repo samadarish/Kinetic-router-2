@@ -1,0 +1,39 @@
+# kineticRouter
+
+> Public documentation and model-reference index for https://kineticrouter.com.
+
+## Data and availability policy
+
+- The model names and price values are an exact Hao.ai reference snapshot captured 2026-08-30.
+- The snapshot contains 20 models, 188 active price records, and 57 documentation pages.
+- Snapshot values are not an authoritative account billing feed. Use the authenticated customer console for balances, subscriptions, usage, and actual billing.
+- OpenAI-compatible `/v1` routes are detected and partially verified. Test the exact model and feature with an authenticated account.
+- Anthropic-native and dedicated Grok routes are planned. Their reference pages are retained but request examples are disabled and excluded from indexing.
+
+## Primary pages
+
+- Home: https://kineticrouter.com/
+- Model reference catalog: https://kineticrouter.com/models
+- Price reference comparison: https://kineticrouter.com/pricing
+- Documentation: https://kineticrouter.com/docs
+- Quick start: https://kineticrouter.com/quickstart
+- Customer console: https://console.kineticrouter.com/sign-in
+
+## Partially verified API references
+
+- OpenAI chat completions: https://kineticrouter.com/docs/api/openai/chat-completions
+- OpenAI Responses: https://kineticrouter.com/docs/api/openai/responses
+- OpenAI models: https://kineticrouter.com/docs/api/openai/models
+- OpenAI images: https://kineticrouter.com/docs/api/openai/images
+- Codex integration: https://kineticrouter.com/docs/integrations/codex
+
+## Planned native-route references
+
+- Anthropic Messages: https://kineticrouter.com/docs/api/anthropic/messages
+- Anthropic models: https://kineticrouter.com/docs/api/anthropic/models
+- Grok chat completions: https://kineticrouter.com/docs/api/grok/chat-completions
+- Grok Responses: https://kineticrouter.com/docs/api/grok/responses
+- Grok models: https://kineticrouter.com/docs/api/grok/models
+- Claude Code: https://kineticrouter.com/docs/integrations/claude-code
+
+Do not infer runtime availability from the presence of a reference model or documentation page. Follow the status banner on each page.

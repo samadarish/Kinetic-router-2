@@ -1,0 +1,80 @@
+{
+  "snapshot": {
+    "source": "https://hao.ai",
+    "capturedAt": "2026-08-30",
+    "catalogPolicy": "exact-hao-mirror",
+    "modelCount": 20,
+    "docsRouteCount": 57,
+    "notice": "Model names and price values are a dated Hao.ai reference snapshot and are not a live Kinetic Router billing feed."
+  },
+  "default": {
+    "status": "reference",
+    "label": "Reference snapshot",
+    "summary": "This page preserves the Hao.ai documentation structure. Confirm Kinetic Router availability in the customer portal before integrating.",
+    "verifiedAt": "2026-08-30",
+    "sources": ["https://hao.ai"]
+  },
+  "rules": [
+    {
+      "prefix": "/docs/api/openai/",
+      "status": "partial",
+      "label": "OpenAI route detected",
+      "summary": "The Kinetic Router OpenAI API surface responds at /v1. Individual model features still require authenticated conformance testing.",
+      "verifiedAt": "2026-08-30",
+      "provider": "openai",
+      "sources": ["https://developers.openai.com/api/docs/models"]
+    },
+    {
+      "prefix": "/docs/api/anthropic/",
+      "status": "planned",
+      "label": "Planned native route",
+      "summary": "The Anthropic-native Kinetic Router route is not active yet. The examples below are retained as a future integration reference.",
+      "verifiedAt": "2026-08-30",
+      "provider": "anthropic",
+      "sources": ["https://platform.claude.com/docs/en/api/messages/create"]
+    },
+    {
+      "prefix": "/docs/api/grok/",
+      "status": "planned",
+      "label": "Planned native route",
+      "summary": "The dedicated Grok Kinetic Router route is not active yet. The examples below are retained as a future integration reference.",
+      "verifiedAt": "2026-08-30",
+      "provider": "grok",
+      "sources": ["https://docs.x.ai/developers/model-capabilities/text/generate-text"]
+    },
+    {
+      "prefix": "/docs/integrations/claude-",
+      "status": "planned",
+      "label": "Planned native route",
+      "summary": "This integration depends on the Anthropic-native Kinetic Router route, which is not active yet.",
+      "verifiedAt": "2026-08-30",
+      "provider": "claude",
+      "sources": ["https://platform.claude.com/docs/en/api/messages/create"]
+    },
+    {
+      "prefix": "/docs/integrations/codex",
+      "status": "partial",
+      "label": "Partially verified",
+      "summary": "The OpenAI-compatible base route is present. WebSocket and advanced tool behavior must be validated with your account before production use.",
+      "verifiedAt": "2026-08-30",
+      "provider": "openai",
+      "sources": ["https://developers.openai.com/api/docs/models"]
+    },
+    {
+      "route": "/docs/api/openapi/balance",
+      "status": "planned",
+      "label": "Not published",
+      "summary": "A verified customer balance API is not published by Kinetic Router yet.",
+      "verifiedAt": "2026-08-30",
+      "sources": []
+    },
+    {
+      "route": "/docs/api/openapi/provider-pricing",
+      "status": "planned",
+      "label": "Not published",
+      "summary": "A verified provider-pricing API is not published by Kinetic Router yet.",
+      "verifiedAt": "2026-08-30",
+      "sources": []
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+'use client';
+
+import { useState } from 'react';
+import type { Model } from '@/data/model-utils';
+import { discountRate, displayContextWindow, formatTokens, formatUsd, usdPrice } from '@/data/model-utils';
+import { ArrowRightIcon, CheckIcon, ClipboardIcon } from './icons';
+import { CatalogNotice } from './catalog-notice';
+import { ProviderLogo, providerLabel, resolveProvider } from './provider-logo';
+
+const componentLabels: Record<string, string> = { input: 'Input', output: 'Output', cache_read: 'Cache read', cache_creation: 'Cache write', cache_creation_5m: '5m cache write', cache_creation_1h: '1h cache write' };
+
+function readableTagline(model: Model) {
+  if (model.tagline.includes('Ã¦') || model.tagline.includes('ï¿½')) return `${model.name.replace(/^OpenAI: /, '')} is an advanced coding model for agentic software engineering, terminal workflows, and complex technical tasks.`;
+  return model.tagline;
+}
+
+function CodeExamples({ model }: { model: Model }) {
+  const planned = model.availability === 'planned';
+  const examples = model.codeExamples.length ? model.codeExamples : [{ language: 'curl', label: 'cURL', source: 'provider', code: `curl https://api.kineticrouter.com/v1/chat/completions \\\n+  -H "Authorization: Bearer $KINETICROUTER_API_KEY" \\\n+  -H "Content-Type: application/json" \\\n+  -d '{"model":"${model.id}","messages":[{"role":"user","content":"Hello!"}]}'` }];
+  const visibleExamples = examples.map((example) => ({ ...example, code: example.code.replaceAll('\n+', '\n') }));
+  const [active, setActive] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  if (planned) {
+    return <aside className="docs-pending-example mt-5"><div className="flex items-center gap-2"><ProviderLogo provider={model.provider} className="h-5 w-5" /><strong>Provider route planned</strong></div><p>The Hao.ai example is preserved in the source snapshot, but Kinetic Router does not expose this native provider route yet. Copying is disabled until the route is enabled and tested.</p></aside>;
+  }
+
+  async function copy() { await navigator.clipboard?.writeText(visibleExamples[active].code); setCopied(true); setTimeout(() => setCopied(false), 1000); }
+  return <div className="mt-5 overflow-hidden rounded-xl border border-border bg-[var(--code)]"><div className="flex items-end border-b border-border px-3">{visibleExamples.map((example, index) => <button key={`${example.label}-${index}`} onClick={() => setActive(index)} className={`h-11 border-b-2 px-3 text-[11px] font-semibold ${active === index ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}>{example.label}</button>)}<button aria-label="Copy code" onClick={copy} className="ml-auto flex h-11 items-center gap-1 text-[10px] text-muted-foreground"><ClipboardIcon className="h-4 w-4" />{copied && 'Copied'}</button></div><pre className="max-h-[430px] overflow-auto bg-[var(--terminal)] p-5 font-mono text-[12px] leading-7 text-[#e4e2de]"><code>{visibleExamples[active].code}</code></pre></div>;
+}
+
+function modelLimit(value: number | undefined, fallback: number) {
+  if (value === 0) return 'Provider-defined';
+  return formatTokens(value ?? fallback);
+}
+
+export function ModelDetail({ model }: { model: Model }) {
+  const rate = discountRate(model);
+  const planned = model.availability === 'planned';
+  const components = ['input', 'output', 'cache_read', 'cache_creation', 'cache_creation_5m', 'cache_creation_1h'].filter((component) => usdPrice(model, 'sell', component) != null || usdPrice(model, 'official', component) != null);
+  return (
+    <>
+      <section className="border-b border-border/60 py-10 md:py-14">
+        <div className="page-container">
+          <nav className="mb-8 flex items-center gap-2 text-[11px] text-muted-foreground"><a href="/models">Models</a><span>/</span><a href={`/models/${model.provider}`}>{providerLabel(model.provider)}</a><span>/</span><span className="truncate text-foreground">{model.slug}</span></nav>
+          <CatalogNotice />
+          <div className="grid items-start gap-8 lg:grid-cols-[1fr_360px]">
+            <div><div className="flex items-center gap-4"><span className="grid h-14 w-14 place-items-center rounded-xl border border-border bg-muted/50"><ProviderLogo provider={model.provider} className="h-8 w-8" /></span><div><div className="flex flex-wrap items-center gap-2"><p className="text-xs text-muted-foreground">{providerLabel(model.provider)}</p><span className="rounded-full border border-border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{planned ? 'Planned route' : 'Partially verified'}</span></div><h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">{model.name.replace(/^[^:]+:\s*/, '')}</h1></div></div><p className="mt-6 max-w-3xl text-sm leading-7 text-muted-foreground">{readableTagline(model)}</p><div className="mt-6 flex flex-wrap gap-2">{model.capabilityFlags.map((flag) => <span key={flag} className="inline-flex items-center gap-1 rounded-lg border border-border bg-muted/30 px-3 py-1.5 text-[10px] capitalize text-muted-foreground"><CheckIcon className="h-3 w-3 text-primary" />{flag}</span>)}</div></div>
+            <aside className="surface p-5"><div className="flex items-center"><span className="text-xs font-semibold">Model ID</span>{rate != null && <span className="ml-auto rounded-md border border-[var(--brand-soft-border)] bg-[var(--brand-soft-bg)] px-2 py-1 text-[10px] font-semibold text-[var(--brand-soft-text)]">{Number(rate.toFixed(2))}x snapshot</span>}</div><code className="mt-3 block break-all rounded-lg bg-muted p-3 font-mono text-[11px]">{model.id}</code><div className="mt-5 grid grid-cols-2 gap-4 border-t border-border pt-5 text-xs"><div><span className="block text-muted-foreground">Upstream context</span><strong className="mt-1 block text-lg">{formatTokens(displayContextWindow(model))}</strong></div><div><span className="block text-muted-foreground">Upstream output</span><strong className="mt-1 block text-lg">{modelLimit(model.upstreamMaxOutput, model.maxOutput)}</strong></div><div><span className="block text-muted-foreground">Snapshot gateway input</span><strong className="mt-1 block">{formatTokens(model.gatewayMaxInput ?? model.contextWindow)}</strong></div><div><span className="block text-muted-foreground">Snapshot gateway output</span><strong className="mt-1 block">{formatTokens(model.gatewayMaxOutput ?? model.maxOutput)}</strong></div></div>{planned ? <span className="mt-5 inline-flex w-full items-center justify-center rounded-lg border border-border px-4 py-3 text-xs font-semibold text-muted-foreground">Native route planned</span> : <a href="https://console.kineticrouter.com/sign-in" className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-xs font-semibold text-white">Get API key <ArrowRightIcon className="h-4 w-4" /></a>}</aside>
+          </div>
+        </div>
+      </section>
+      <section className="page-container grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:py-14">
+        <div className="min-w-0">
+          <h2 className="text-2xl font-semibold tracking-tight">Reference pricing</h2><p className="mt-2 text-xs text-muted-foreground">Exact Hao.ai snapshot values per 1M tokens. Your customer portal is authoritative for actual Kinetic Router billing.</p>
+          <div className="mt-5 overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[560px] border-collapse text-left text-xs"><thead className="bg-muted/50"><tr><th className="px-4 py-3">Component</th><th className="px-4 py-3 text-primary">Mirrored snapshot</th><th className="px-4 py-3">Official reference</th><th className="px-4 py-3">Snapshot savings</th></tr></thead><tbody>{components.map((component) => { const sell = usdPrice(model, 'sell', component); const official = usdPrice(model, 'official', component); const savings = sell != null && official ? Math.round((1 - sell / official) * 100) : undefined; return <tr key={component} className="border-t border-border"><td className="px-4 py-3 text-muted-foreground">{componentLabels[component] ?? component}</td><td className="px-4 py-3 font-semibold text-primary">{formatUsd(sell)}</td><td className="px-4 py-3 text-muted-foreground">{formatUsd(official)}</td><td className="px-4 py-3">{savings == null ? '—' : `${savings}%`}</td></tr>; })}</tbody></table></div>
+          <h2 className="mt-12 text-2xl font-semibold tracking-tight">API example</h2><p className="mt-2 text-xs text-muted-foreground">{planned ? 'This example is held until the Kinetic Router native provider route is enabled.' : `Use the detected OpenAI-compatible Kinetic Router route with ${model.name.replace(/^[^:]+:\s*/, '')}.`}</p><CodeExamples model={model} />
+          <h2 className="mt-12 text-2xl font-semibold tracking-tight">About this model</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{readableTagline(model)}</p>
+          {!!model.faq.length && <div className="mt-12"><h2 className="text-2xl font-semibold tracking-tight">Snapshot FAQ</h2><p className="mt-2 text-xs text-muted-foreground">Imported reference copy; verify runtime behavior before production use.</p><div className="mt-5 divide-y divide-border rounded-xl border border-border">{model.faq.map((item) => <details key={item.q} className="group p-5"><summary className="cursor-pointer list-none text-sm font-semibold">{item.q}<span className="float-right text-muted-foreground group-open:rotate-45">＋</span></summary><p className="mt-3 text-xs leading-6 text-muted-foreground">{item.a}</p></details>)}</div></div>}
+        </div>
+        <aside className="hidden lg:block"><div className="sticky top-24 space-y-5"><div className="surface p-5"><h2 className="text-xs font-semibold">Compatibility reference</h2><div className="mt-3 flex flex-wrap gap-2">{model.compatIcons.map((item) => { const provider = resolveProvider(item, model.id); return <span key={item} className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-[10px]"><ProviderLogo provider={provider} className="h-3.5 w-3.5" />{item} API</span>; })}</div></div><div className="surface p-5"><h2 className="text-xs font-semibold">Details</h2><dl className="mt-4 space-y-3 text-[11px]"><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Category</dt><dd className="capitalize">{model.category}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Hosted on</dt><dd>{model.hostedOn}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Released</dt><dd>{model.date}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Input</dt><dd>{model.inputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Output</dt><dd>{model.outputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Fact check</dt><dd>{model.sourceVerifiedAt}</dd></div></dl>{model.sourceUrl && <a href={model.sourceUrl} className="mt-4 block text-[10px] font-semibold text-primary">Official model reference ↗</a>}</div></div></aside>
+      </section>
+    </>
+  );
+}
