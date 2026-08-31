@@ -7,7 +7,6 @@ import { consolePageUrl, resolvePublicConsoleOrigin } from '@/data/public-consol
 type PublicSession = {
   authenticated: boolean;
   user?: { id: string; username: string; avatarUrl?: string | null };
-  siteAdminRole: 'none' | 'editor' | 'publisher';
 };
 
 type SessionEnvelope = { ok: true; data: PublicSession };

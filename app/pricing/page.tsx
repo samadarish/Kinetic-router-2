@@ -1,37 +1,26 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { CatalogNotice } from '@/components/catalog-notice';
 import { PricingComparison } from '@/components/pricing-comparison';
-import { PublishedPageBlocks } from '@/components/published-page-blocks';
 import { SiteFrame } from '@/components/site-frame';
 import { catalogSnapshot } from '@/data/documentation';
 import { discountRate, getPageMeta, models } from '@/data/content';
 import { providerDisplayStatus } from '@/data/provider-availability';
-import { hasPublishedPageBlocks, loadPublishedSiteContent, publishedPageEntry } from '@/data/site-content';
 
 const fallbackPage = getPageMeta('/pricing');
 const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'API Pricing Reference', description: 'Imported model and price snapshot with kineticRouter route availability clearly marked.' };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'pricing');
-  return published?.enabled ? { title: published.title, description: published.description || fallbackMetadata.description } : fallbackMetadata;
-}
+export const metadata = fallbackMetadata;
 
 const rates = models.map(discountRate).filter((value): value is number => value != null);
 const rateRange = `${Math.min(...rates).toFixed(2)}x–${Math.max(...rates).toFixed(2)}x`;
 const activePriceRows = models.reduce((count, model) => count + model.prices.filter((price) => price.active).length, 0);
 const metrics = [[rateRange, 'Snapshot multiplier range'], [String(models.length), 'Reference models'], [String(activePriceRows), 'Active snapshot price rows'], [catalogSnapshot.capturedAt, 'Snapshot captured']];
 
-export default async function PricingPage() {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'pricing');
-  if (published && !published.enabled) notFound();
-  if (hasPublishedPageBlocks(published)) return <SiteFrame content={content}><PublishedPageBlocks page={published} content={content} /></SiteFrame>;
+export default function PricingPage() {
   const openAi = providerDisplayStatus('openai');
   const anthropic = providerDisplayStatus('anthropic');
   const grok = providerDisplayStatus('grok');
-  return <SiteFrame content={content}>
+  return <SiteFrame>
     <section className="px-4 pb-12 pt-16 text-center md:pb-16 md:pt-24">
       <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-primary">Pricing reference</p>
       <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-semibold leading-[1.1] tracking-[-.045em] md:text-[3.5rem]">Transparent reference pricing,<br className="hidden sm:block" /> with honest route status</h1>

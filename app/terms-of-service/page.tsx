@@ -1,19 +1,11 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { LegalPage } from '@/components/legal-page';
-import { PublishedPageBlocks } from '@/components/published-page-blocks';
-import { SiteFrame } from '@/components/site-frame';
 import { getPageMeta } from '@/data/content';
-import { hasPublishedPageBlocks, loadPublishedSiteContent, publishedPageEntry } from '@/data/site-content';
 
 const fallbackPage = getPageMeta('/terms-of-service');
 const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Terms of Service', description: fallbackPage?.description };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'terms-of-service');
-  return published?.enabled ? { title: published.title, description: published.description || fallbackMetadata.description } : fallbackMetadata;
-}
+export const metadata = fallbackMetadata;
 const sections = [
   { title: '1. Definitions', paragraphs: ['“kineticRouter,” “we,” and “us” mean kineticRouter. “Services” means the kineticRouter website, API gateway, console, documentation, and related offerings. “Content” includes prompts, files, inputs, and AI-generated outputs.'] },
   { title: '2. Scope of Terms', paragraphs: ['These Terms govern access to and use of the Services. By creating an account, purchasing credits, or using an API key, you agree to these Terms and applicable policies.'] },
@@ -31,10 +23,6 @@ const sections = [
   { title: '14. Governing Rules and Dispute Resolution', paragraphs: ['These Terms are governed by the rules stated in the applicable service notice. Parties should first attempt to resolve disputes informally through good-faith discussion.'] },
   { title: '15. Contact', paragraphs: ['Questions about these Terms may be sent through the support channels identified on the kineticRouter website.'] },
 ];
-export default async function TermsPage() {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'terms-of-service');
-  if (published && !published.enabled) notFound();
-  if (hasPublishedPageBlocks(published)) return <SiteFrame content={content}><PublishedPageBlocks page={published} content={content} /></SiteFrame>;
-  return <LegalPage content={content} title="Terms of Service" updated="June 4, 2026" intro="Welcome to kineticRouter. These Terms of Service govern your access to and use of the kineticRouter website, console, APIs, documentation, payments, support, and related services. The services are provided by kineticRouter. By registering, accessing, or continuing to use the services, you agree to these Terms." sections={sections} />;
+export default function TermsPage() {
+  return <LegalPage title="Terms of Service" updated="June 4, 2026" intro="Welcome to kineticRouter. These Terms of Service govern your access to and use of the kineticRouter website, console, APIs, documentation, payments, support, and related services. The services are provided by kineticRouter. By registering, accessing, or continuing to use the services, you agree to these Terms." sections={sections} />;
 }

@@ -3,10 +3,10 @@ import { DocsArticle } from './docs-article';
 import { DocsHeader } from './docs-header';
 import { rebrandHtml } from '@/data/brand';
 import type { DocumentationStatus } from '@/data/documentation';
-import { docsNavigationFor } from '@/data/docs-navigation';
+import { docsNavigation } from '@/data/docs-navigation';
 import { DocsNavigation } from './docs-navigation';
 import { DocsStatusBanner } from './docs-status-banner';
-import { siteThemeStyle, type SiteContentDocument } from '@/data/site-content';
+import { siteConfig } from '@/data/site-config';
 import { SiteTheme } from './site-theme';
 
 function pageToc(html: string, fallback: string[]) {
@@ -14,9 +14,8 @@ function pageToc(html: string, fallback: string[]) {
   return matches.length ? matches.slice(0, 10) : fallback.filter(Boolean).slice(1, 10).map((heading) => ({ heading, id: heading.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
 }
 
-export function DocsShell({ route, html, headings, status, siteContent }: { route: string; html: string; headings: string[]; status: DocumentationStatus; siteContent: SiteContentDocument }) {
+export function DocsShell({ route, html, headings, status }: { route: string; html: string; headings: string[]; status: DocumentationStatus }) {
   const isDocsHome = route === '/docs';
-  const navigation = docsNavigationFor(siteContent.docs);
   const toc = pageToc(html, headings);
   const renderedHtml = rebrandHtml(html);
   const layout = isDocsHome
@@ -24,13 +23,13 @@ export function DocsShell({ route, html, headings, status, siteContent }: { rout
     : 'grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_230px]';
 
   return (
-    <div className="site-theme-root min-h-screen bg-background text-foreground" data-site-default-theme={siteContent.theme.defaultTheme} style={siteThemeStyle(siteContent.theme)}>
-      <SiteTheme defaultTheme={siteContent.theme.defaultTheme} />
-      <DocsHeader route={route} navigation={navigation} headerLinks={siteContent.navigation.docsHeader} brand={siteContent.brand} />
+    <div className="site-theme-root min-h-screen bg-background text-foreground">
+      <SiteTheme />
+      <DocsHeader route={route} navigation={docsNavigation} headerLinks={siteConfig.navigation.docsHeader} brand={siteConfig.brand} />
       <div className={`mx-auto grid max-w-[1440px] pt-16 ${layout}`}>
         {!isDocsHome && (
           <aside className="hidden h-[calc(100vh-4rem)] border-r border-border lg:sticky lg:top-16 lg:block">
-            <DocsNavigation groups={navigation} route={route} className="h-full overflow-y-auto px-4 py-7" />
+            <DocsNavigation groups={docsNavigation} route={route} className="h-full overflow-y-auto px-4 py-7" />
           </aside>
         )}
 
@@ -41,7 +40,7 @@ export function DocsShell({ route, html, headings, status, siteContent }: { rout
             <DocsArticle html={renderedHtml} />
           </div>
           <div className={`mx-auto mt-12 flex items-center border-t border-border py-8 text-xs text-muted-foreground ${isDocsHome ? 'max-w-5xl' : 'max-w-3xl'}`}>
-            <a href="/docs">{siteContent.brand.displayName} Documentation</a>
+            <a href="/docs">{siteConfig.brand.displayName} Documentation</a>
           </div>
         </main>
 

@@ -1,21 +1,14 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { ArrowRightIcon, CheckIcon, SparklesIcon } from '@/components/icons';
-import { PublishedPageBlocks } from '@/components/published-page-blocks';
 import { ProviderLogo } from '@/components/provider-logo';
 import { SiteFrame } from '@/components/site-frame';
 import { getPageMeta } from '@/data/content';
 import { providerAvailabilityCheckedAt, providerDisplayStatus } from '@/data/provider-availability';
-import { hasPublishedPageBlocks, loadPublishedSiteContent, publishedPageEntry } from '@/data/site-content';
 
 const fallbackPage = getPageMeta('/vibe-coding');
 const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Coding-agent setup', description: 'Status-marked kineticRouter setup references for Codex and Claude Code.' };
 
-export async function generateMetadata(): Promise<Metadata> {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'vibe-coding');
-  return published?.enabled ? { title: published.title, description: published.description || fallbackMetadata.description } : fallbackMetadata;
-}
+export const metadata = fallbackMetadata;
 const setup = `export OPENAI_BASE_URL=https://api.kineticrouter.com/v1
 export OPENAI_API_KEY=KINETICROUTER_API_KEY`;
 const codex = `# ~/.codex/config.toml
@@ -26,11 +19,7 @@ base_url = "https://api.kineticrouter.com/v1"
 wire_api = "responses"
 supports_websockets = true`;
 
-export default async function VibeCodingPage() {
-  const content = await loadPublishedSiteContent();
-  const published = publishedPageEntry(content, 'vibe-coding');
-  if (published && !published.enabled) notFound();
-  if (hasPublishedPageBlocks(published)) return <SiteFrame content={content}><PublishedPageBlocks page={published} content={content} /></SiteFrame>;
+export default function VibeCodingPage() {
   const openAiStatus = providerDisplayStatus('openai');
   const anthropicStatus = providerDisplayStatus('anthropic');
   const grokStatus = providerDisplayStatus('grok');

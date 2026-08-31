@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { SiteContentDocument } from '@/data/site-content';
 
-type SiteThemeName = SiteContentDocument['theme']['defaultTheme'];
+type SiteThemeName = 'dark' | 'light';
 
 function applyTheme(theme: SiteThemeName) {
   const root = document.documentElement;
@@ -12,17 +11,17 @@ function applyTheme(theme: SiteThemeName) {
   root.style.colorScheme = theme;
 }
 
-export function SiteTheme({ defaultTheme }: { defaultTheme: SiteThemeName }) {
+export function SiteTheme() {
   useEffect(() => {
-    let theme = defaultTheme;
+    let theme: SiteThemeName = 'dark';
     try {
       const stored = localStorage.getItem('kineticrouter-theme');
       if (stored === 'light' || stored === 'dark') theme = stored;
     } catch {
-      // Storage can be unavailable in privacy-restricted browsers; the published default remains safe.
+      // Storage can be unavailable in privacy-restricted browsers; dark mode remains the safe default.
     }
     applyTheme(theme);
-  }, [defaultTheme]);
+  }, []);
 
   return null;
 }

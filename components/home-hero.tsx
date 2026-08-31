@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import type { ProviderId } from '@/data/provider-availability';
-import type { SiteContentDocument, SiteProviderMap } from '@/data/site-content';
+import type { SiteConfig, SiteProviderMap } from '@/data/site-config';
 import { ArrowRightIcon, ClipboardIcon } from './icons';
 import { ProviderLogo } from './provider-logo';
 
@@ -70,7 +70,7 @@ response = client.chat.completions.create(
 )`;
 }
 
-export function HomeHero({ home, providers }: { home: SiteContentDocument['home']; providers: SiteProviderMap }) {
+export function HomeHero({ home, providers }: { home: SiteConfig['home']; providers: SiteProviderMap }) {
   const enabledProviders = allProviders.filter((id) => providers[id].enabled);
   const providerOrder = enabledProviders.length ? enabledProviders : allProviders;
   const [provider, setProvider] = useState<ProviderId>(providerOrder[0]);
@@ -168,4 +168,3 @@ export function HomeHero({ home, providers }: { home: SiteContentDocument['home'
     </section>
   );
 }
-

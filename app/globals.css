@@ -62,15 +62,6 @@
   color-scheme: dark;
 }
 
-.light .site-theme-root[data-site-default-theme='light'],
-.dark .site-theme-root[data-site-default-theme='dark'] {
-  --background: var(--site-background);
-  --card: color-mix(in oklab, var(--site-background) 96%, var(--foreground));
-  --elevated: color-mix(in oklab, var(--site-background) 92%, var(--foreground));
-  --muted: color-mix(in oklab, var(--site-background) 88%, var(--foreground));
-  --border: color-mix(in oklab, var(--site-background) 78%, var(--foreground));
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

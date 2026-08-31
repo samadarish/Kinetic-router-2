@@ -6,7 +6,7 @@ import { DocsNavigation } from './docs-navigation';
 import { CloseIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
 import type { DocsNavigationGroup } from '@/data/docs-navigation';
-import type { SiteContentDocument, SiteNavigationItem } from '@/data/site-content';
+import type { SiteConfig, SiteNavigationItem } from '@/data/site-config';
 
 function routeActive(route: string, href: string) {
   return href === '/docs' ? route === href : route === href || route.startsWith(`${href}/`);
@@ -16,7 +16,7 @@ type DocsHeaderProps = {
   route: string;
   navigation: DocsNavigationGroup[];
   headerLinks: SiteNavigationItem[];
-  brand: SiteContentDocument['brand'];
+  brand: SiteConfig['brand'];
 };
 
 export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeaderProps) {
@@ -117,4 +117,3 @@ export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeader
     </header>
   );
 }
-

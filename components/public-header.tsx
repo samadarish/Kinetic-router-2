@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { Brand } from './brand';
 import { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
-import type { SiteContentDocument } from '@/data/site-content';
+import type { SiteConfig } from '@/data/site-config';
 
 function isActive(pathname: string, href: string) { return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`); }
 
-export function PublicHeader({ content, compact = false }: { content: SiteContentDocument; compact?: boolean }) {
+export function PublicHeader({ content, compact = false }: { content: SiteConfig; compact?: boolean }) {
   const pathname = usePathname();
   const [menu, setMenu] = useState(false);
   const [dark, setDark] = useState(true);

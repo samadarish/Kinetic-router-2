@@ -1,9 +1,9 @@
 import { Brand } from './brand';
 import { ProviderLogo } from './provider-logo';
 import { displayStateLabel, type ProviderId } from '@/data/provider-availability';
-import type { SiteContentDocument } from '@/data/site-content';
+import type { SiteConfig } from '@/data/site-config';
 
-export function PublicFooter({ content }: { content: SiteContentDocument }) {
+export function PublicFooter({ content }: { content: SiteConfig }) {
   const { brand, home, navigation, providers } = content;
   return (
     <footer className="overflow-hidden border-t border-border/70 bg-background pt-12">
@@ -42,4 +42,3 @@ export function PublicFooter({ content }: { content: SiteContentDocument }) {
     </footer>
   );
 }
-
