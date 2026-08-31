@@ -2,13 +2,13 @@
 
 Canonical site: https://kineticrouter.com
 Customer console: https://console.kineticrouter.com/sign-in
-Reference snapshot source: https://hao.ai
+Reference snapshot source: imported catalog archive
 Snapshot captured: 2026-08-30
 Snapshot scope: 20 models, 188 active price records, 57 documentation pages
 
 ## Interpretation
 
-This public site preserves the exact Hao.ai model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is detected and partially verified. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
+This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is detected and partially verified. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
 
 ## Main pages
 

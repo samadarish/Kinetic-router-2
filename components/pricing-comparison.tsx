@@ -23,7 +23,7 @@ export function PricingComparison({ models }: { models: Model[] }) {
       <div className="mb-7 flex flex-col gap-4 lg:flex-row lg:items-end">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">Reference model pricing</h2>
-          <p className="mt-2 text-xs text-muted-foreground">Exact Hao.ai snapshot prices per 1M tokens, retained for comparison and not presented as a live billing feed.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Imported snapshot prices per 1M tokens, retained for comparison and not presented as a live billing feed.</p>
         </div>
         <div className="flex flex-wrap gap-2 lg:ml-auto">
           {providers.map((item) => (

@@ -1,11 +1,21 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { LegalPage } from '@/components/legal-page';
+import { PublishedPageBlocks } from '@/components/published-page-blocks';
+import { SiteFrame } from '@/components/site-frame';
 import { getPageMeta } from '@/data/content';
+import { hasPublishedPageBlocks, loadPublishedSiteContent, publishedPageEntry } from '@/data/site-content';
 
-const page = getPageMeta('/privacy');
-export const metadata: Metadata = { title: page?.title ?? 'Privacy Policy', description: page?.description };
+const fallbackPage = getPageMeta('/privacy');
+const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Privacy Policy', description: fallbackPage?.description };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await loadPublishedSiteContent();
+  const published = publishedPageEntry(content, 'privacy');
+  return published?.enabled ? { title: published.title, description: published.description || fallbackMetadata.description } : fallbackMetadata;
+}
 const sections = [
-  { title: '1. Scope', paragraphs: ['This Privacy Policy explains how Kinetic Router handles information when you use our website, account services, API gateway, documentation, and related services.'] },
+  { title: '1. Scope', paragraphs: ['This Privacy Policy explains how kineticRouter handles information when you use our website, account services, API gateway, documentation, and related services.'] },
   { title: '2. Information We Collect', paragraphs: ['We collect account details you provide, transaction and billing records, API credentials, request metadata, device and browser information, and support communications.'], bullets: ['Account and contact information', 'Usage, latency, model, token, and cost records', 'Payment and credit transaction records', 'Security and diagnostic logs'] },
   { title: '3. How We Use Information', paragraphs: ['We use information to provide and secure the service, route API requests, calculate usage and costs, improve reliability, prevent abuse, communicate with you, and meet legal obligations.'] },
   { title: '4. API Content and Upstream Providers', paragraphs: ['Prompts, files, and model outputs may be transmitted to the upstream provider selected for a request. Upstream providers process that content under their own applicable terms and policies. Do not submit content you are not authorized to process.'] },
@@ -18,7 +28,13 @@ const sections = [
   { title: '11. Minors', paragraphs: ['The service is not directed to children and must not be used by anyone below the minimum age required in their jurisdiction.'] },
   { title: '12. Updates', paragraphs: ['We may update this policy as the service and applicable requirements change. The posted effective date identifies the latest version.'] },
   { title: '13. Disputes and Complaints', paragraphs: ['Contact us first with any privacy concern so we can investigate and respond. You may also have the right to contact your local data protection authority.'] },
-  { title: '14. Other Terms', paragraphs: ['This policy should be read together with the Kinetic Router Terms of Service and any additional terms presented for a specific feature.'] },
-  { title: '15. Contact', paragraphs: ['For privacy questions or requests, contact Kinetic Router at support@kineticrouter.com.'] },
+  { title: '14. Other Terms', paragraphs: ['This policy should be read together with the kineticRouter Terms of Service and any additional terms presented for a specific feature.'] },
+  { title: '15. Contact', paragraphs: ['For privacy questions or requests, use the support channel available in your customer console.'] },
 ];
-export default function PrivacyPage() { return <LegalPage title="Privacy Policy" updated="June 4, 2026" intro="Kinetic Router operates the Kinetic Router website, console, APIs, payments, support, and related services. This Privacy Policy explains how we collect, use, retain, share, and protect personal information, API usage data, and related logs, and how you may exercise your rights." sections={sections} />; }
+export default async function PrivacyPage() {
+  const content = await loadPublishedSiteContent();
+  const published = publishedPageEntry(content, 'privacy');
+  if (published && !published.enabled) notFound();
+  if (hasPublishedPageBlocks(published)) return <SiteFrame content={content}><PublishedPageBlocks page={published} content={content} /></SiteFrame>;
+  return <LegalPage content={content} title="Privacy Policy" updated="June 4, 2026" intro="kineticRouter operates the kineticRouter website, console, APIs, payments, support, and related services. This Privacy Policy explains how we collect, use, retain, share, and protect personal information, API usage data, and related logs, and how you may exercise your rights." sections={sections} />;
+}

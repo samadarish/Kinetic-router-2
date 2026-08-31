@@ -5,10 +5,9 @@ const anthropicBaseUrl = providerAvailability.anthropic.previewBaseUrl!;
 const grokBaseUrl = providerAvailability.grok.previewBaseUrl!;
 
 export const BRAND = {
-  name: 'Kinetic Router',
-  legalName: 'Kinetic Router',
+  name: 'kineticRouter',
+  legalName: 'kineticRouter',
   siteUrl: 'https://kineticrouter.com',
-  supportEmail: 'support@kineticrouter.com',
   apiKeyEnv: 'KINETICROUTER_API_KEY',
   providerId: 'kineticrouter',
   api: {
@@ -20,29 +19,22 @@ export const BRAND = {
   },
 } as const;
 
-const replacements: ReadonlyArray<readonly [string, string]> = [
-  ['YOUR_HAOAI_API_KEY', 'YOUR_KINETICROUTER_API_KEY'],
-  ['HAOAI_API_KEY', BRAND.apiKeyEnv],
-  ['https://api.hao.ai', BRAND.api.root],
-  ['support@hao.ai', BRAND.supportEmail],
-  ['https://hao.ai', BRAND.siteUrl],
-  ['hao.ai', 'kineticrouter.com'],
-  ['HaoAI LLC', BRAND.legalName],
-  ['Hao.ai', BRAND.name],
-  ['HaoAI', BRAND.name],
-];
-
 export function rebrandText(value: string) {
-  let result = value;
-  for (const [from, to] of replacements) result = result.replaceAll(from, to);
-  return result
-    .replace(/\bhaoai(?=[-_]|\b)/g, BRAND.providerId)
-    .replace(/official Telegram community/gi, 'support email')
+  return value
+    .replace(/https?:\/\/kineticrouter\.com\/console\/api-keys\/?/gi, 'https://console.kineticrouter.com/api-keys')
+    .replace(/https?:\/\/kineticrouter\.com\/console\/overview\/?/gi, 'https://console.kineticrouter.com/dashboard')
+    .replace(/(?<![\w./-])kineticrouter\.com\/console\/api-keys\b/gi, 'console.kineticrouter.com/api-keys')
+    .replace(/(?<![\w./-])kineticrouter\.com\/console\/overview\b/gi, 'console.kineticrouter.com/dashboard')
+    .replace(/official Telegram community/gi, 'kineticRouter support')
     .replace(/official community channels/gi, 'official support channels');
 }
 
 export function rebrandHtml(value: string) {
-  const withoutLegacyExternalLinks = value.replace(
+  const withoutEmailLinks = value.replace(
+    /<a\b[^>]*href=["']mailto:[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi,
+    '$1',
+  );
+  const withoutLegacyExternalLinks = withoutEmailLinks.replace(
     /<a\b[^>]*href=["']https:\/\/(?:t\.me|x\.com|github\.com)\/[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi,
     '$1',
   );
@@ -52,7 +44,7 @@ export function rebrandHtml(value: string) {
   );
   const withScreenshotCallouts = withoutUnavailableSources.replace(
     /<img\b[^>]*(?:\/docs\/|%2Fdocs%2F|kineticrouter\.com\/docs\/)[^>]*>/gi,
-    '<div class="docs-image-note">This screenshot will be refreshed with Kinetic Router branding during the integration documentation pass.</div>',
+    '<div class="docs-image-note">This screenshot will be refreshed with kineticRouter branding during the integration documentation pass.</div>',
   );
   return rebrandText(withScreenshotCallouts);
 }

@@ -7,7 +7,7 @@ const eslintConfig = defineConfig([
   ...nextTs,
   {
     // Vinext handles internal anchors as client-side navigations; the public
-    // replica intentionally preserves Hao.ai's original href-based markup.
+    // The imported documentation intentionally preserves href-based markup.
     rules: {
       '@next/next/no-html-link-for-pages': 'off',
     },

@@ -1,4 +1,5 @@
-import rawManifest from './hao-manifest.json';
+import rawManifest from './reference-manifest.json';
+import type { SiteDocContent } from './site-content';
 
 export type DocsNavigationLink = {
   label: string;
@@ -97,3 +98,27 @@ export const docsNavigation: DocsNavigationGroup[] = [
   ] },
   { label: 'Integrations', links: integrationLinks.map(withCapturedIcon) },
 ];
+
+export function docsNavigationFor(publishedDocs: SiteDocContent[]) {
+  if (!publishedDocs.length) return docsNavigation;
+  const staticLinks = new Map(docsNavigation.flatMap((group) => group.links).map((link) => [link.href, link]));
+  const groups = new Map<string, Array<SiteDocContent>>();
+  for (const doc of [...publishedDocs].filter((item) => item.enabled).sort((a, b) => a.order - b.order)) {
+    const items = groups.get(doc.group) ?? [];
+    items.push(doc);
+    groups.set(doc.group, items);
+  }
+  if (!groups.size) return [];
+  return [...groups.entries()].map(([label, docs]) => ({
+    label,
+    links: docs.map((doc) => {
+      const captured = staticLinks.get(doc.route);
+      return {
+        label: doc.navLabel,
+        href: doc.route,
+        ...(captured?.depth !== undefined ? { depth: captured.depth } : {}),
+        ...(captured?.iconSvg ? { iconSvg: captured.iconSvg } : {}),
+      };
+    }),
+  })) satisfies DocsNavigationGroup[];
+}

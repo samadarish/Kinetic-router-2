@@ -3,10 +3,11 @@ import { readFile } from 'node:fs/promises';
 import { documentationRouteStatus, providerAvailability, providerForAlias } from './provider-availability.mjs';
 
 const root = new URL('../', import.meta.url);
-const manifestUrl = new URL('data/hao-manifest.json', root);
+const manifestUrl = new URL('data/reference-manifest.json', root);
 const statusUrl = new URL('data/documentation-status.json', root);
 const manifestBytes = await readFile(manifestUrl);
-const manifest = JSON.parse(manifestBytes.toString('utf8'));
+const manifestJson = manifestBytes.toString('utf8');
+const manifest = JSON.parse(manifestJson);
 const status = JSON.parse(await readFile(statusUrl, 'utf8'));
 const llms = await readFile(new URL('public/llms.txt', root), 'utf8');
 const llmsFull = await readFile(new URL('public/llms-full.txt', root), 'utf8');
@@ -19,7 +20,7 @@ const expect = (condition, message) => { if (!condition) failures.push(message);
 const unique = (values) => new Set(values).size === values.length;
 const sha256 = createHash('sha256').update(manifestBytes).digest('hex').toUpperCase();
 
-expect(sha256 === '90CB02E22F118779B2F51D42CF7A2A5B185EF0D0FDE7816003E7C7AD57EC432C', `Hao snapshot hash changed: ${sha256}`);
+expect(sha256 === '0E34F76F9BC701DF878CD202683F5B9F3952D5D1A41BA9016F601463EB2ACC8C', `Reference snapshot hash changed: ${sha256}`);
 expect(manifest.capturedAt === '2026-08-30', 'Unexpected or missing snapshot date');
 expect(Array.isArray(manifest.officialSources) && manifest.officialSources.length > 0, 'Official source provenance is missing');
 expect(manifest.notes && typeof manifest.notes === 'object', 'Snapshot notes are missing');
@@ -29,11 +30,14 @@ expect(unique(manifest.docsRoutes), 'Duplicate docs routes found');
 expect(unique(manifest.modelFixture.models.map((model) => model.id)), 'Duplicate model IDs found');
 expect(manifest.docsRoutes.every((route) => manifest.docsMeta.some((item) => item.route === route)), 'A docs route is missing metadata');
 expect(manifest.docsRoutes.every((route) => manifest.docsContent.some((item) => item.route === route)), 'A docs route is missing content');
+expect(!/kineticrouter\.com\/console\/(?:api-keys|overview)/i.test(manifestJson), 'Reference snapshot contains a stale customer-console URL');
+expect(!/\/console\/(?:chat|image)\b|"LanguageSwitcher"|"chatCta"\s*:/i.test(manifestJson), 'Reference snapshot contains a retired public control');
+expect(!/GitHub Repository<!-- -->/.test(manifestJson), 'Documentation labels the documentation homepage as a GitHub repository');
 
 const activePrices = manifest.modelFixture.models.flatMap((model) => model.prices).filter((price) => price.active);
 expect(activePrices.length === 188, `Expected 188 active price rows, found ${activePrices.length}`);
 expect(unique(activePrices.map((price) => price.id)), 'Duplicate active price IDs found');
-expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked Hao snapshot');
+expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked reference snapshot');
 expect(providerAvailability.version === 1 && providerAvailability.displayOnly === true, 'Provider availability registry metadata is invalid');
 expect(providerAvailability.checkedAt === manifest.capturedAt, 'Provider availability date must match the current verification snapshot date');
 const providerAliasOwners = new Map();
@@ -67,7 +71,7 @@ expect(!/api\.kineticrouter\.com\/(?:anthropic|grok\/v1)/i.test(homeHero), 'Land
 
 const navigationRoutes = [...docsNavigationSource.matchAll(/href:\s*'([^']+)'/g)].map((match) => match[1]);
 expect(navigationRoutes.length === manifest.docsRoutes.length && unique(navigationRoutes), 'Docs navigation must contain each captured docs route exactly once');
-expect(manifest.docsRoutes.every((route) => navigationRoutes.includes(route)), 'Docs navigation is missing a captured Hao docs route');
+expect(manifest.docsRoutes.every((route) => navigationRoutes.includes(route)), 'Docs navigation is missing an imported documentation route');
 const integrationRoutes = manifest.docsRoutes.filter((route) => route.startsWith('/docs/integrations/') && route !== '/docs/integrations');
 expect(integrationRoutes.every((route) => manifest.docsContent.find((item) => item.route === route)?.html.includes('docs-meta-title-icon')), 'An integration page is missing its captured tool icon');
 

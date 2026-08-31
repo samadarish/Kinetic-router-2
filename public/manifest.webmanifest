@@ -1,7 +1,7 @@
 {
   "name": "kineticRouter — OpenAI-compatible API and model reference",
   "short_name": "kineticRouter",
-  "description": "OpenAI-compatible API access with a dated Hao.ai model and pricing reference catalog. Native Anthropic and Grok routes are planned.",
+  "description": "OpenAI-compatible API access with a transparent model and pricing reference catalog. Native Anthropic and Grok routes are planned.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#141413",

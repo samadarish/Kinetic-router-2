@@ -1,4 +1,4 @@
-import rawManifest from './hao-manifest.json';
+import rawManifest from './reference-manifest.json';
 import type { Model } from './model-utils';
 import { PENDING_PORTAL_ROUTES, pendingPortalHtml, rebrandValue } from './brand';
 import { correctMirroredDocumentation, documentationStatusFor } from './documentation';
@@ -61,7 +61,7 @@ export const docsMeta = manifest.docsMeta;
 export const docsContent = manifest.docsContent;
 export function getModel(provider: string, slug: string) { return models.find((model) => model.provider === provider && model.slug === slug); }
 function normalizedMeta(meta: PageMeta | undefined) {
-  return meta ? { ...meta, title: meta.title.replace(/\s+(?:-|\|)\s+(?:kineticrouter\.com|Kinetic Router)$/i, '') } : meta;
+  return meta ? { ...meta, title: meta.title.replace(/\s+(?:-|\|)\s+(?:kineticrouter\.com|kineticRouter)$/i, '') } : meta;
 }
 export function getPageMeta(route: string) { return normalizedMeta([...manifest.mainMeta, ...manifest.docsMeta].find((meta) => meta.route === route)); }
 export function getDocsPage(route: string) {

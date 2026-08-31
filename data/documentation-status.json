@@ -1,23 +1,23 @@
 {
   "snapshot": {
-    "source": "https://hao.ai",
+    "source": "imported-reference-snapshot",
     "capturedAt": "2026-08-30",
-    "catalogPolicy": "exact-hao-mirror",
+    "catalogPolicy": "locked-reference-snapshot",
     "modelCount": 20,
     "docsRouteCount": 57,
-    "notice": "Model names and price values are a dated Hao.ai reference snapshot and are not a live Kinetic Router billing feed."
+    "notice": "Model names and price values are a dated reference snapshot and are not a live kineticRouter billing feed."
   },
   "default": {
     "status": "reference",
     "label": "Reference snapshot",
-    "summary": "This page preserves the Hao.ai documentation structure. Confirm Kinetic Router availability in the customer portal before integrating.",
+    "summary": "This page preserves an imported documentation reference. Confirm kineticRouter availability in the customer portal before integrating.",
     "verifiedAt": "2026-08-30",
-    "sources": ["https://hao.ai"]
+    "sources": []
   },
   "rules": [
     {
       "prefix": "/docs/api/openai/",
-      "summary": "This page documents the OpenAI-compatible protocol shape used by Kinetic Router.",
+      "summary": "This page documents the OpenAI-compatible protocol shape used by kineticRouter.",
       "provider": "openai"
     },
     {
@@ -44,7 +44,7 @@
       "route": "/docs/api/openapi/balance",
       "status": "planned",
       "label": "Not published",
-      "summary": "A verified customer balance API is not published by Kinetic Router yet.",
+      "summary": "A verified customer balance API is not published by kineticRouter yet.",
       "verifiedAt": "2026-08-30",
       "sources": []
     },
@@ -52,7 +52,7 @@
       "route": "/docs/api/openapi/provider-pricing",
       "status": "planned",
       "label": "Not published",
-      "summary": "A verified provider-pricing API is not published by Kinetic Router yet.",
+      "summary": "A verified provider-pricing API is not published by kineticRouter yet.",
       "verifiedAt": "2026-08-30",
       "sources": []
     }
