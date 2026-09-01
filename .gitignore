@@ -6,6 +6,8 @@ dist/
 **/.next/
 .vinext/
 **/.vinext/
+.vite/
+**/.vite/
 .wrangler/
 **/.wrangler/
 .env
