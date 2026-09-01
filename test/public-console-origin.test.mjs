@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { consolePageUrl, normalizeConsoleOrigin, resolvePublicConsoleOrigin } from '../data/public-console-origin.mjs';
 
 test('uses the local console for a local public-site runtime', () => {
-  assert.equal(resolvePublicConsoleOrigin(undefined, 'http://localhost:3000'), 'http://localhost:5173');
-  assert.equal(resolvePublicConsoleOrigin(undefined, 'http://127.0.0.1:3000'), 'http://127.0.0.1:5173');
+  assert.equal(resolvePublicConsoleOrigin(undefined, 'http://localhost:3000'), 'http://localhost:5174');
+  assert.equal(resolvePublicConsoleOrigin(undefined, 'http://127.0.0.1:3000'), 'http://127.0.0.1:5174');
 });
 
 test('uses the configured HTTPS console origin', () => {

@@ -1,5 +1,5 @@
 const productionConsoleOrigin = 'https://console.kineticrouter.com';
-const localConsoleOrigin = 'http://127.0.0.1:5173';
+const localConsoleOrigin = 'http://127.0.0.1:5174';
 
 function isLocalHostname(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
@@ -25,7 +25,7 @@ export function resolvePublicConsoleOrigin(configuredOrigin, runtimeOrigin, deve
   const runtime = normalizeConsoleOrigin(runtimeOrigin);
   if (runtime) {
     const hostname = new URL(runtime).hostname;
-    if (isLocalHostname(hostname)) return `http://${hostname === '[::1]' ? '[::1]' : hostname}:5173`;
+    if (isLocalHostname(hostname)) return `http://${hostname === '[::1]' ? '[::1]' : hostname}:5174`;
   }
 
   return development ? localConsoleOrigin : productionConsoleOrigin;

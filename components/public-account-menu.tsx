@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDownIcon } from './icons';
 import { consolePageUrl, resolvePublicConsoleOrigin } from '@/data/public-console-origin.mjs';
+import { requestPublicLogout } from '@/data/public-session.mjs';
 
 type PublicSession = {
   authenticated: boolean;
@@ -31,6 +32,7 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
   const [session, setSession] = useState<PublicSession | null>(null);
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const consoleOrigin = useMemo(() => resolvePublicConsoleOrigin(
     process.env.NEXT_PUBLIC_KINETICROUTER_CONSOLE_ORIGIN,
@@ -72,16 +74,17 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
 
   async function signOut() {
     setSigningOut(true);
+    setSignOutError(null);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 5_000);
     try {
-      await fetch(consolePageUrl(consoleOrigin, '/portal/v1/auth/logout'), {
-        method: 'POST',
-        credentials: 'include',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: '{}',
-      });
+      await requestPublicLogout(consoleOrigin, { signal: controller.signal });
       setSession(null);
       setOpen(false);
+    } catch {
+      setSignOutError('Couldn\u2019t sign out. Please try again.');
     } finally {
+      window.clearTimeout(timeout);
       setSigningOut(false);
     }
   }
@@ -112,7 +115,8 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
           </div>
           <a role="menuitem" href={consolePageUrl(consoleOrigin, '/dashboard')} className="mt-1 flex rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">Dashboard</a>
           <a role="menuitem" href={consolePageUrl(consoleOrigin, '/profile')} className="flex rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">Profile</a>
-          <button role="menuitem" type="button" disabled={signingOut} onClick={signOut} className="flex w-full rounded-lg px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50">{signingOut ? 'Signing out…' : 'Sign out'}</button>
+          <button role="menuitem" type="button" disabled={signingOut} aria-busy={signingOut} onClick={() => void signOut()} className="flex w-full rounded-lg px-3 py-2 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50">{signingOut ? 'Signing out…' : 'Sign out'}</button>
+          {signOutError && <p role="alert" className="px-3 pb-1 pt-0.5 text-[10px] leading-4 text-red-500">{signOutError}</p>}
         </div>
       )}
     </div>
