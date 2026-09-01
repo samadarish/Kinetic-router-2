@@ -1,0 +1,7 @@
+import { SiteFrame } from './site-frame';
+
+type Section = { title: string; paragraphs: string[]; bullets?: string[] };
+
+export function LegalPage({ title, updated, intro, sections }: { title: string; updated: string; intro: string; sections: Section[] }) {
+  return <SiteFrame><article className="page-container py-7 text-[12px] leading-6 text-muted-foreground md:py-9"><h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1><p className="mt-1 text-[11px]">Last updated: {updated}</p><p className="mt-1 max-w-none">{intro}</p><p className="mt-7">Please read this {title === 'Privacy Policy' ? 'Policy' : 'document'} carefully before registering, topping up, creating API keys, calling APIs, or using the console. Feature-specific notices and platform rules, where provided, apply together with this {title === 'Privacy Policy' ? 'Policy' : 'document'}.</p>{sections.map((section) => <section key={section.title} id={section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')} className="mt-7"><h2 className="text-base font-semibold text-foreground">{section.title}</h2>{section.paragraphs.map((paragraph, index) => <p key={paragraph} className="mt-3"><span className="mr-2 font-mono text-[10px] text-muted-foreground">{section.title.split('.')[0]}.{index + 1}</span>{paragraph}</p>)}{section.bullets?.map((bullet, index) => <p key={bullet} className="mt-3"><span className="mr-2 font-mono text-[10px] text-muted-foreground">{section.title.split('.')[0]}.{section.paragraphs.length + index + 1}</span>{bullet}</p>)}</section>)}</article></SiteFrame>;
+}

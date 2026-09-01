@@ -1,0 +1,60 @@
+{
+  "snapshot": {
+    "source": "imported-reference-snapshot",
+    "capturedAt": "2026-08-30",
+    "catalogPolicy": "locked-reference-snapshot",
+    "modelCount": 20,
+    "docsRouteCount": 57,
+    "notice": "Model names and price values are a dated reference snapshot and are not a live kineticRouter billing feed."
+  },
+  "default": {
+    "status": "reference",
+    "label": "Reference snapshot",
+    "summary": "This page preserves an imported documentation reference. Confirm kineticRouter availability in the customer portal before integrating.",
+    "verifiedAt": "2026-08-30",
+    "sources": []
+  },
+  "rules": [
+    {
+      "prefix": "/docs/api/openai/",
+      "summary": "This page documents the OpenAI-compatible protocol shape used by kineticRouter.",
+      "provider": "openai"
+    },
+    {
+      "prefix": "/docs/api/anthropic/",
+      "summary": "This page preserves the Anthropic-native request shape as an integration reference.",
+      "provider": "anthropic"
+    },
+    {
+      "prefix": "/docs/api/grok/",
+      "summary": "This page preserves the dedicated Grok request shape as an integration reference.",
+      "provider": "grok"
+    },
+    {
+      "prefix": "/docs/integrations/claude-",
+      "summary": "This page preserves configuration steps for the Anthropic-native protocol.",
+      "provider": "claude"
+    },
+    {
+      "prefix": "/docs/integrations/codex",
+      "summary": "This page preserves the Codex configuration workflow for the OpenAI-compatible route.",
+      "provider": "openai"
+    },
+    {
+      "route": "/docs/api/openapi/balance",
+      "status": "planned",
+      "label": "Not published",
+      "summary": "A verified customer balance API is not published by kineticRouter yet.",
+      "verifiedAt": "2026-08-30",
+      "sources": []
+    },
+    {
+      "route": "/docs/api/openapi/provider-pricing",
+      "status": "planned",
+      "label": "Not published",
+      "summary": "A verified provider-pricing API is not published by kineticRouter yet.",
+      "verifiedAt": "2026-08-30",
+      "sources": []
+    }
+  ]
+}

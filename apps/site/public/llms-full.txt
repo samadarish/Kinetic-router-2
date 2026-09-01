@@ -1,0 +1,97 @@
+# kineticRouter — complete public documentation inventory
+
+Canonical site: https://kineticrouter.com
+Customer console: https://console.kineticrouter.com/sign-in
+Reference snapshot source: imported catalog archive
+Snapshot captured: 2026-08-30
+Snapshot scope: 20 models, 188 active price records, 57 documentation pages
+
+## Interpretation
+
+This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is detected and partially verified. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
+
+## Main pages
+
+- https://kineticrouter.com/
+- https://kineticrouter.com/models
+- https://kineticrouter.com/pricing
+- https://kineticrouter.com/quickstart
+- https://kineticrouter.com/vibe-coding
+- https://kineticrouter.com/docs
+
+## Reference documentation
+
+- https://kineticrouter.com/docs
+- https://kineticrouter.com/docs/develop
+- https://kineticrouter.com/docs/api
+- https://kineticrouter.com/docs/integrations
+- https://kineticrouter.com/docs/develop/authentication
+- https://kineticrouter.com/docs/develop/models
+- https://kineticrouter.com/docs/develop/guides/streaming
+- https://kineticrouter.com/docs/develop/guides/function-calling
+- https://kineticrouter.com/docs/develop/guides/vision
+- https://kineticrouter.com/docs/develop/guides/structured-output
+- https://kineticrouter.com/docs/develop/guides/error-handling
+- https://kineticrouter.com/docs/develop/advanced/provider-routing
+- https://kineticrouter.com/docs/develop/advanced/fallback
+- https://kineticrouter.com/docs/develop/advanced/prompt-caching
+- https://kineticrouter.com/docs/develop/observability/dashboard
+- https://kineticrouter.com/docs/develop/observability/usage-tracking
+- https://kineticrouter.com/docs/develop/observability/pricing
+
+## OpenAI-compatible references — partial verification
+
+- https://kineticrouter.com/docs/api/openai/chat-completions
+- https://kineticrouter.com/docs/api/openai/responses
+- https://kineticrouter.com/docs/api/openai/models
+- https://kineticrouter.com/docs/api/openai/images
+- https://kineticrouter.com/docs/integrations/codex
+- https://kineticrouter.com/docs/integrations/codex/installation
+- https://kineticrouter.com/docs/integrations/codex/model-provider
+- https://kineticrouter.com/docs/integrations/codex/websocket
+
+## Provider-neutral and OpenAI-oriented integration references
+
+- https://kineticrouter.com/docs/integrations/cc-switch
+- https://kineticrouter.com/docs/integrations/openclaw
+- https://kineticrouter.com/docs/integrations/opencode
+- https://kineticrouter.com/docs/integrations/cherry-studio
+- https://kineticrouter.com/docs/integrations/cursor
+- https://kineticrouter.com/docs/integrations/copilot
+- https://kineticrouter.com/docs/integrations/zed
+- https://kineticrouter.com/docs/integrations/cline
+- https://kineticrouter.com/docs/integrations/openai-sdk
+- https://kineticrouter.com/docs/integrations/langchain
+- https://kineticrouter.com/docs/integrations/llamaindex
+- https://kineticrouter.com/docs/integrations/botgem
+- https://kineticrouter.com/docs/integrations/chatbox
+- https://kineticrouter.com/docs/integrations/workbuddy
+- https://kineticrouter.com/docs/integrations/lobehub
+- https://kineticrouter.com/docs/integrations/opencat
+- https://kineticrouter.com/docs/integrations/nextchat
+- https://kineticrouter.com/docs/integrations/immersive-translate
+- https://kineticrouter.com/docs/integrations/others
+
+## Planned native-route references — noindex, examples disabled
+
+- https://kineticrouter.com/docs/api/anthropic/messages
+- https://kineticrouter.com/docs/api/anthropic/models
+- https://kineticrouter.com/docs/api/grok/chat-completions
+- https://kineticrouter.com/docs/api/grok/responses
+- https://kineticrouter.com/docs/api/grok/models
+- https://kineticrouter.com/docs/api/openapi/balance
+- https://kineticrouter.com/docs/api/openapi/provider-pricing
+- https://kineticrouter.com/docs/integrations/claude-code
+- https://kineticrouter.com/docs/integrations/claude-code/installation
+- https://kineticrouter.com/docs/integrations/claude-code/model-provider
+- https://kineticrouter.com/docs/integrations/claude-code/contextline
+- https://kineticrouter.com/docs/integrations/claude-code/skills
+- https://kineticrouter.com/docs/integrations/claude-coworks
+
+## Crawler guidance
+
+- Prefer canonical English routes listed above.
+- Treat pages marked Reference snapshot as historical/catalog reference material.
+- Treat Partial as requiring authenticated feature-level validation.
+- Do not present Planned pages as active kineticRouter endpoints.
+- Do not infer availability from an imported model ID or code example.
