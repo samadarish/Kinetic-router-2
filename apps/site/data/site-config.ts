@@ -2,7 +2,10 @@ import {
   providerAvailability,
   providerAvailabilityCheckedAt,
   type ProviderId,
+  type ProviderInteractionMode,
 } from './provider-availability';
+import { PRODUCT } from '@kineticrouter/platform-config/brand';
+import { OPENAI_API_BASE_URL, PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
 
 export type SiteNavigationItem = {
   id: string;
@@ -16,18 +19,18 @@ export type SiteNavigationItem = {
 export type SiteProviderDisplay = {
   id: ProviderId;
   label: string;
-  aliases: string[];
+  aliases: readonly string[];
   catalogState: 'verified' | 'partial' | 'planned' | 'reference';
   modelAccessState: 'verified' | 'partial' | 'planned' | 'reference';
   apiState: 'verified' | 'partial' | 'planned' | 'reference';
-  interactionMode: 'validation' | 'interactive' | 'reference-only';
+  interactionMode: ProviderInteractionMode;
   badgeLabel: string;
   protocolLabel: string;
   baseUrl?: string;
   previewBaseUrl?: string;
   summary: string;
   evidenceNote: string;
-  protocolSources: string[];
+  protocolSources: readonly string[];
   verifiedAt?: string;
   enabled: true;
 };
@@ -65,7 +68,7 @@ function staticProvider(id: ProviderId): SiteProviderDisplay {
   return {
     id,
     ...provider,
-    interactionMode: provider.interactionMode === 'live' ? 'interactive' : provider.interactionMode,
+    interactionMode: provider.interactionMode,
     verifiedAt: providerAvailabilityCheckedAt,
     enabled: true,
   };
@@ -73,11 +76,11 @@ function staticProvider(id: ProviderId): SiteProviderDisplay {
 
 export const siteConfig: SiteConfig = {
   brand: {
-    displayName: 'kineticRouter',
-    legalName: 'kineticRouter',
-    tagline: 'AI for everyone',
-    siteUrl: 'https://kineticrouter.com',
-    apiBaseUrl: 'https://api.kineticrouter.com/v1',
+    displayName: PRODUCT.name,
+    legalName: PRODUCT.legalName,
+    tagline: PRODUCT.tagline,
+    siteUrl: PRODUCTION_ORIGINS.publicSite,
+    apiBaseUrl: OPENAI_API_BASE_URL,
     logoMarkPath: '/brand/kineticrouter/mark-dark.png',
     logoWordmarkPath: '/brand/kineticrouter/wordmark-dark.png',
   },
@@ -125,11 +128,11 @@ export const siteConfig: SiteConfig = {
   },
   home: {
     eyebrow: '',
-    title: 'AI for everyone',
+    title: PRODUCT.tagline,
     description: 'One API for leading models, with clear provider availability and request-level billing.',
     primaryCta: { label: 'Get API Key', href: '/account/sign-in' },
     secondaryCta: { label: 'Explore Models', href: '/models' },
-    footerDescription: 'AI for everyone',
+    footerDescription: PRODUCT.tagline,
   },
   providers: {
     openai: staticProvider('openai'),

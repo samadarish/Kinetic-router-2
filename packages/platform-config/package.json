@@ -1,0 +1,21 @@
+{
+  "name": "@kineticrouter/platform-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./brand": { "types": "./dist/brand.d.ts", "import": "./dist/brand.js" },
+    "./origins": { "types": "./dist/origins.d.ts", "import": "./dist/origins.js" },
+    "./routes": { "types": "./dist/routes.d.ts", "import": "./dist/routes.js" },
+    "./theme": { "types": "./dist/theme.d.ts", "import": "./dist/theme.js" },
+    "./providers": { "types": "./dist/providers.d.ts", "import": "./dist/providers.js" }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit"
+  }
+}

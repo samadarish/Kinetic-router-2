@@ -18,7 +18,7 @@ const docsNavigationSource = await readFile(new URL('data/docs-navigation.ts', r
 const failures = [];
 const expect = (condition, message) => { if (!condition) failures.push(message); };
 const unique = (values) => new Set(values).size === values.length;
-const sha256 = createHash('sha256').update(manifestBytes).digest('hex').toUpperCase();
+const sha256 = createHash('sha256').update(manifestJson.replace(/\r\n/g, '\n')).digest('hex').toUpperCase();
 
 expect(sha256 === '0E34F76F9BC701DF878CD202683F5B9F3952D5D1A41BA9016F601463EB2ACC8C', `Reference snapshot hash changed: ${sha256}`);
 expect(manifest.capturedAt === '2026-08-30', 'Unexpected or missing snapshot date');
@@ -74,13 +74,6 @@ expect(navigationRoutes.length === manifest.docsRoutes.length && unique(navigati
 expect(manifest.docsRoutes.every((route) => navigationRoutes.includes(route)), 'Docs navigation is missing an imported documentation route');
 const integrationRoutes = manifest.docsRoutes.filter((route) => route.startsWith('/docs/integrations/') && route !== '/docs/integrations');
 expect(integrationRoutes.every((route) => manifest.docsContent.find((item) => item.route === route)?.html.includes('docs-meta-title-icon')), 'An integration page is missing its captured tool icon');
-
-try {
-  const portalRegistry = JSON.parse(await readFile(new URL('../portal/apps/web/src/lib/provider-display-status.generated.json', root), 'utf8'));
-  expect(JSON.stringify(portalRegistry) === JSON.stringify(providerAvailability), 'Portal provider display-status copy is out of sync with the canonical registry');
-} catch (error) {
-  if (error?.code !== 'ENOENT') throw error;
-}
 
 if (failures.length) {
   console.error('Content checks failed:');

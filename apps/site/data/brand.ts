@@ -1,17 +1,19 @@
 import { providerAvailability } from './provider-availability';
+import { PRODUCT } from '@kineticrouter/platform-config/brand';
+import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
 
 const openAiBaseUrl = providerAvailability.openai.baseUrl!;
 const anthropicBaseUrl = providerAvailability.anthropic.previewBaseUrl!;
 const grokBaseUrl = providerAvailability.grok.previewBaseUrl!;
 
 export const BRAND = {
-  name: 'kineticRouter',
-  legalName: 'kineticRouter',
-  siteUrl: 'https://kineticrouter.com',
-  apiKeyEnv: 'KINETICROUTER_API_KEY',
-  providerId: 'kineticrouter',
+  name: PRODUCT.name,
+  legalName: PRODUCT.legalName,
+  siteUrl: PRODUCTION_ORIGINS.publicSite,
+  apiKeyEnv: PRODUCT.apiKeyEnv,
+  providerId: PRODUCT.providerId,
   api: {
-    root: 'https://api.kineticrouter.com',
+    root: PRODUCTION_ORIGINS.api,
     openai: openAiBaseUrl,
     anthropic: anthropicBaseUrl,
     grokRoot: grokBaseUrl.replace(/\/v1$/, ''),

@@ -7,6 +7,7 @@ import { CloseIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
 import type { DocsNavigationGroup } from '@/data/docs-navigation';
 import type { SiteConfig, SiteNavigationItem } from '@/data/site-config';
+import { applyTheme, writeStoredTheme } from '@kineticrouter/platform-config/theme';
 
 function routeActive(route: string, href: string) {
   return href === '/docs' ? route === href : route === href || route.startsWith(`${href}/`);
@@ -42,10 +43,9 @@ export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeader
   function toggleTheme() {
     const next = !dark;
     setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    document.documentElement.classList.toggle('light', !next);
-    document.documentElement.style.colorScheme = next ? 'dark' : 'light';
-    localStorage.setItem('kineticrouter-theme', next ? 'dark' : 'light');
+    const theme = next ? 'dark' : 'light';
+    applyTheme(document.documentElement, theme);
+    try { writeStoredTheme(window.localStorage, theme); } catch { /* Storage can be unavailable. */ }
   }
 
   return (

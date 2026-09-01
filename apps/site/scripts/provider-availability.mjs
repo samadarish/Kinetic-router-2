@@ -1,9 +1,7 @@
 import { readFile } from 'node:fs/promises';
 
-const root = new URL('../', import.meta.url);
-
 export const providerAvailability = JSON.parse(
-  await readFile(new URL('data/provider-availability.json', root), 'utf8'),
+  await readFile(new URL('../../../packages/platform-config/src/provider-registry.json', import.meta.url), 'utf8'),
 );
 
 const normalizeProvider = (value) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');

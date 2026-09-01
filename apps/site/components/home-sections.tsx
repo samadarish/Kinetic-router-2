@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { providerDisplayStatus } from '@/data/provider-availability';
-import { ArrowRightIcon, ClipboardIcon, CodexIcon, ExternalIcon } from './icons';
+import { CodexIcon } from '@kineticrouter/brand-ui';
+import { ArrowRightIcon, ClipboardIcon, ExternalIcon } from './icons';
 import { CatalogNotice } from './catalog-notice';
 import { ProviderLogo } from './provider-logo';
 

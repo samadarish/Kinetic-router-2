@@ -1,0 +1,42 @@
+{
+  "name": "kineticrouter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "npm run build:shared && concurrently -n site,console,bff -c blue,magenta,cyan \"npm run dev -w @kineticrouter/site\" \"npm run dev -w @kineticrouter/console\" \"npm run dev -w @kineticrouter/bff\"",
+    "dev:site": "npm run build:shared && npm run dev -w @kineticrouter/site",
+    "dev:console": "npm run build:shared && concurrently -n console,bff -c magenta,cyan \"npm run dev -w @kineticrouter/console\" \"npm run dev -w @kineticrouter/bff\"",
+    "build:shared": "npm run build -w @kineticrouter/platform-config && npm run build -w @kineticrouter/brand-ui && npm run build -w @kineticrouter/portal-contract && npm run build -w @kineticrouter/sub2api-client",
+    "build:site": "npm run build:shared && npm run build -w @kineticrouter/site && node scripts/stage-site-dist.mjs",
+    "build:console": "npm run build:shared && npm run build -w @kineticrouter/console",
+    "build:bff": "npm run build:shared && npm run build -w @kineticrouter/bff",
+    "build": "npm run build:shared && npm run build -w @kineticrouter/bff && npm run build -w @kineticrouter/console && npm run build -w @kineticrouter/site && node scripts/stage-site-dist.mjs",
+    "pretypecheck": "npm run build:shared",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "pretest:portal": "npm run build:shared",
+    "test:portal": "vitest run",
+    "test:site": "npm run test:public -w @kineticrouter/site",
+    "test": "npm run test:portal && npm run test:site",
+    "test:watch": "vitest",
+    "lint": "npm run lint -w @kineticrouter/site",
+    "check:providers": "npm run check:provider-availability -w @kineticrouter/site",
+    "check:content": "npm run check:content -w @kineticrouter/site",
+    "check:brand": "npm run check:brand -w @kineticrouter/site",
+    "check": "npm run test && npm run typecheck && npm run lint && npm run check:providers && npm run check:content && npm run build && npm run check:brand",
+    "start": "npm run start -w @kineticrouter/bff"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}

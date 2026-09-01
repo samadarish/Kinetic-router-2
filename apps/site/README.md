@@ -1,25 +1,14 @@
-# kineticRouter UI reconstruction
+# kineticRouter public site
 
-Dark-first public kineticRouter site reconstruction built with React, Vinext, Vite, and Tailwind CSS.
+The public landing page, documentation, legal pages, model reference catalog, and console redirects for `kineticrouter.com`.
 
-## Run locally
+Run it from the monorepo root:
 
-```bash
-npm install
-npm run dev
+```powershell
+npm run dev:site
+npm run build:site
 ```
 
-Open `http://localhost:3000`.
+Provider display state is controlled by the canonical registry at `packages/platform-config/src/provider-registry.json`. It is display-only; real provider availability is configured and validated in the original Sub2API administrator interface.
 
-## Checks
-
-```bash
-npm run lint
-npm run build
-```
-
-Provider badges, protocol labels, endpoint examples, and copy gating are controlled by `data/provider-availability.json`. It is display-only: actual provider availability is configured in the original Sub2API administrator interface. After changing it, run `npm run sync:provider-availability` to update the checked-in portal copy, then `npm run check`.
-
-The project includes the public homepage, marketing and legal pages, a locked 20-model reference snapshot, the 57-page English documentation tree, protected console redirects, recovered fonts and brand assets, sitemaps, and LLM exports.
-
-`web/` is the public landing, documentation, and dated reference-catalog surface. Authentication, keys, usage, billing, and customer account data live in the connected Sub2API customer portal under `portal/`; `/account/sign-in` redirects there.
+Authentication, API keys, usage, billing, and account data live in `apps/console` and `apps/bff`. `/account/sign-in` safely redirects to the console, preserving only allowlisted console return paths.

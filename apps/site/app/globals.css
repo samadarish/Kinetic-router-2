@@ -1,22 +1,7 @@
 @import 'tailwindcss';
+@import '@kineticrouter/brand-ui/brand.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
-
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/inter.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('/fonts/jetbrains-mono.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 100 800;
-  font-display: swap;
-}
 
 :root {
   --background: oklch(98.18% 0.0054 95.0986);
@@ -26,12 +11,6 @@
   --muted: oklch(93.41% 0.0153 90.239);
   --muted-foreground: oklch(54% 0.01 97);
   --border: oklch(88.47% 0.0069 97.3627);
-  --brand-mint: #53e1d2;
-  --brand-cyan: #38cce4;
-  --brand-sky: #38b6e8;
-  --brand-blue: #379dec;
-  --brand-deep: #3789ef;
-  --brand-gradient: linear-gradient(135deg, #53e1d2 0%, #38cce4 28%, #38b6e8 52%, #379dec 74%, #3789ef 100%);
   --brand-soft-bg: color-mix(in oklab, #38b6e8 10%, var(--background));
   --brand-soft-border: color-mix(in oklab, #379dec 38%, var(--border));
   --brand-soft-text: #2367d1;
@@ -119,28 +98,6 @@ textarea:focus-visible {
 ::selection { background: color-mix(in oklab, var(--primary) 35%, transparent); }
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--foreground) 20%, transparent); border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
-
-.brand-wordmark,
-.brand-mark {
-  display: inline-block;
-  flex-shrink: 0;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-.brand-wordmark {
-  aspect-ratio: 360 / 136;
-  background-image: url('/brand/kineticrouter/wordmark-light.png');
-}
-
-.brand-mark {
-  aspect-ratio: 1;
-  background-image: url('/brand/kineticrouter/mark-light.png');
-}
-
-.dark .brand-wordmark { background-image: url('/brand/kineticrouter/wordmark-dark.png'); }
-.dark .brand-mark { background-image: url('/brand/kineticrouter/mark-dark.png'); }
 
 .footer-watermark {
   background-image: var(--brand-gradient);

@@ -1,0 +1,27 @@
+{
+  "name": "@kineticrouter/bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "predev": "tsc -p tsconfig.json",
+    "dev": "concurrently -k -n build,server -c yellow,cyan \"tsc -p tsconfig.json --watch --preserveWatchOutput\" \"node --env-file-if-exists=../../.env --watch dist/index.js\"",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file-if-exists=../../.env dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "@kineticrouter/platform-config": "0.1.0",
+    "@kineticrouter/portal-contract": "0.1.0",
+    "@kineticrouter/sub2api-client": "0.1.0",
+    "hono": "^4.10.7",
+    "pino": "^10.1.0",
+    "redis": "^5.10.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -1,16 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ApiSuccess, PublicSessionPresentation } from '@kineticrouter/portal-contract';
 import { ChevronDownIcon } from './icons';
 import { consolePageUrl, resolvePublicConsoleOrigin } from '@/data/public-console-origin.mjs';
 import { requestPublicLogout } from '@/data/public-session.mjs';
 
-type PublicSession = {
-  authenticated: boolean;
-  user?: { id: string; username: string; avatarUrl?: string | null };
-};
-
-type SessionEnvelope = { ok: true; data: PublicSession };
+type SessionEnvelope = ApiSuccess<PublicSessionPresentation>;
 
 function initials(username: string) {
   const words = username.trim().split(/\s+/).filter(Boolean);
@@ -29,7 +25,7 @@ function safeAvatarUrl(value?: string | null) {
 }
 
 export function PublicAccountMenu({ className = '' }: { className?: string }) {
-  const [session, setSession] = useState<PublicSession | null>(null);
+  const [session, setSession] = useState<PublicSessionPresentation | null>(null);
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);

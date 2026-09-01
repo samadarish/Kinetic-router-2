@@ -6,6 +6,7 @@ import { Brand } from './brand';
 import { CloseIcon, MenuIcon, MoonIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
 import type { SiteConfig } from '@/data/site-config';
+import { applyTheme, writeStoredTheme } from '@kineticrouter/platform-config/theme';
 
 function isActive(pathname: string, href: string) { return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`); }
 
@@ -24,10 +25,9 @@ export function PublicHeader({ content, compact = false }: { content: SiteConfig
   function toggleTheme() {
     const next = !dark;
     setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    document.documentElement.classList.toggle('light', !next);
-    document.documentElement.style.colorScheme = next ? 'dark' : 'light';
-    localStorage.setItem('kineticrouter-theme', next ? 'dark' : 'light');
+    const theme = next ? 'dark' : 'light';
+    applyTheme(document.documentElement, theme);
+    try { writeStoredTheme(window.localStorage, theme); } catch { /* Storage can be unavailable. */ }
   }
 
   const links = content.navigation.publicHeader;

@@ -1,0 +1,18 @@
+@font-face { font-family: Inter; src: url('/fonts/inter.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'JetBrains Mono'; src: url('/fonts/jetbrains-mono.woff2') format('woff2'); font-weight: 100 800; font-style: normal; font-display: swap; }
+
+:root {
+  --brand-mint: #53e1d2;
+  --brand-cyan: #38cce4;
+  --brand-sky: #38b6e8;
+  --brand-blue: #379dec;
+  --brand-deep: #3789ef;
+  --brand-gradient: linear-gradient(135deg, #53e1d2 0%, #38cce4 28%, #38b6e8 52%, #379dec 74%, #3789ef 100%);
+}
+
+.brand-wordmark,.brand-mark { display:inline-block; flex-shrink:0; background-position:center; background-repeat:no-repeat; background-size:contain; }
+.brand-wordmark { aspect-ratio:360/136; background-image:url('/brand/kineticrouter/wordmark-light.png'); }
+.brand-mark { aspect-ratio:1; background-image:url('/brand/kineticrouter/mark-light.png'); }
+.dark .brand-wordmark { background-image:url('/brand/kineticrouter/wordmark-dark.png'); }
+.dark .brand-mark { background-image:url('/brand/kineticrouter/mark-dark.png'); }
+.provider-icon-anthropic,.provider-icon-claude { color:#d97757; }

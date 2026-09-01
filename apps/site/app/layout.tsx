@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { THEME_BOOTSTRAP_SCRIPT } from '@kineticrouter/platform-config/theme';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,22 +29,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#141413' };
 
-const themeScript = `
-(() => {
-  try {
-    const stored = localStorage.getItem('kineticrouter-theme');
-    const theme = stored === 'light' || stored === 'dark' ? stored : 'dark';
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    root.style.colorScheme = theme;
-  } catch {}
-})();`;
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
       <body>{children}</body>
     </html>
   );
