@@ -1,0 +1,25 @@
+{
+  "name": "@kineticrouter/portal-bff",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env --watch --import tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file-if-exists=../../.env dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.7",
+    "@kineticrouter/portal-contract": "0.1.0",
+    "@kineticrouter/sub2api-client": "0.1.0",
+    "hono": "^4.10.7",
+    "pino": "^10.1.0",
+    "redis": "^5.10.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

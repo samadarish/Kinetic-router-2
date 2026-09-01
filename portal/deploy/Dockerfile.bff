@@ -1,0 +1,29 @@
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/bff/package.json apps/bff/package.json
+COPY packages/portal-contract/package.json packages/portal-contract/package.json
+COPY packages/sub2api-client/package.json packages/sub2api-client/package.json
+RUN npm ci --no-audit --no-fund
+COPY packages/portal-contract packages/portal-contract
+COPY packages/sub2api-client packages/sub2api-client
+COPY apps/bff apps/bff
+RUN npm run build -w @kineticrouter/portal-contract && npm run build -w @kineticrouter/sub2api-client && npm run build -w @kineticrouter/portal-bff
+
+FROM node:24-alpine AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/bff/package.json apps/bff/package.json
+COPY packages/portal-contract/package.json packages/portal-contract/package.json
+COPY packages/sub2api-client/package.json packages/sub2api-client/package.json
+RUN npm ci --omit=dev --no-audit --no-fund
+COPY --from=build /app/apps/bff/dist apps/bff/dist
+COPY --from=build /app/packages/portal-contract/dist packages/portal-contract/dist
+COPY --from=build /app/packages/sub2api-client/dist packages/sub2api-client/dist
+USER node
+EXPOSE 3101
+HEALTHCHECK --interval=20s --timeout=5s --start-period=12s --retries=3 CMD node -e "fetch('http://127.0.0.1:3101/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "apps/bff/dist/index.js"]

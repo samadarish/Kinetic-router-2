@@ -1,0 +1,31 @@
+console.kineticrouter.com {
+  encode zstd gzip
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "no-referrer"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+    Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    -Server
+  }
+
+  @portal_api path /portal/* /readyz
+  handle @portal_api {
+    reverse_proxy 127.0.0.1:3101
+  }
+
+  handle {
+    reverse_proxy 127.0.0.1:3100
+  }
+
+  log {
+    output file /var/log/caddy/console.kineticrouter.com.log {
+      roll_size 10MiB
+      roll_keep 5
+      roll_keep_for 168h
+    }
+    format json
+  }
+}
