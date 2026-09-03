@@ -2,12 +2,17 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 
 const imageSpecs = [
   ['packages/brand-ui/assets/favicon-source-white.png', 1254, 1254, 550_000],
+  ['packages/brand-ui/assets/home-hero-source.png', 2061, 763, 2_750_000],
+  ['packages/brand-ui/assets/home-hero-640.webp', 640, 237, 50_000],
+  ['packages/brand-ui/assets/home-hero-1280.webp', 1280, 474, 160_000],
+  ['packages/brand-ui/assets/home-hero-2061.webp', 2061, 763, 320_000],
   ['packages/brand-ui/assets/wordmark-light.png', 360, 136, 12_000],
   ['packages/brand-ui/assets/wordmark-dark.png', 360, 136, 12_000],
   ['packages/brand-ui/assets/mark-light.png', 96, 96, 5_000],
@@ -28,7 +33,7 @@ for (const [relativePath, expectedWidth, expectedHeight, maxBytes] of imageSpecs
     continue;
   }
   const bytes = statSync(path).size;
-  const { width, height } = imageDimensions(readFileSync(path));
+  const { width, height } = await sharp(path).metadata();
   if (width !== expectedWidth || height !== expectedHeight) {
     failures.push(`${relativePath} is ${width}x${height}; expected ${expectedWidth}x${expectedHeight}`);
   }
@@ -51,6 +56,9 @@ const synchronizedCopies = [
   ['packages/brand-ui/assets/wordmark-dark.png', 'apps/site/public/brand/kineticrouter/wordmark-dark.png'],
   ['packages/brand-ui/assets/mark-light.png', 'apps/site/public/brand/kineticrouter/mark-light.png'],
   ['packages/brand-ui/assets/mark-dark.png', 'apps/site/public/brand/kineticrouter/mark-dark.png'],
+  ['packages/brand-ui/assets/home-hero-640.webp', 'apps/site/public/brand/kineticrouter/home-hero-640.webp'],
+  ['packages/brand-ui/assets/home-hero-1280.webp', 'apps/site/public/brand/kineticrouter/home-hero-1280.webp'],
+  ['packages/brand-ui/assets/home-hero-2061.webp', 'apps/site/public/brand/kineticrouter/home-hero-2061.webp'],
   ['packages/brand-ui/assets/social-preview.jpg', 'apps/site/public/og.jpg'],
   ['packages/brand-ui/assets/favicon-16.png', 'apps/site/public/favicon-16.png'],
   ['packages/brand-ui/assets/favicon-32.png', 'apps/site/public/favicon-32.png'],
@@ -91,6 +99,7 @@ for (const retired of [
 
 const metadataChecks = [
   ['apps/site/app/layout.tsx', ['/favicon-16.png', '/favicon-32.png', '/favicon-48.png', '/favicon.ico', '/og.jpg']],
+  ['apps/site/components/home-hero.tsx', ['/brand/kineticrouter/home-hero-640.webp', '/brand/kineticrouter/home-hero-1280.webp', '/brand/kineticrouter/home-hero-2061.webp']],
   ['apps/console/index.html', ['/favicon-16.png', '/favicon-32.png', '/favicon-48.png', '/favicon.ico', '/og.jpg']],
 ];
 for (const [relativePath, expectedValues] of metadataChecks) {
@@ -109,26 +118,6 @@ console.log('Brand asset dimensions, budgets, metadata, and synchronized copies 
 
 function digest(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex');
-}
-
-function imageDimensions(buffer) {
-  if (buffer.subarray(1, 4).toString('ascii') === 'PNG') {
-    return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
-  }
-  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
-    let offset = 2;
-    while (offset < buffer.length) {
-      if (buffer[offset] !== 0xff) { offset += 1; continue; }
-      const marker = buffer[offset + 1];
-      if (marker === 0xd8 || marker === 0xd9) { offset += 2; continue; }
-      const length = buffer.readUInt16BE(offset + 2);
-      if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) {
-        return { width: buffer.readUInt16BE(offset + 7), height: buffer.readUInt16BE(offset + 5) };
-      }
-      offset += length + 2;
-    }
-  }
-  throw new Error('Unsupported image format');
 }
 
 function icoSizes(buffer) {

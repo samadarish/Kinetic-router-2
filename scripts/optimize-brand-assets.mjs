@@ -7,6 +7,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const assets = resolve(root, 'packages/brand-ui/assets');
 const faviconSource = resolve(assets, 'favicon-source-white.png');
 const appIcon = resolve(assets, 'app-icon.png');
+const homeHeroSource = resolve(assets, 'home-hero-source.png');
 
 const pngOptions = {
   compressionLevel: 9,
@@ -34,6 +35,10 @@ await Promise.all([
     .flatten({ background: '#141413' })
     .jpeg({ quality: 88, progressive: true, chromaSubsampling: '4:4:4', mozjpeg: true })
     .toFile(resolve(assets, 'social-preview.jpg')),
+  ...[640, 1280, 2061].map((width) => sharp(homeHeroSource)
+    .resize({ width, withoutEnlargement: true, kernel: sharp.kernel.lanczos3 })
+    .webp({ quality: 82, effort: 6, smartSubsample: true })
+    .toFile(resolve(assets, `home-hero-${width}.webp`))),
 ]);
 
 console.log('Optimized brand delivery assets.');

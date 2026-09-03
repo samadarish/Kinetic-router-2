@@ -109,13 +109,33 @@ export function HomeHero({ home, providers }: { home: SiteConfig['home']; provid
   }
 
   return (
-    <section className="hero-grid hero-glow relative overflow-hidden pb-10 pt-16 md:pb-16 md:pt-20">
-      <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        {home.eyebrow && <p className="mb-3 text-xs font-semibold uppercase tracking-[.18em] text-primary">{home.eyebrow}</p>}
-        <h1 className="text-[1.75rem] font-semibold leading-[1.14] tracking-[-.045em] min-[380px]:text-[2rem] sm:text-[2.7rem] md:text-[3.35rem] lg:text-[3.7rem]">
-          {home.title.split('\n').map((line) => <span key={line} className="block">{line}</span>)}
+    <section className="overflow-hidden">
+      <div className="home-hero-visual">
+        {/* These committed WebP variants are already optimized for their target widths. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/kineticrouter/home-hero-1280.webp"
+          srcSet="/brand/kineticrouter/home-hero-640.webp 640w, /brand/kineticrouter/home-hero-1280.webp 1280w, /brand/kineticrouter/home-hero-2061.webp 2061w"
+          sizes="100vw"
+          width={2061}
+          height={763}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="home-hero-image"
+        />
+        <div className="home-hero-scrim" aria-hidden="true" />
+        <h1 className="home-hero-title">
+          <span className="home-hero-title-copy">{home.title}<span className="home-hero-period">.</span></span>
         </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">{home.description}</p>
+      </div>
+
+      <div className="hero-grid hero-glow relative overflow-hidden pb-10 pt-4 md:pb-16 md:pt-5">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
+          {home.eyebrow && <p className="mb-3 text-xs font-semibold uppercase tracking-[.18em] text-primary">{home.eyebrow}</p>}
+          <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">{home.description}</p>
 
         <div aria-label="Choose a model provider" className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
           {providerOrder.map((id) => {
@@ -164,6 +184,7 @@ export function HomeHero({ home, providers }: { home: SiteConfig['home']; provid
           <div><strong className="block text-[17px] font-semibold tracking-tight sm:text-2xl">20 models</strong><span className="text-[9px] leading-tight text-muted-foreground sm:text-xs">Dated catalog<br className="sm:hidden" /> snapshot</span></div>
           <div><strong className="block text-[17px] font-semibold tracking-tight sm:text-2xl">57 docs</strong><span className="text-[9px] leading-tight text-muted-foreground sm:text-xs">Status-marked<br className="sm:hidden" /> references</span></div>
         </div>
+      </div>
       </div>
     </section>
   );

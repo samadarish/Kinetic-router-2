@@ -68,6 +68,9 @@ expect(!/database-driven|live model catalog|live pricing/i.test(inventories), 'L
 expect(!/DeepSeek/i.test(inventories), 'LLM exports list a provider absent from the snapshot');
 expect(!inventories.includes('/docs/develop/advanced/model-routing'), 'LLM exports contain the removed model-routing path');
 expect(!/api\.kineticrouter\.com\/(?:anthropic|grok\/v1)/i.test(homeHero), 'Landing hero exposes a planned provider endpoint');
+expect((homeHero.match(/<h1\b/g) ?? []).length === 1, 'Landing hero must contain exactly one semantic h1');
+expect(homeHero.includes('{home.title}<span className="home-hero-period">.</span>'), 'Landing hero must render the gradient period as HTML text');
+expect(/<img[\s\S]*?alt=""[\s\S]*?aria-hidden="true"[\s\S]*?fetchPriority="high"/.test(homeHero), 'Landing hero image must be decorative and loaded with high priority');
 
 const navigationRoutes = [...docsNavigationSource.matchAll(/href:\s*'([^']+)'/g)].map((match) => match[1]);
 expect(navigationRoutes.length === manifest.docsRoutes.length && unique(navigationRoutes), 'Docs navigation must contain each captured docs route exactly once');
