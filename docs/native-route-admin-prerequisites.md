@@ -4,7 +4,7 @@ The customer portal must not present an on/off control for the Anthropic-native 
 
 ## Current boundary
 
-- The public and customer UIs label the OpenAI-compatible route as **Partial**.
+- The public and customer UIs label the OpenAI-compatible route as **Available**.
 - Anthropic-native and dedicated Grok routes are labeled **Planned**.
 - Planned endpoints and request examples are visible only as reference material; their copy actions are disabled.
 - The original Sub2API administrator interface remains the only supported place for provider and gateway configuration.

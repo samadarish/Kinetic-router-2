@@ -39,7 +39,7 @@ expect(activePrices.length === 188, `Expected 188 active price rows, found ${act
 expect(unique(activePrices.map((price) => price.id)), 'Duplicate active price IDs found');
 expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked reference snapshot');
 expect(providerAvailability.version === 1 && providerAvailability.displayOnly === true, 'Provider availability registry metadata is invalid');
-expect(providerAvailability.checkedAt === manifest.capturedAt, 'Provider availability date must match the current verification snapshot date');
+expect(providerAvailability.checkedAt >= manifest.capturedAt, 'Provider availability fact check cannot predate the reference snapshot');
 const providerAliasOwners = new Map();
 for (const [id, provider] of Object.entries(providerAvailability.providers)) {
   expect(provider.protocolSources.length > 0, `${id} is missing authoritative protocol sources`);
@@ -56,7 +56,7 @@ for (const provider of ['anthropic', 'grok']) {
   const providerStatus = providerForAlias(provider);
   expect(providerStatus?.apiState === 'planned' && providerStatus.interactionMode === 'reference-only', `${provider} must remain reference-only until an authoritative route check passes`);
 }
-expect(providerForAlias('codex')?.apiState === 'partial', 'Codex must resolve through the OpenAI provider status');
+expect(providerForAlias('codex')?.apiState === 'verified', 'Codex must resolve through the available OpenAI provider status');
 expect(providerForAlias('claude')?.apiState === 'planned', 'Claude must resolve through the Anthropic provider status');
 
 const indexableDocs = manifest.docsRoutes.filter((route) => documentationRouteStatus(route, status) !== 'planned');

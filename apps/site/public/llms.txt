@@ -7,7 +7,7 @@
 - The model names and price values are a locked reference snapshot captured 2026-08-30.
 - The snapshot contains 20 models, 188 active price records, and 57 documentation pages.
 - Snapshot values are not an authoritative account billing feed. Use the authenticated customer console for balances, subscriptions, usage, and actual billing.
-- OpenAI-compatible `/v1` routes are detected and partially verified. Test the exact model and feature with an authenticated account.
+- OpenAI-compatible `/v1` routes are available for authenticated requests.
 - Anthropic-native and dedicated Grok routes are planned. Their reference pages are retained but request examples are disabled and excluded from indexing.
 
 ## Primary pages
@@ -19,7 +19,7 @@
 - Quick start: https://kineticrouter.com/quickstart
 - Customer console: https://console.kineticrouter.com/sign-in
 
-## Partially verified API references
+## Available OpenAI-compatible API references
 
 - OpenAI chat completions: https://kineticrouter.com/docs/api/openai/chat-completions
 - OpenAI Responses: https://kineticrouter.com/docs/api/openai/responses

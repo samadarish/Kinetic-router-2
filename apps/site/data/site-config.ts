@@ -44,8 +44,6 @@ export type SiteConfig = {
     tagline: string;
     siteUrl: string;
     apiBaseUrl: string;
-    logoMarkPath: string;
-    logoWordmarkPath: string;
   };
   navigation: {
     publicHeader: SiteNavigationItem[];
@@ -81,8 +79,6 @@ export const siteConfig: SiteConfig = {
     tagline: PRODUCT.tagline,
     siteUrl: PRODUCTION_ORIGINS.publicSite,
     apiBaseUrl: OPENAI_API_BASE_URL,
-    logoMarkPath: '/brand/kineticrouter/mark-dark.png',
-    logoWordmarkPath: '/brand/kineticrouter/wordmark-dark.png',
   },
   navigation: {
     publicHeader: [

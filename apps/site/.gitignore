@@ -35,9 +35,6 @@ next-env.d.ts
 /dist/
 /.wrangler/
 /.openai/hosting.json
-/public/brand/kineticrouter/*.png
-/public/fonts/*.woff2
-/public/og.png
 /outputs/
 /work/
 *.tsbuildinfo

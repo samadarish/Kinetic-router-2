@@ -110,7 +110,6 @@ export function PortalShell() {
       <div className="sidebar-bottom">
         <a className="nav-link" href={publicSiteHref('/docs')} target="_blank" rel="noreferrer" title={sidebarCollapsed ? 'Documentation' : undefined}><BookOpen size={17} /><span>Documentation</span></a>
         <button className="nav-link theme-nav" onClick={toggle} title={sidebarCollapsed ? (theme === 'dark' ? 'Light mode' : 'Dark mode') : undefined}>{theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}<span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span></button>
-        <div className="api-endpoint"><span>OpenAI-compatible API</span><code>api.kineticrouter.com/v1</code></div>
       </div>
     </aside>
     {menuOpen && <button className="sidebar-scrim" aria-label="Close navigation" onClick={() => setMenuOpen(false)} />}

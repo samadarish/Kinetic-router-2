@@ -1,20 +1,20 @@
 {
   "version": 1,
-  "checkedAt": "2026-08-30",
+  "checkedAt": "2026-09-03",
   "displayOnly": true,
   "providers": {
     "openai": {
       "label": "OpenAI",
       "aliases": ["gpt", "codex"],
       "catalogState": "reference",
-      "modelAccessState": "partial",
-      "apiState": "partial",
-      "interactionMode": "validation",
-      "badgeLabel": "Partial",
+      "modelAccessState": "verified",
+      "apiState": "verified",
+      "interactionMode": "live",
+      "badgeLabel": "Available",
       "protocolLabel": "OpenAI-compatible",
       "baseUrl": "https://api.kineticrouter.com/v1",
-      "summary": "The OpenAI-compatible base route is detected and available for authenticated validation.",
-      "evidenceNote": "Validate the exact model, endpoint, streaming mode, and tool behavior used by your application before production use.",
+      "summary": "The OpenAI-compatible API is available for authenticated kineticRouter requests.",
+      "evidenceNote": "Use your kineticRouter API key with the published base URL and supported OpenAI-compatible endpoints.",
       "protocolSources": ["https://developers.openai.com/api/docs"]
     },
     "anthropic": {

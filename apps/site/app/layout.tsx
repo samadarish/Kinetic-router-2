@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: [{ url: '/favicon-192.png', type: 'image/png' }, { url: '/favicon.ico' }],
+    icon: [
+      { url: '/favicon-16.png', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-48.png', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
+    ],
     apple: '/apple-icon.png',
   },
   openGraph: {
@@ -22,9 +27,9 @@ export const metadata: Metadata = {
     siteName: 'kineticRouter',
     title: 'kineticRouter — OpenAI-compatible API and model reference',
     description: 'OpenAI-compatible API access with a transparent model and pricing reference catalog.',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'kineticRouter' }],
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'kineticRouter' }],
   },
-  twitter: { card: 'summary_large_image', title: 'kineticRouter — OpenAI-compatible API and model reference', description: 'OpenAI-compatible access with a transparent reference catalog.', images: ['/og.png'] },
+  twitter: { card: 'summary_large_image', title: 'kineticRouter — OpenAI-compatible API and model reference', description: 'OpenAI-compatible access with a transparent reference catalog.', images: ['/og.jpg'] },
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#141413' };

@@ -40,6 +40,7 @@ export function assertProviderDisplayRegistry(value: unknown): asserts value is 
   for (const id of providerDisplayIds) {
     const provider = candidate.providers[id];
     if (!provider || provider.catalogState !== 'reference' || !['verified', 'partial', 'planned', 'reference'].includes(provider.modelAccessState) || !['verified', 'partial', 'planned', 'reference'].includes(provider.apiState) || !['live', 'validation', 'reference-only'].includes(provider.interactionMode) || !provider.label || !provider.badgeLabel || !provider.protocolLabel || !provider.summary || !provider.evidenceNote || !Array.isArray(provider.aliases) || !Array.isArray(provider.protocolSources) || provider.protocolSources.length === 0) throw new Error(`Provider display status is invalid: ${id}`);
+    if (provider.interactionMode === 'live' && (!provider.baseUrl || provider.previewBaseUrl || provider.apiState !== 'verified')) throw new Error(`Live provider is invalid: ${id}`);
     if (provider.interactionMode === 'validation' && (!provider.baseUrl || provider.previewBaseUrl || provider.apiState !== 'partial')) throw new Error(`Validation provider is invalid: ${id}`);
     if (provider.interactionMode === 'reference-only' && (!provider.previewBaseUrl || provider.baseUrl || provider.apiState !== 'planned')) throw new Error(`Reference-only provider is invalid: ${id}`);
     for (const alias of [id, ...provider.aliases]) {

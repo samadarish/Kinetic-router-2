@@ -51,7 +51,7 @@ export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeader
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
       <div className="mx-auto flex h-full min-w-0 max-w-[1440px] items-center px-3 sm:px-4 lg:px-6">
-        <a href="/" aria-label={`${brand.displayName} home`} className="shrink-0"><Brand className="w-[105px] sm:w-[132px]" label={brand.displayName} wordmarkPath={brand.logoWordmarkPath} /></a>
+        <a href="/" aria-label={`${brand.displayName} home`} className="shrink-0"><Brand className="w-[105px] sm:w-[132px]" label={brand.displayName} /></a>
         <span className="mx-2 h-5 shrink-0 border-l border-border sm:mx-3" />
 
         <div className="docs-header-rail hidden min-w-0 flex-1 md:block">

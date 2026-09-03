@@ -11,20 +11,20 @@ import {
 describe('provider display-status registry', () => {
   it('locks the generated registry metadata and provider order', () => {
     expect(providerDisplayRegistry.version).toBe(1);
-    expect(providerDisplayRegistry.checkedAt).toBe('2026-08-30');
+    expect(providerDisplayRegistry.checkedAt).toBe('2026-09-03');
     expect(providerDisplayRegistry.displayOnly).toBe(true);
     expect(providerDisplayIds).toEqual(['openai', 'anthropic', 'grok']);
   });
 
-  it('keeps OpenAI validation-only and copyable through its base URL', () => {
+  it('keeps OpenAI available and copyable through its base URL', () => {
     const provider = getProviderDisplayStatus('openai');
     expect(provider).toMatchObject({
       id: 'openai',
       catalogState: 'reference',
-      modelAccessState: 'partial',
-      apiState: 'partial',
-      interactionMode: 'validation',
-      badgeLabel: 'Partial',
+      modelAccessState: 'verified',
+      apiState: 'verified',
+      interactionMode: 'live',
+      badgeLabel: 'Available',
       protocolLabel: 'OpenAI-compatible',
       baseUrl: 'https://api.kineticrouter.com/v1',
     });

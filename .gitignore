@@ -24,9 +24,3 @@ test-results/
 *.tsbuildinfo
 .DS_Store
 apps/site/.openai/hosting.json
-apps/site/public/brand/kineticrouter/*.png
-apps/site/public/fonts/*.woff2
-apps/site/public/og.png
-apps/console/public/brand/kineticrouter/*.png
-apps/console/public/fonts/*.woff2
-apps/console/public/og.png

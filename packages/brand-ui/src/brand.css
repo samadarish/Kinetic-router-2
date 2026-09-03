@@ -11,8 +11,8 @@
 }
 
 .brand-wordmark,.brand-mark { display:inline-block; flex-shrink:0; background-position:center; background-repeat:no-repeat; background-size:contain; }
-.brand-wordmark { aspect-ratio:360/136; background-image:url('/brand/kineticrouter/wordmark-light.png'); }
-.brand-mark { aspect-ratio:1; background-image:url('/brand/kineticrouter/mark-light.png'); }
+.brand-wordmark,.light .brand-wordmark { aspect-ratio:360/136; background-image:url('/brand/kineticrouter/wordmark-light.png'); }
+.brand-mark,.light .brand-mark { aspect-ratio:1; background-image:url('/brand/kineticrouter/mark-light.png'); }
 .dark .brand-wordmark { background-image:url('/brand/kineticrouter/wordmark-dark.png'); }
 .dark .brand-mark { background-image:url('/brand/kineticrouter/mark-dark.png'); }
 .provider-icon-anthropic,.provider-icon-claude { color:#d97757; }

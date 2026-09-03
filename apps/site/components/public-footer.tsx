@@ -10,7 +10,7 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
       <div className="page-container grid gap-10 lg:grid-cols-[minmax(280px,.95fr)_minmax(0,1.55fr)]">
         <div className="min-w-0">
           <a href="/" aria-label={`${brand.displayName} home`} className="inline-flex max-w-full">
-            <Brand className="w-[180px] max-w-full" label={brand.displayName} wordmarkPath={brand.logoWordmarkPath} />
+            <Brand className="w-[180px] max-w-full" label={brand.displayName} />
           </a>
           <p className="mt-4 text-xs text-muted-foreground">© 2026 {brand.legalName}. All rights reserved.</p>
           <p className="mt-3 max-w-sm text-xs leading-5 text-muted-foreground">{home.footerDescription || brand.tagline}</p>

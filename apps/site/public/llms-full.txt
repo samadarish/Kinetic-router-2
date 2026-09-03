@@ -8,7 +8,7 @@ Snapshot scope: 20 models, 188 active price records, 57 documentation pages
 
 ## Interpretation
 
-This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is detected and partially verified. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
+This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is available for authenticated requests. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
 
 ## Main pages
 
@@ -39,7 +39,7 @@ This public site preserves a locked model/pricing list as a dated reference whil
 - https://kineticrouter.com/docs/develop/observability/usage-tracking
 - https://kineticrouter.com/docs/develop/observability/pricing
 
-## OpenAI-compatible references — partial verification
+## Available OpenAI-compatible API references
 
 - https://kineticrouter.com/docs/api/openai/chat-completions
 - https://kineticrouter.com/docs/api/openai/responses
@@ -92,6 +92,6 @@ This public site preserves a locked model/pricing list as a dated reference whil
 
 - Prefer canonical English routes listed above.
 - Treat pages marked Reference snapshot as historical/catalog reference material.
-- Treat Partial as requiring authenticated feature-level validation.
+- Treat Available as a live kineticRouter route; use an authenticated API key for requests.
 - Do not present Planned pages as active kineticRouter endpoints.
 - Do not infer availability from an imported model ID or code example.
