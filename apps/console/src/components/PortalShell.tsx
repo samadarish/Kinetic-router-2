@@ -25,6 +25,8 @@ const SIDEBAR_STORAGE_KEY = 'kineticrouter-sidebar-collapsed';
 export function PortalShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string>();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarPreference);
   const { user, capabilities, logout } = useAuth();
   const { theme, toggle } = useTheme();
@@ -57,8 +59,15 @@ export function PortalShell() {
   }, [sidebarCollapsed]);
 
   async function signOut() {
-    await logout();
-    navigate('/sign-in', { replace: true });
+    setSigningOut(true);
+    setSignOutError(undefined);
+    try {
+      await logout();
+      navigate('/sign-in', { replace: true });
+    } catch (error) {
+      setSignOutError(error instanceof Error ? error.message : 'Unable to sign out. Please try again.');
+      setSigningOut(false);
+    }
   }
 
   const accountName = user?.username || user?.email || 'kineticRouter user';
@@ -132,7 +141,8 @@ export function PortalShell() {
           {accountOpen && <div className="account-dropdown" role="menu">
             <div className="account-summary"><strong>{accountName}</strong><span>{user?.email}</span></div>
             <button role="menuitem" onClick={() => { setAccountOpen(false); navigate('/profile'); }}><Settings size={16} /> Account settings</button>
-            <button role="menuitem" onClick={signOut}><LogOut size={16} /> Sign out</button>
+            <button role="menuitem" disabled={signingOut} onClick={signOut}><LogOut size={16} /> {signingOut ? 'Signing out…' : 'Sign out'}</button>
+            {signOutError && <p className="account-menu-error" role="alert">{signOutError}</p>}
           </div>}
         </div>
       </header>

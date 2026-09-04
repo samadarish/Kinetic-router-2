@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, type PropsWithChildren } from 're
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityMap, PortalUser, SessionView } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
+import { applyLoggedOutQueryState } from './auth-cache';
 
 type LoginResult =
   | { requires2fa: true; tempToken: string; maskedEmail?: string }
@@ -36,11 +37,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const unauthorized = () => {
       setCsrfToken();
-      client.setQueryData<SessionView>(['session'], {
-        authenticated: false,
-        capabilities: session.data?.capabilities ?? emptyCapabilities,
-      });
-      client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'session' });
+      void applyLoggedOutQueryState(client, session.data?.capabilities ?? emptyCapabilities);
     };
     window.addEventListener('portal:unauthorized', unauthorized);
     return () => window.removeEventListener('portal:unauthorized', unauthorized);
@@ -71,13 +68,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       method: 'POST', ...jsonBody({ tempToken, code }),
     })),
     logout: async () => {
-      try {
-        await portalApi('/auth/logout', { method: 'POST', ...jsonBody({}) });
-      } finally {
-        setCsrfToken();
-        client.clear();
-        await client.prefetchQuery({ queryKey: ['session'], queryFn: () => portalApi<SessionView>('/auth/session') });
-      }
+      await portalApi('/auth/logout', { method: 'POST', ...jsonBody({}) });
+      setCsrfToken();
+      await applyLoggedOutQueryState(client, session.data?.capabilities ?? emptyCapabilities);
     },
     refresh: async () => { await session.refetch(); },
   };
