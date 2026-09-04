@@ -15,6 +15,7 @@ import {
   usageSummaryQuerySchema,
   type CapabilityMap,
   type PortalUser,
+  type RedeemResult,
 } from '@kineticrouter/portal-contract';
 import {
   Sub2ApiClient,
@@ -26,12 +27,10 @@ import {
   mapChannel,
   mapDashboardStats,
   mapGroup,
-  mapModels,
   mapPaginated,
   mapRedeemResult,
   mapRedemption,
   mapSubscription,
-  mapTrend,
   mapUsageEndpoints,
   mapUsageError,
   mapUsageEvent,
@@ -41,13 +40,16 @@ import {
   mapUsageTrend,
   mapUser,
   readCapabilities,
+  type LoginResult,
 } from '@kineticrouter/sub2api-client';
 import { config } from './config.js';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
+import { toCreateKeyBody, toUpdateKeyBody } from './api-key-payload.js';
 import { OPENAI_API_BASE_URL } from '@kineticrouter/platform-config/origins';
 import { DEFAULT_THEME } from '@kineticrouter/platform-config/theme';
 import { constantTimeEqual } from './crypto.js';
 import { logger } from './logger.js';
+import { toPublicErrorCode, toPublicText, toPublicUpstreamMessage } from './public-errors.js';
 import { createSession, createSessionStore, type PortalSession, type SessionStore } from './session-store.js';
 
 type Variables = {
@@ -56,11 +58,36 @@ type Variables = {
   session?: PortalSession;
 };
 
-const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
-const upstream = new Sub2ApiClient(config.sub2apiBaseUrl);
-const settingsCache: { value?: Record<string, unknown>; expiresAt: number } = { expiresAt: 0 };
+type AccountServiceClient = Pick<Sub2ApiClient, 'login' | 'login2fa' | 'logout' | 'publicSettings' | 'refresh' | 'request'>;
+type WriteGates = {
+  keys: boolean;
+  profile: boolean;
+  redeem: boolean;
+  announcements: boolean;
+};
+type SettingsCache = {
+  value?: Record<string, unknown>;
+  expiresAt: number;
+  pending?: Promise<Record<string, unknown>>;
+};
 
-export function createApp(store: SessionStore = createSessionStore()) {
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const defaultUpstream = new Sub2ApiClient(config.sub2apiBaseUrl);
+const configuredWriteGates: WriteGates = {
+  keys: config.enableKeyWrites,
+  profile: config.enableProfileWrites,
+  redeem: config.enableRedeemWrites,
+  announcements: config.enableAnnouncementWrites,
+};
+
+export function createApp(
+  store: SessionStore = createSessionStore(),
+  options: { client?: AccountServiceClient; writeGates?: Partial<WriteGates> } = {},
+) {
+  const client = options.client ?? defaultUpstream;
+  const writeGates = { ...configuredWriteGates, ...options.writeGates };
+  const defaultCapabilities = readCapabilities({}, writeGates);
+  const settingsCache: SettingsCache = { expiresAt: 0 };
   const app = new Hono<{ Variables: Variables }>();
 
   app.use('*', secureHeaders({
@@ -87,7 +114,7 @@ export function createApp(store: SessionStore = createSessionStore()) {
   app.get('/healthz', (c) => c.json({ status: 'ok' }));
   app.get('/readyz', async (c) => {
     try {
-      await Promise.all([getPublicSettings(), store.ping()]);
+      await Promise.all([getPublicSettings(client, settingsCache), store.ping()]);
       return c.json({ status: 'ready', upstream: 'reachable', sessions: 'ready' });
     } catch {
       return c.json({ status: 'degraded', upstream: 'unreachable' }, 503);
@@ -106,29 +133,22 @@ export function createApp(store: SessionStore = createSessionStore()) {
   });
 
   app.get('/portal/v1/config', async (c) => {
-    const capabilities = await getCapabilities();
+    const capabilities = await getCapabilities(client, settingsCache, writeGates);
     return success(c, {
       brand: PRODUCT.name,
       apiBaseUrl: OPENAI_API_BASE_URL,
       defaultTheme: DEFAULT_THEME,
       capabilities,
       serverTimezone: config.serverTimezone,
-      compatibility: {
-        product: 'Sub2API',
-        version: config.compatibility.version,
-        revision: config.compatibility.revision,
-      },
     });
   });
-  app.get('/portal/v1/capabilities', async (c) => success(c, await getCapabilities()));
+  app.get('/portal/v1/capabilities', async (c) => success(c, await getCapabilities(client, settingsCache, writeGates)));
 
   app.get('/portal/v1/auth/session', async (c) => {
     const loaded = await loadSession(c, store);
-    if (!loaded) {
-      return success(c, { authenticated: false, capabilities: await getCapabilities() });
-    }
-    const capabilities = await getCapabilities();
-    await updateSessionCapabilities(store, loaded.id, capabilities);
+    if (!loaded) return success(c, { authenticated: false, capabilities: cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities });
+    const capabilities = applyWriteGates(cachedCapabilities(settingsCache, writeGates) ?? loaded.capabilities, writeGates);
+    if (settingsCache.expiresAt <= Date.now()) refreshSessionCapabilities(store, client, settingsCache, writeGates, loaded.id, capabilities);
     return success(c, {
       authenticated: true,
       csrfToken: loaded.csrfToken,
@@ -141,53 +161,30 @@ export function createApp(store: SessionStore = createSessionStore()) {
 
   app.post('/portal/v1/auth/password/login', requireOrigin, authRateLimit, async (c) => {
     const input = loginInputSchema.parse(await c.req.json());
-    const result = await upstream.login(input);
+    const result = await client.login(input);
     if (result.requires2fa) return success(c, result);
 
-    const session = createSession({
-      user: result.user,
-      capabilities: await getCapabilities(),
-      tokens: result.tokens,
-    });
-    await store.set(session);
-    setSessionCookie(c, session.id);
-    return success(c, {
-      requires2fa: false,
-      user: session.user,
-      csrfToken: session.csrfToken,
-      capabilities: session.capabilities,
-    });
+    return establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
   });
 
   app.post('/portal/v1/auth/totp', requireOrigin, authRateLimit, async (c) => {
     const input = totpInputSchema.parse(await c.req.json());
-    const result = await upstream.login2fa({ tempToken: input.tempToken, code: input.code });
+    const result = await client.login2fa({ tempToken: input.tempToken, code: input.code });
     if (result.requires2fa) throw new Sub2ApiError({ status: 400, code: 'TOTP_REQUIRED', message: 'A valid authenticator code is required.' });
-    const session = createSession({
-      user: result.user,
-      capabilities: await getCapabilities(),
-      tokens: result.tokens,
-    });
-    await store.set(session);
-    setSessionCookie(c, session.id);
-    return success(c, {
-      requires2fa: false,
-      user: session.user,
-      csrfToken: session.csrfToken,
-      capabilities: session.capabilities,
-    });
+    return establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
   });
 
   app.options('/portal/v1/auth/logout', (c) => logoutCorsPreflight(c));
   app.post('/portal/v1/auth/logout', requireLogoutOrigin, async (c) => {
-    const loaded = await loadSession(c, store);
-    if (loaded) {
+    const sessionId = getCookie(c, config.sessionCookieName);
+    if (sessionId) {
       try {
-        await upstream.logout(loaded.tokens.refreshToken);
+        const revoked = await store.revoke(sessionId);
+        if (revoked?.tokens.refreshToken) void revokeRefreshToken(client, sessionId, revoked.tokens.refreshToken);
       } catch (error) {
-        logger.warn({ err: error, sessionId: loaded.id.slice(0, 8) }, 'Upstream logout revocation failed');
-      } finally {
-        await store.delete(loaded.id);
+        logger.warn({ err: error, sessionId: sessionId.slice(0, 8) }, 'Session cleanup failed during sign out');
+        applyLogoutCorsHeaders(c);
+        return failure(c, 503, 'SIGN_OUT_UNAVAILABLE', 'Sign out could not be completed safely. Please try again.');
       }
     }
     clearSessionCookie(c);
@@ -217,32 +214,28 @@ export function createApp(store: SessionStore = createSessionStore()) {
 
   app.get('/portal/v1/dashboard', async (c) => {
     const session = requireSession(c);
-    const dashboardQuery = dashboardDateQuery();
-    const [profileRaw, statsRaw, trendRaw, modelsRaw] = await Promise.all([
-      authRequest(c, store, (token) => upstream.request('user/profile', {}, authOptions(token))),
-      authRequest(c, store, (token) => upstream.request('usage/dashboard/stats', {}, authOptions(token))),
-      authRequest(c, store, (token) => upstream.request(`usage/dashboard/trend?${dashboardQuery.trend}`, {}, authOptions(token))),
-      authRequest(c, store, (token) => upstream.request(`usage/dashboard/models?${dashboardQuery.models}`, {}, authOptions(token))),
+    const [profileRaw, statsRaw] = await Promise.all([
+      authRequest(c, store, client, (token) => client.request('user/profile', {}, authOptions(token))),
+      authRequest(c, store, client, (token) => client.request('usage/dashboard/stats', {}, authOptions(token))),
     ]);
     const user = mapUser(asRecord(profileRaw));
-    await updateSessionUser(store, session.id, user);
+    void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
     return success(c, {
       user,
       stats: mapDashboardStats(statsRaw),
-      trend: mapTrend(trendRaw),
-      models: mapModels(modelsRaw),
     });
   });
 
   app.get('/portal/v1/me', async (c) => {
     const session = requireSession(c);
-    const raw = await authRequest(c, store, (token) => upstream.request('user/profile', {}, authOptions(token)));
+    const raw = await authRequest(c, store, client, (token) => client.request('user/profile', {}, authOptions(token)));
     const user = mapUser(asRecord(raw));
-    await updateSessionUser(store, session.id, user);
+    void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
     return success(c, user);
   });
 
-  app.patch('/portal/v1/me', requireFeature('profile'), async (c) => {
+  app.patch('/portal/v1/me', requireFeature(writeGates, 'profile'), async (c) => {
+    const session = requireSession(c);
     const input = profileUpdateSchema.parse(await c.req.json());
     const body = {
       ...(input.username !== undefined ? { username: input.username } : {}),
@@ -250,17 +243,17 @@ export function createApp(store: SessionStore = createSessionStore()) {
       ...(input.balanceNotifyEnabled !== undefined ? { balance_notify_enabled: input.balanceNotifyEnabled } : {}),
       ...(input.balanceNotifyThreshold !== undefined ? { balance_notify_threshold: input.balanceNotifyThreshold } : {}),
     };
-    const raw = await authWrite(c, store, (token) => upstream.request('user', {
+    const raw = await authWrite(c, store, client, (token) => client.request('user', {
       method: 'PUT', body: JSON.stringify(body),
     }, authOptions(token)));
     const user = mapUser(asRecord(raw));
-    await updateSessionUser(store, requireSession(c).id, user);
+    await settleSessionUpdate(updateSessionUser(store, session.id, user), session.id, 'profile');
     return success(c, user);
   });
 
-  app.put('/portal/v1/me/password', requireFeature('profile'), async (c) => {
+  app.put('/portal/v1/me/password', requireFeature(writeGates, 'profile'), async (c) => {
     const input = passwordUpdateSchema.parse(await c.req.json());
-    await authWrite(c, store, (token) => upstream.request('user/password', {
+    await authWrite(c, store, client, (token) => client.request('user/password', {
       method: 'PUT',
       body: JSON.stringify({ old_password: input.oldPassword, new_password: input.newPassword }),
     }, authOptions(token)));
@@ -268,8 +261,8 @@ export function createApp(store: SessionStore = createSessionStore()) {
   });
 
   app.get('/portal/v1/groups', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request('groups/available', {}, authOptions(token)));
-    return success(c, arrayValue(raw).map(mapGroup));
+    const raw = await authRequest(c, store, client, (token) => client.request('groups/available', {}, authOptions(token)));
+    return success(c, arrayValue(raw).map((value) => publicGroup(mapGroup(value))));
   });
 
   app.get('/portal/v1/api-keys', async (c) => {
@@ -277,33 +270,33 @@ export function createApp(store: SessionStore = createSessionStore()) {
       page: 'page', pageSize: 'page_size', search: 'search', status: 'status', groupId: 'group_id',
       sortBy: 'sort_by', sortOrder: 'sort_order',
     }, { page: '1', page_size: '20', sort_by: 'created_at', sort_order: 'desc' });
-    const raw = await authRequest(c, store, (token) => upstream.request(`keys?${query}`, {}, authOptions(token)));
-    return success(c, mapPaginated(raw, mapApiKey));
+    const raw = await authRequest(c, store, client, (token) => client.request(`keys?${query}`, {}, authOptions(token)));
+    return success(c, mapPaginated(raw, (value) => publicApiKey(mapApiKey(value))));
   });
 
   app.get('/portal/v1/api-keys/:id', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {}, authOptions(token)));
-    return success(c, mapApiKey(raw));
+    const raw = await authRequest(c, store, client, (token) => client.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {}, authOptions(token)));
+    return success(c, publicApiKey(mapApiKey(raw)));
   });
 
-  app.post('/portal/v1/api-keys', requireFeature('keys'), async (c) => {
+  app.post('/portal/v1/api-keys', requireFeature(writeGates, 'keys'), async (c) => {
     const input = createApiKeySchema.parse(await c.req.json());
-    const raw = await authWrite(c, store, (token) => upstream.request('keys', {
+    const raw = await authWrite(c, store, client, (token) => client.request('keys', {
       method: 'POST', body: JSON.stringify(toCreateKeyBody(input)),
     }, authOptions(token)));
-    return success(c, isObjectWithKey(raw) ? mapApiKey(raw) : raw, 201);
+    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : raw, 201);
   });
 
-  app.patch('/portal/v1/api-keys/:id', requireFeature('keys'), async (c) => {
+  app.patch('/portal/v1/api-keys/:id', requireFeature(writeGates, 'keys'), async (c) => {
     const input = updateApiKeySchema.parse(await c.req.json());
-    const raw = await authWrite(c, store, (token) => upstream.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {
+    const raw = await authWrite(c, store, client, (token) => client.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {
       method: 'PUT', body: JSON.stringify(toUpdateKeyBody(input)),
     }, authOptions(token)));
-    return success(c, isObjectWithKey(raw) ? mapApiKey(raw) : raw);
+    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : raw);
   });
 
-  app.delete('/portal/v1/api-keys/:id', requireFeature('keys'), async (c) => {
-    await authWrite(c, store, (token) => upstream.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {
+  app.delete('/portal/v1/api-keys/:id', requireFeature(writeGates, 'keys'), async (c) => {
+    await authWrite(c, store, client, (token) => client.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {
       method: 'DELETE',
     }, authOptions(token)));
     return success(c, { deleted: true });
@@ -330,16 +323,16 @@ export function createApp(store: SessionStore = createSessionStore()) {
       include_group_stats: 'true',
     }).toString();
     const [stats, models, snapshot] = await Promise.all([
-      authRequest(c, store, (token) => upstream.request(`usage/stats?${statsQuery}`, {}, authOptions(token))),
-      authRequest(c, store, (token) => upstream.request(`usage/dashboard/models?${modelsQuery}`, {}, authOptions(token))),
-      authRequest(c, store, (token) => upstream.request(`usage/dashboard/snapshot-v2?${snapshotQuery}`, {}, authOptions(token))),
+      authRequest(c, store, client, (token) => client.request(`usage/stats?${statsQuery}`, {}, authOptions(token))),
+      authRequest(c, store, client, (token) => client.request(`usage/dashboard/models?${modelsQuery}`, {}, authOptions(token))),
+      authRequest(c, store, client, (token) => client.request(`usage/dashboard/snapshot-v2?${snapshotQuery}`, {}, authOptions(token))),
     ]);
     return success(c, {
       range: { ...range, granularity, timezone: config.serverTimezone },
       stats: mapUsageRangeStats(stats),
       trend: mapUsageTrend(snapshot),
       models: mapUsageModels(models),
-      groups: mapUsageGroups(snapshot),
+      groups: mapUsageGroups(snapshot).map(publicUsageGroup),
       endpoints: mapUsageEndpoints(stats),
     });
   });
@@ -350,8 +343,8 @@ export function createApp(store: SessionStore = createSessionStore()) {
       model: 'model', groupId: 'group_id', requestType: 'request_type', stream: 'stream', billingType: 'billing_type',
       billingMode: 'billing_mode', sortBy: 'sort_by', sortOrder: 'sort_order',
     }, { page: '1', page_size: '20', sort_by: 'created_at', sort_order: 'desc' });
-    const raw = await authRequest(c, store, (token) => upstream.request(`usage?${query}`, {}, authOptions(token)));
-    return success(c, mapPaginated(raw, mapUsageEvent));
+    const raw = await authRequest(c, store, client, (token) => client.request(`usage?${query}`, {}, authOptions(token)));
+    return success(c, mapPaginated(raw, (value) => publicUsageEvent(mapUsageEvent(value))));
   });
 
   app.get('/portal/v1/usage/errors', async (c) => {
@@ -359,50 +352,60 @@ export function createApp(store: SessionStore = createSessionStore()) {
       page: 'page', pageSize: 'page_size', startDate: 'start_date', endDate: 'end_date', model: 'model',
       category: 'category', apiKeyId: 'api_key_id', statusCode: 'status_code', sortBy: 'sort_by', sortOrder: 'sort_order',
     }, { page: '1', page_size: '20', sort_by: 'created_at', sort_order: 'desc' });
-    const raw = await authRequest(c, store, (token) => upstream.request(`usage/errors?${query}`, {}, authOptions(token)));
-    return success(c, mapPaginated(raw, mapUsageError));
+    const raw = await authRequest(c, store, client, (token) => client.request(`usage/errors?${query}`, {}, authOptions(token)));
+    return success(c, mapPaginated(raw, (value) => publicUsageError(mapUsageError(value))));
   });
 
   app.get('/portal/v1/usage/errors/:id', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request(`usage/errors/${encodeURIComponent(c.req.param('id'))}`, {}, authOptions(token)));
-    return success(c, mapUsageError(raw));
+    const raw = await authRequest(c, store, client, (token) => client.request(`usage/errors/${encodeURIComponent(c.req.param('id'))}`, {}, authOptions(token)));
+    return success(c, publicUsageError(mapUsageError(raw)));
   });
 
   app.get('/portal/v1/channels/status', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request('channel-monitors', {}, authOptions(token)));
+    const raw = await authRequest(c, store, client, (token) => client.request('channel-monitors', {}, authOptions(token)));
     const record = asRecord(raw);
-    return success(c, arrayValue(record.items ?? raw).map(mapChannel));
+    return success(c, arrayValue(record.items ?? raw).map((value) => publicChannel(mapChannel(value))));
   });
 
   app.get('/portal/v1/subscriptions', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request('subscriptions', {}, authOptions(token)));
+    const raw = await authRequest(c, store, client, (token) => client.request('subscriptions', {}, authOptions(token)));
     const record = asRecord(raw);
-    return success(c, arrayValue(record.items ?? raw).map(mapSubscription));
+    return success(c, arrayValue(record.items ?? raw).map((value) => publicSubscription(mapSubscription(value))));
   });
 
   app.get('/portal/v1/redemptions', async (c) => {
-    const raw = await authRequest(c, store, (token) => upstream.request('redeem/history', {}, authOptions(token)));
+    const raw = await authRequest(c, store, client, (token) => client.request('redeem/history', {}, authOptions(token)));
     const record = asRecord(raw);
-    return success(c, arrayValue(record.items ?? raw).map(mapRedemption));
+    return success(c, arrayValue(record.items ?? raw).map((value) => publicRedemption(mapRedemption(value))));
   });
 
-  app.post('/portal/v1/redemptions', requireFeature('redeem'), async (c) => {
+  app.post('/portal/v1/redemptions', requireFeature(writeGates, 'redeem'), async (c) => {
+    const session = requireSession(c);
     const input = redeemInputSchema.parse(await c.req.json());
-    const raw = await authWrite(c, store, (token) => upstream.request('redeem', {
+    const raw = await authWrite(c, store, client, (token) => client.request('redeem', {
       method: 'POST', body: JSON.stringify({ code: input.code }),
     }, authOptions(token)));
-    return success(c, mapRedeemResult(raw));
+    const result = mapRedeemResult(raw);
+    await settleSessionUpdate(updateSessionAfterRedemption(store, session.id, result), session.id, 'redemption');
+    return success(c, publicRedeemResult(result));
   });
 
   app.get('/portal/v1/announcements', async (c) => {
     const unread = c.req.query('unreadOnly') === 'true' ? '?unread_only=1' : '';
-    const raw = await authRequest(c, store, (token) => upstream.request(`announcements${unread}`, {}, authOptions(token)));
+    const raw = await authRequest(c, store, client, (token) => client.request(`announcements${unread}`, {}, authOptions(token)));
     const record = asRecord(raw);
-    return success(c, arrayValue(record.items ?? raw).map(mapAnnouncement));
+    return success(c, arrayValue(record.items ?? raw).map((item) => {
+      const announcement = mapAnnouncement(item);
+      return {
+        ...announcement,
+        title: toPublicText(announcement.title, 'Service announcement'),
+        content: toPublicText(announcement.content, ''),
+      };
+    }));
   });
 
-  app.post('/portal/v1/announcements/:id/read', requireFeature('announcements'), async (c) => {
-    await authWrite(c, store, (token) => upstream.request(`announcements/${encodeURIComponent(c.req.param('id'))}/read`, {
+  app.post('/portal/v1/announcements/:id/read', requireFeature(writeGates, 'announcements'), async (c) => {
+    await authWrite(c, store, client, (token) => client.request(`announcements/${encodeURIComponent(c.req.param('id'))}/read`, {
       method: 'POST', body: JSON.stringify({}),
     }, authOptions(token)));
     return success(c, { read: true });
@@ -415,7 +418,7 @@ export function createApp(store: SessionStore = createSessionStore()) {
     if (error instanceof Sub2ApiError) {
       const status = normalizeStatus(error.status);
       if (status >= 500) logger.error({ err: error, requestId, upstreamStatus: error.status }, 'Upstream request failed');
-      return failure(c, status, error.code, error.message, error.reason, error.metadata);
+      return failure(c, status, toPublicErrorCode(error.code, status), toPublicUpstreamMessage(error.message, status));
     }
     if (error && typeof error === 'object' && 'issues' in error) {
       return failure(c, 400, 'VALIDATION_ERROR', 'Check the highlighted fields and try again.');
@@ -479,20 +482,62 @@ function logoutCorsPreflight(c: Context<{ Variables: Variables }>) {
   return c.body(null, 204);
 }
 
-async function getPublicSettings(): Promise<Record<string, unknown>> {
+async function getPublicSettings(client: AccountServiceClient, settingsCache: SettingsCache): Promise<Record<string, unknown>> {
   if (settingsCache.value && settingsCache.expiresAt > Date.now()) return settingsCache.value;
-  const settings = await upstream.publicSettings();
-  settingsCache.value = settings;
-  settingsCache.expiresAt = Date.now() + 60_000;
-  return settings;
+  if (settingsCache.pending) return settingsCache.pending;
+  const pending = client.publicSettings().then((settings) => {
+    settingsCache.value = settings;
+    settingsCache.expiresAt = Date.now() + 60_000;
+    return settings;
+  });
+  settingsCache.pending = pending;
+  try {
+    return await pending;
+  } finally {
+    if (settingsCache.pending === pending) settingsCache.pending = undefined;
+  }
 }
 
-async function getCapabilities(): Promise<CapabilityMap> {
-  return readCapabilities(await getPublicSettings(), {
-    keys: config.enableKeyWrites,
-    profile: config.enableProfileWrites,
-    redeem: config.enableRedeemWrites,
-    announcements: config.enableAnnouncementWrites,
+async function getCapabilities(
+  client: AccountServiceClient,
+  settingsCache: SettingsCache,
+  writeGates: WriteGates,
+): Promise<CapabilityMap> {
+  try {
+    return readCapabilities(await getPublicSettings(client, settingsCache), writeGates);
+  } catch (error) {
+    const cached = cachedCapabilities(settingsCache, writeGates);
+    if (cached) {
+      logger.warn({ err: error }, 'Using cached capabilities while public settings are unavailable');
+      return cached;
+    }
+    throw error;
+  }
+}
+
+function cachedCapabilities(settingsCache: SettingsCache, writeGates: WriteGates) {
+  return settingsCache.value ? readCapabilities(settingsCache.value, writeGates) : undefined;
+}
+
+async function establishSession(
+  c: Context<{ Variables: Variables }>,
+  store: SessionStore,
+  client: AccountServiceClient,
+  settingsCache: SettingsCache,
+  writeGates: WriteGates,
+  defaultCapabilities: CapabilityMap,
+  result: Extract<LoginResult, { requires2fa: false }>,
+) {
+  const capabilities = cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities;
+  const session = createSession({ user: result.user, capabilities, tokens: result.tokens });
+  await store.set(session);
+  setSessionCookie(c, session.id);
+  refreshSessionCapabilities(store, client, settingsCache, writeGates, session.id, capabilities);
+  return success(c, {
+    requires2fa: false as const,
+    user: session.user,
+    csrfToken: session.csrfToken,
+    capabilities: session.capabilities,
   });
 }
 
@@ -513,17 +558,18 @@ function requireSession(c: Context<{ Variables: Variables }>): PortalSession {
 async function authRequest<T>(
   c: Context<{ Variables: Variables }>,
   store: SessionStore,
+  client: AccountServiceClient,
   request: (accessToken: string) => Promise<T>,
 ): Promise<T> {
   const current = requireSession(c);
   let active = current.tokens.expiresAt <= Date.now() + 30_000
-    ? await refreshSession(store, current.id)
+    ? await refreshSession(c, store, client, current.id)
     : current;
   try {
     return await request(active.tokens.accessToken);
   } catch (error) {
     if (!(error instanceof Sub2ApiError) || error.status !== 401) throw error;
-    active = await refreshSession(store, current.id, active.tokens.accessToken);
+    active = await refreshSession(c, store, client, current.id, active.tokens.accessToken);
     return request(active.tokens.accessToken);
   }
 }
@@ -531,39 +577,63 @@ async function authRequest<T>(
 async function authWrite<T>(
   c: Context<{ Variables: Variables }>,
   store: SessionStore,
+  client: AccountServiceClient,
   request: (accessToken: string) => Promise<T>,
 ): Promise<T> {
   const current = requireSession(c);
   const active = current.tokens.expiresAt <= Date.now() + 30_000
-    ? await refreshSession(store, current.id)
+    ? await refreshSession(c, store, client, current.id)
     : current;
   return request(active.tokens.accessToken);
 }
 
-async function refreshSession(store: SessionStore, id: string, rejectedAccessToken?: string): Promise<PortalSession> {
+async function refreshSession(
+  c: Context,
+  store: SessionStore,
+  client: AccountServiceClient,
+  id: string,
+  rejectedAccessToken?: string,
+): Promise<PortalSession> {
   return store.withLock(id, async () => {
     const latest = await store.get(id);
-    if (!latest) throw new Sub2ApiError({ status: 401, code: 'SESSION_EXPIRED', message: 'Your session has expired.' });
+    if (!latest) {
+      clearSessionCookie(c);
+      throw sessionExpiredError();
+    }
     if (rejectedAccessToken && latest.tokens.accessToken !== rejectedAccessToken) return latest;
     if (!rejectedAccessToken && latest.tokens.expiresAt > Date.now() + 30_000) return latest;
     try {
-      latest.tokens = await upstream.refresh(latest.tokens.refreshToken);
-      latest.updatedAt = Date.now();
+      latest.tokens = await client.refresh(latest.tokens.refreshToken);
+      touchSession(latest);
       await store.set(latest);
+      if (!await store.get(id)) {
+        await revokeRefreshToken(client, id, latest.tokens.refreshToken);
+        clearSessionCookie(c);
+        throw sessionExpiredError();
+      }
       return latest;
     } catch (error) {
-      await store.delete(id);
+      if (isDefinitiveAuthFailure(error)) {
+        try {
+          await store.delete(id);
+        } catch (deleteError) {
+          logger.warn({ err: deleteError, sessionId: id.slice(0, 8) }, 'Could not remove an invalid session after refresh failure');
+        }
+        clearSessionCookie(c);
+        throw sessionExpiredError();
+      }
       throw error;
     }
   });
 }
 
-async function updateSessionUser(store: SessionStore, id: string, user: PortalUser): Promise<void> {
+async function updateSessionUser(store: SessionStore, id: string, user: PortalUser, expectedRevision?: number): Promise<void> {
   await store.withLock(id, async () => {
     const current = await store.get(id);
     if (!current) return;
+    if (expectedRevision !== undefined && current.revision !== expectedRevision) return;
     current.user = user;
-    current.updatedAt = Date.now();
+    touchSession(current);
     await store.set(current);
   });
 }
@@ -573,9 +643,148 @@ async function updateSessionCapabilities(store: SessionStore, id: string, capabi
     const current = await store.get(id);
     if (!current) return;
     current.capabilities = capabilities;
-    current.updatedAt = Date.now();
+    touchSession(current);
     await store.set(current);
   });
+}
+
+async function updateSessionAfterRedemption(store: SessionStore, id: string, result: RedeemResult): Promise<void> {
+  if (result.newBalance === undefined && result.newConcurrency === undefined) return;
+  await store.withLock(id, async () => {
+    const current = await store.get(id);
+    if (!current) return;
+    if (result.newBalance !== undefined && result.newBalance !== null) current.user.balance = result.newBalance;
+    if (result.newConcurrency !== undefined) current.user.concurrency = result.newConcurrency;
+    touchSession(current);
+    await store.set(current);
+  });
+}
+
+async function revokeRefreshToken(client: AccountServiceClient, id: string, refreshToken: string): Promise<void> {
+  try {
+    await client.logout(refreshToken);
+  } catch (error) {
+    logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Account token revocation failed during sign out');
+  }
+}
+
+async function settleSessionUpdate(update: Promise<void>, id: string, kind: string): Promise<void> {
+  try {
+    await update;
+  } catch (error) {
+    logger.warn({ err: error, sessionId: id.slice(0, 8), update: kind }, 'Session cache update failed');
+  }
+}
+
+function capabilityMapsEqual(left: CapabilityMap, right: CapabilityMap): boolean {
+  return (Object.keys(left) as Array<keyof CapabilityMap>).every((key) => left[key] === right[key]);
+}
+
+function touchSession(session: PortalSession): void {
+  session.revision += 1;
+  session.updatedAt = Date.now();
+}
+
+function applyWriteGates(capabilities: CapabilityMap, writeGates: WriteGates): CapabilityMap {
+  return {
+    ...capabilities,
+    keyWrites: writeGates.keys,
+    profileWrites: writeGates.profile,
+    redeemWrites: writeGates.redeem,
+    announcementWrites: writeGates.announcements,
+  };
+}
+
+function isDefinitiveAuthFailure(error: unknown): boolean {
+  return error instanceof Sub2ApiError && [400, 401, 403].includes(error.status);
+}
+
+function sessionExpiredError(): Sub2ApiError {
+  return new Sub2ApiError({ status: 401, code: 'SESSION_EXPIRED', message: 'Your session has expired. Sign in again.' });
+}
+
+function refreshSessionCapabilities(
+  store: SessionStore,
+  client: AccountServiceClient,
+  settingsCache: SettingsCache,
+  writeGates: WriteGates,
+  id: string,
+  current: CapabilityMap,
+): void {
+  void getCapabilities(client, settingsCache, writeGates)
+    .then((capabilities) => {
+      if (!capabilityMapsEqual(capabilities, current)) {
+        void settleSessionUpdate(updateSessionCapabilities(store, id, capabilities), id, 'capabilities');
+      }
+    })
+    .catch((error) => {
+      logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Could not refresh account capabilities');
+    });
+}
+
+function publicOptionalText(value: string | undefined): string | undefined {
+  return value === undefined ? undefined : toPublicText(value, '');
+}
+
+function publicGroup(group: ReturnType<typeof mapGroup>): ReturnType<typeof mapGroup> {
+  return {
+    ...group,
+    name: toPublicText(group.name, 'Default'),
+    description: publicOptionalText(group.description),
+    platform: publicOptionalText(group.platform),
+  };
+}
+
+function publicApiKey(apiKey: ReturnType<typeof mapApiKey>): ReturnType<typeof mapApiKey> {
+  return { ...apiKey, group: apiKey.group ? publicGroup(apiKey.group) : apiKey.group };
+}
+
+function publicUsageGroup(group: ReturnType<typeof mapUsageGroups>[number]): ReturnType<typeof mapUsageGroups>[number] {
+  return { ...group, groupName: toPublicText(group.groupName, 'Ungrouped') };
+}
+
+function publicUsageEvent(event: ReturnType<typeof mapUsageEvent>): ReturnType<typeof mapUsageEvent> {
+  return { ...event, groupName: publicOptionalText(event.groupName) };
+}
+
+function publicUsageError(error: ReturnType<typeof mapUsageError>): ReturnType<typeof mapUsageError> {
+  return {
+    ...error,
+    message: toPublicUpstreamMessage(error.message, error.statusCode),
+    platform: publicOptionalText(error.platform),
+    errorBody: error.errorBody === undefined
+      ? undefined
+      : toPublicUpstreamMessage(error.errorBody, error.statusCode),
+  };
+}
+
+function publicChannel(channel: ReturnType<typeof mapChannel>): ReturnType<typeof mapChannel> {
+  return {
+    ...channel,
+    name: toPublicText(channel.name, 'Channel'),
+    provider: toPublicText(channel.provider, 'Provider'),
+    groupName: publicOptionalText(channel.groupName),
+  };
+}
+
+function publicSubscription(subscription: ReturnType<typeof mapSubscription>): ReturnType<typeof mapSubscription> {
+  return { ...subscription, group: subscription.group ? publicGroup(subscription.group) : undefined };
+}
+
+function publicRedemption(redemption: ReturnType<typeof mapRedemption>): ReturnType<typeof mapRedemption> {
+  return {
+    ...redemption,
+    groupName: publicOptionalText(redemption.groupName),
+    notes: publicOptionalText(redemption.notes),
+  };
+}
+
+function publicRedeemResult(result: RedeemResult): RedeemResult {
+  return {
+    ...result,
+    message: toPublicText(result.message, 'Code redeemed.', 500),
+    groupName: publicOptionalText(result.groupName),
+  };
 }
 
 const requireOrigin: MiddlewareHandler<{ Variables: Variables }> = async (c, next) => {
@@ -594,15 +803,9 @@ const requireLogoutOrigin: MiddlewareHandler<{ Variables: Variables }> = async (
   await next();
 };
 
-function requireFeature(feature: 'keys' | 'profile' | 'redeem' | 'announcements'): MiddlewareHandler<{ Variables: Variables }> {
+function requireFeature(writeGates: WriteGates, feature: keyof WriteGates): MiddlewareHandler<{ Variables: Variables }> {
   return async (c, next) => {
-    const enabled = feature === 'keys'
-      ? config.enableKeyWrites
-      : feature === 'profile'
-        ? config.enableProfileWrites
-        : feature === 'redeem'
-          ? config.enableRedeemWrites
-          : config.enableAnnouncementWrites;
+    const enabled = writeGates[feature];
     if (!enabled) return failure(c, 403, 'FEATURE_DISABLED', 'This action is not enabled yet.');
     await next();
   };
@@ -657,33 +860,6 @@ function toUpstreamQuery(
   return params.toString();
 }
 
-function toCreateKeyBody(input: ReturnType<typeof createApiKeySchema.parse>) {
-  return {
-    name: input.name,
-    ...(input.groupId ? { group_id: input.groupId } : {}),
-    ...(input.customKey ? { custom_key: input.customKey } : {}),
-    ...(input.ipWhitelist?.length ? { ip_whitelist: input.ipWhitelist } : {}),
-    ...(input.ipBlacklist?.length ? { ip_blacklist: input.ipBlacklist } : {}),
-    ...(input.quota !== null && input.quota !== undefined && input.quota > 0 ? { quota: input.quota } : {}),
-    ...(input.expiresInDays !== null && input.expiresInDays !== undefined && input.expiresInDays > 0 ? { expires_in_days: input.expiresInDays } : {}),
-    ...(input.rateLimit5h !== null && input.rateLimit5h !== undefined && input.rateLimit5h > 0 ? { rate_limit_5h: input.rateLimit5h } : {}),
-    ...(input.rateLimit1d !== null && input.rateLimit1d !== undefined && input.rateLimit1d > 0 ? { rate_limit_1d: input.rateLimit1d } : {}),
-    ...(input.rateLimit7d !== null && input.rateLimit7d !== undefined && input.rateLimit7d > 0 ? { rate_limit_7d: input.rateLimit7d } : {}),
-  };
-}
-
-function dashboardDateQuery(days = 7) {
-  const end = new Date();
-  const start = new Date(end);
-  start.setUTCDate(start.getUTCDate() - days);
-  const startDate = start.toISOString().slice(0, 10);
-  const endDate = end.toISOString().slice(0, 10);
-  return {
-    trend: new URLSearchParams({ start_date: startDate, end_date: endDate, granularity: 'day' }).toString(),
-    models: new URLSearchParams({ start_date: startDate, end_date: endDate }).toString(),
-  };
-}
-
 function defaultUsageDateRange() {
   const endDate = calendarDateInTimezone(new Date(), config.serverTimezone);
   const [year = 0, month = 0, day = 0] = endDate.split('-').map(Number);
@@ -710,23 +886,6 @@ function usageGranularity(startDate: string, endDate: string): 'hour' | 'day' {
   return difference <= 86_400_000 ? 'hour' : 'day';
 }
 
-function toUpdateKeyBody(input: ReturnType<typeof updateApiKeySchema.parse>) {
-  return {
-    ...(input.name !== undefined ? { name: input.name } : {}),
-    ...(input.groupId !== undefined ? { group_id: input.groupId } : {}),
-    ...(input.ipWhitelist !== undefined ? { ip_whitelist: input.ipWhitelist } : {}),
-    ...(input.ipBlacklist !== undefined ? { ip_blacklist: input.ipBlacklist } : {}),
-    ...(input.quota !== undefined ? { quota: input.quota } : {}),
-    ...(input.expiresAt !== undefined ? { expires_at: input.expiresAt } : {}),
-    ...(input.rateLimit5h !== undefined ? { rate_limit_5h: input.rateLimit5h } : {}),
-    ...(input.rateLimit1d !== undefined ? { rate_limit_1d: input.rateLimit1d } : {}),
-    ...(input.rateLimit7d !== undefined ? { rate_limit_7d: input.rateLimit7d } : {}),
-    ...(input.status !== undefined ? { status: input.status } : {}),
-    ...(input.resetQuota !== undefined ? { reset_quota: input.resetQuota } : {}),
-    ...(input.resetRateLimitUsage !== undefined ? { reset_rate_limit_usage: input.resetRateLimitUsage } : {}),
-  };
-}
-
 function isObjectWithKey(value: unknown): boolean {
   return Boolean(asRecord(value).key);
 }
@@ -740,12 +899,10 @@ function failure(
   status: number,
   code: string,
   message: string,
-  reason?: string,
-  metadata?: Record<string, unknown>,
 ) {
   return c.json({
     ok: false as const,
-    error: { code, message, ...(reason ? { reason } : {}), ...(metadata ? { metadata } : {}) },
+    error: { code, message },
     requestId: c.get('requestId') || randomUUID(),
   }, status as 400);
 }

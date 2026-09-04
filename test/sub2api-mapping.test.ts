@@ -3,6 +3,8 @@ import {
   mapApiKey,
   mapDashboardStats,
   mapPaginated,
+  mapRedeemResult,
+  mapRedemption,
   mapUsageEndpoints,
   mapUsageGroups,
   mapUsageModels,
@@ -29,6 +31,13 @@ describe('Sub2API compatibility mapping', () => {
   it('normalizes paginated snake-case values', () => {
     const result = mapPaginated({ items: [{ id: 1, key: 'secret', status: 'active' }], total: 21, page: 2, page_size: 10, pages: 3 }, mapApiKey);
     expect(result).toMatchObject({ total: 21, page: 2, pageSize: 10, pages: 3 });
+  });
+
+  it('maps redemption history and result fields without losing values', () => {
+    expect(mapRedemption({ id: 4, code: 'MiXeD-4', type: 'concurrency', value: 3, used_at: '2026-09-04T10:00:00Z' }))
+      .toMatchObject({ id: '4', code: 'MiXeD-4', type: 'concurrency', value: '3' });
+    expect(mapRedeemResult({ message: 'Redeemed', type: 'balance', value: '5.25', new_balance: '11.75' }))
+      .toMatchObject({ message: 'Redeemed', type: 'balance', value: '5.25', newBalance: '11.75' });
   });
 
   it('maps dashboard numeric values without currency precision loss in strings', () => {

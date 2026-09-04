@@ -29,14 +29,16 @@ export async function portalApi<T>(path: string, init: RequestInit = {}): Promis
 
   let response: Response;
   try {
+    const timeoutSignal = AbortSignal.timeout(20_000);
     response = await fetch(`/portal/v1${path}`, {
       ...init,
       method,
       headers,
       credentials: 'include',
-      signal: init.signal ?? AbortSignal.timeout(20_000),
+      signal: init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal,
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
     const timedOut = error instanceof DOMException && error.name === 'TimeoutError';
     throw new PortalApiError({
       status: timedOut ? 504 : 0,

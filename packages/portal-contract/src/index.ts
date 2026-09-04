@@ -26,7 +26,7 @@ const nullableNumberSchema = z.number().nonnegative().nullable();
 export const createApiKeySchema = z.object({
     name: z.string().trim().min(1).max(100),
     groupId: idSchema.nullable().optional(),
-    customKey: z.string().trim().min(8).max(256).optional(),
+    customKey: z.string().trim().min(16).max(128).regex(/^[A-Za-z0-9_-]+$/).optional(),
     ipWhitelist: ipListSchema.optional(),
     ipBlacklist: ipListSchema.optional(),
     quota: nullableNumberSchema.optional(),
@@ -183,11 +183,6 @@ export type PortalConfig = {
     defaultTheme: 'dark';
     capabilities: CapabilityMap;
     serverTimezone: string;
-    compatibility: {
-        product: 'Sub2API';
-        version: string;
-        revision: string;
-    };
 };
 
 export type SessionView = {
@@ -379,8 +374,6 @@ export type UsageSummary = {
 export type Dashboard = {
     user: PortalUser;
     stats: DashboardStats;
-    trend: TrendPoint[];
-    models: ModelUsage[];
 };
 
 export type UsageEvent = {

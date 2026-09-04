@@ -18,8 +18,7 @@
     "@kineticrouter/sub2api-client": "0.1.0",
     "hono": "^4.10.7",
     "pino": "^10.1.0",
-    "redis": "^5.10.0",
-    "zod": "^4.1.13"
+    "redis": "^5.10.0"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

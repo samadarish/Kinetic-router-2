@@ -28,7 +28,7 @@
       "protocolLabel": "Anthropic native",
       "previewBaseUrl": "https://api.kineticrouter.com/anthropic",
       "summary": "The Anthropic-native route is planned and its configuration is shown only as a reference.",
-      "evidenceNote": "Enable and test the native adapter in the original Sub2API administrator interface before changing this display state.",
+      "evidenceNote": "This route must be enabled and verified by a kineticRouter administrator before its availability status changes.",
       "protocolSources": ["https://platform.claude.com/docs/en/api/messages/create"]
     },
     "grok": {
@@ -42,7 +42,7 @@
       "protocolLabel": "xAI-compatible",
       "previewBaseUrl": "https://api.kineticrouter.com/grok/v1",
       "summary": "The dedicated Grok route is planned and its configuration is shown only as a reference.",
-      "evidenceNote": "Enable and test the dedicated adapter in the original Sub2API administrator interface before changing this display state.",
+      "evidenceNote": "This route must be enabled and verified by a kineticRouter administrator before its availability status changes.",
       "protocolSources": ["https://docs.x.ai/developers/model-capabilities/text/generate-text"]
     }
   }

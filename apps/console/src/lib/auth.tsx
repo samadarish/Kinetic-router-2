@@ -10,6 +10,7 @@ type LoginResult =
 
 type AuthContextValue = {
   loading: boolean;
+  error?: unknown;
   authenticated: boolean;
   user?: PortalUser;
   capabilities?: CapabilityMap;
@@ -28,7 +29,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
     queryFn: () => portalApi<SessionView>('/auth/session'),
     staleTime: 60_000,
     retry: false,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   });
+
+  useEffect(() => {
+    if (!session.data?.authenticated) return;
+    const timers = [1_500, 10_000].map((delay) => window.setTimeout(() => { void session.refetch(); }, delay));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [session.data?.authenticated]);
 
   useEffect(() => {
     setCsrfToken(session.data?.csrfToken);
@@ -58,6 +68,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const value: AuthContextValue = {
     loading: session.isLoading,
+    error: session.data ? undefined : session.error,
     authenticated: Boolean(session.data?.authenticated),
     user: session.data?.user,
     capabilities: session.data?.capabilities,

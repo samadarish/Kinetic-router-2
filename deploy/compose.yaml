@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.console
-    image: kineticrouter/customer-portal-web:${PORTAL_IMAGE_TAG:-dev}
+    image: kineticrouter/customer-portal-web:${PORTAL_IMAGE_TAG:?Set PORTAL_IMAGE_TAG in deploy/.env}
     restart: unless-stopped
     ports:
       - "127.0.0.1:3100:8080"
@@ -32,7 +32,7 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.bff
-    image: kineticrouter/customer-portal-bff:${PORTAL_IMAGE_TAG:-dev}
+    image: kineticrouter/customer-portal-bff:${PORTAL_IMAGE_TAG:?Set PORTAL_IMAGE_TAG in deploy/.env}
     restart: unless-stopped
     env_file:
       - .env

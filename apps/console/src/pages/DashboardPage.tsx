@@ -9,9 +9,11 @@ import type { Dashboard } from '@kineticrouter/portal-contract';
 import { QuickIntegration } from '../components/QuickIntegration';
 import { Card, ErrorState, LoadingState, PageHeader } from '../components/Ui';
 import { portalApi } from '../lib/api';
+import { useAuth } from '../lib/auth';
 import { formatLatency, formatMoney, formatNumber } from '../lib/format';
 
 export function DashboardPage() {
+  const { capabilities } = useAuth();
   const query = useQuery({ queryKey: ['dashboard'], queryFn: () => portalApi<Dashboard>('/dashboard') });
   const readiness = useQuery({ queryKey: ['readiness'], queryFn: readReadiness, retry: false, staleTime: 60_000 });
   if (query.isLoading) return <><PageHeader title="Dashboard" description="Your kineticRouter account at a glance." /><LoadingState label="Loading account overview" /></>;
@@ -34,8 +36,8 @@ export function DashboardPage() {
         <p>Everything you need to connect, monitor, and manage your kineticRouter API.</p>
       </div>
       <div className="overview-actions" aria-label="Account actions">
-        <Link className="button button-secondary" to="/redeem"><Gift size={15} />Redeem balance</Link>
-        <Link className="button button-primary" to="/api-keys"><KeyRound size={15} />Create API Key</Link>
+        {capabilities?.redeemWrites && user.runMode !== 'simple' && <Link className="button button-secondary" to="/redeem"><Gift size={15} />Redeem balance</Link>}
+        {capabilities?.keyWrites && <Link className="button button-primary" to="/api-keys"><KeyRound size={15} />Create API Key</Link>}
         <Link className="button button-secondary" to="/usage"><BarChart3 size={15} />Detailed statistics</Link>
       </div>
     </section>

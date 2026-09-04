@@ -71,8 +71,8 @@ export function getDocsPage(route: string) {
   if (PENDING_PORTAL_ROUTES.has(route) && content) {
     const subject = route.endsWith('/balance') ? 'Balance API' : 'Provider pricing API';
     return {
-      meta: meta ? { ...meta, title: `${subject} - Contract pending`, description: `${subject} documentation will be published after its Sub2API endpoint contract is verified.` } : meta,
-      content: { ...content, html: pendingPortalHtml(route), text: 'Sub2API endpoint contract pending.' },
+      meta: meta ? { ...meta, title: `${subject} - Contract pending`, description: `${subject} documentation will be published after its endpoint contract is verified.` } : meta,
+      content: { ...content, html: pendingPortalHtml(route), text: 'Endpoint contract pending.' },
       status,
     };
   }

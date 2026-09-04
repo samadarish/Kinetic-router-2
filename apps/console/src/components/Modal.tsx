@@ -58,5 +58,5 @@ export function ConfirmDialog({ open, title, description, confirmLabel, danger =
   onCancel(): void;
   onConfirm(): void;
 }) {
-  return <Modal open={open} title={title} description={description} onClose={onCancel} footer={<><button className="button button-secondary" onClick={onCancel}>Cancel</button><button className={`button ${danger ? 'button-danger' : 'button-primary'}`} disabled={busy} onClick={onConfirm}>{busy ? 'Working…' : confirmLabel}</button></>}><div className="confirm-note">This action is applied immediately to your Sub2API account.</div></Modal>;
+  return <Modal open={open} title={title} description={description} onClose={onCancel} footer={<><button className="button button-secondary" onClick={onCancel}>Cancel</button><button className={`button ${danger ? 'button-danger' : 'button-primary'}`} disabled={busy} onClick={onConfirm}>{busy ? 'Working…' : confirmLabel}</button></>}><div className="confirm-note">This action takes effect immediately.</div></Modal>;
 }

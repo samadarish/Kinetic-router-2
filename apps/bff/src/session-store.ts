@@ -5,6 +5,10 @@ import { config } from './config.js';
 import { decryptJson, encryptJson, randomToken } from './crypto.js';
 import { logger } from './logger.js';
 
+const SESSION_LOCK_LEASE_MS = 60_000;
+const SESSION_LOCK_RENEW_MS = 15_000;
+const SESSION_REVOCATION_TTL_SECONDS = config.sessionTtlSeconds;
+
 export type PortalSession = {
   id: string;
   csrfToken: string;
@@ -13,13 +17,15 @@ export type PortalSession = {
   tokens: TokenBundle;
   createdAt: number;
   updatedAt: number;
+  revision: number;
 };
 
 export interface SessionStore {
   get(id: string): Promise<PortalSession | null>;
   set(session: PortalSession): Promise<void>;
   delete(id: string): Promise<void>;
-  withLock<T>(id: string, callback: () => Promise<T>): Promise<T>;
+  revoke(id: string): Promise<PortalSession | null>;
+  withLock<T>(id: string, callback: () => Promise<T>, options?: { waitMs?: number }): Promise<T>;
   ping(): Promise<void>;
   hitRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean>;
   close(): Promise<void>;
@@ -27,20 +33,23 @@ export interface SessionStore {
 
 class MemorySessionStore implements SessionStore {
   private readonly sessions = new Map<string, { session: PortalSession; expiresAt: number }>();
+  private readonly revocations = new Map<string, number>();
   private readonly locks = new Map<string, Promise<void>>();
   private readonly rateLimits = new Map<string, { count: number; expiresAt: number }>();
 
   async get(id: string): Promise<PortalSession | null> {
+    if (this.isRevoked(id)) return null;
     const record = this.sessions.get(id);
     if (!record) return null;
     if (record.expiresAt <= Date.now()) {
       this.sessions.delete(id);
       return null;
     }
-    return structuredClone(record.session);
+    return normalizeSession(structuredClone(record.session));
   }
 
   async set(session: PortalSession): Promise<void> {
+    if (this.isRevoked(session.id)) return;
     this.sessions.set(session.id, {
       session: structuredClone(session),
       expiresAt: Date.now() + config.sessionTtlSeconds * 1000,
@@ -51,7 +60,33 @@ class MemorySessionStore implements SessionStore {
     this.sessions.delete(id);
   }
 
-  async withLock<T>(id: string, callback: () => Promise<T>): Promise<T> {
+  async revoke(id: string): Promise<PortalSession | null> {
+    const now = Date.now();
+    const record = this.sessions.get(id);
+    const session = record && record.expiresAt > now ? normalizeSession(structuredClone(record.session)) : null;
+    if (!session && !this.locks.has(id)) {
+      this.sessions.delete(id);
+      return null;
+    }
+    this.revocations.set(id, now + SESSION_REVOCATION_TTL_SECONDS * 1000);
+    this.sessions.delete(id);
+    if (this.revocations.size > 5_000) {
+      for (const [sessionId, expiresAt] of this.revocations) {
+        if (expiresAt <= now) this.revocations.delete(sessionId);
+      }
+    }
+    return session;
+  }
+
+  private isRevoked(id: string): boolean {
+    const expiresAt = this.revocations.get(id);
+    if (!expiresAt) return false;
+    if (expiresAt > Date.now()) return true;
+    this.revocations.delete(id);
+    return false;
+  }
+
+  async withLock<T>(id: string, callback: () => Promise<T>, _options?: { waitMs?: number }): Promise<T> {
     const previous = this.locks.get(id) ?? Promise.resolve();
     let release = () => {};
     const current = new Promise<void>((resolve) => { release = resolve; });
@@ -87,7 +122,7 @@ class MemorySessionStore implements SessionStore {
 
 class RedisSessionStore implements SessionStore {
   private readonly client: RedisClientType;
-  private connected = false;
+  private connection?: Promise<void>;
 
   constructor(url: string) {
     this.client = createClient({ url });
@@ -95,18 +130,24 @@ class RedisSessionStore implements SessionStore {
   }
 
   private async ready() {
-    if (!this.connected) {
-      await this.client.connect();
-      this.connected = true;
+    if (this.client.isReady) return;
+    if (this.client.isOpen) return;
+    const connection = this.connection ?? this.client.connect().then(() => undefined);
+    this.connection = connection;
+    try {
+      await connection;
+    } finally {
+      if (this.connection === connection) this.connection = undefined;
     }
   }
 
   async get(id: string): Promise<PortalSession | null> {
     await this.ready();
-    const value = await this.client.get(this.sessionKey(id));
+    const [revoked, value] = await this.client.mGet([this.revocationKey(id), this.sessionKey(id)]);
+    if (revoked) return null;
     if (!value) return null;
     try {
-      return decryptJson<PortalSession>(value, config.sessionEncryptionKey);
+      return normalizeSession(decryptJson<PortalSession>(value, config.sessionEncryptionKey));
     } catch (error) {
       logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Discarding unreadable portal session');
       await this.delete(id);
@@ -116,10 +157,12 @@ class RedisSessionStore implements SessionStore {
 
   async set(session: PortalSession): Promise<void> {
     await this.ready();
-    await this.client.set(
-      this.sessionKey(session.id),
-      encryptJson(session, config.sessionEncryptionKey),
-      { EX: config.sessionTtlSeconds },
+    await this.client.eval(
+      "if redis.call('exists', KEYS[2]) == 1 then return 0 end; redis.call('set', KEYS[1], ARGV[1], 'EX', ARGV[2]); return 1",
+      {
+        keys: [this.sessionKey(session.id), this.revocationKey(session.id)],
+        arguments: [encryptJson(session, config.sessionEncryptionKey), String(config.sessionTtlSeconds)],
+      },
     );
   }
 
@@ -128,21 +171,58 @@ class RedisSessionStore implements SessionStore {
     await this.client.del(this.sessionKey(id));
   }
 
-  async withLock<T>(id: string, callback: () => Promise<T>): Promise<T> {
+  async revoke(id: string): Promise<PortalSession | null> {
     await this.ready();
-    const lockKey = `kr:portal:lock:${id}`;
+    const value = await this.client.eval(
+      "local session = redis.call('get', KEYS[1]); if not session and redis.call('exists', KEYS[3]) == 0 then return nil end; redis.call('set', KEYS[2], '1', 'EX', ARGV[1]); redis.call('del', KEYS[1]); return session",
+      {
+        keys: [this.sessionKey(id), this.revocationKey(id), this.lockKey(id)],
+        arguments: [String(SESSION_REVOCATION_TTL_SECONDS)],
+      },
+    );
+    if (typeof value !== 'string') return null;
+    try {
+      return normalizeSession(decryptJson<PortalSession>(value, config.sessionEncryptionKey));
+    } catch (error) {
+      logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Discarding unreadable revoked portal session');
+      return null;
+    }
+  }
+
+  async withLock<T>(id: string, callback: () => Promise<T>, options?: { waitMs?: number }): Promise<T> {
+    await this.ready();
+    const lockKey = this.lockKey(id);
     const token = randomToken(16);
-    const deadline = Date.now() + 6_000;
+    const deadline = Date.now() + (options?.waitMs ?? 6_000);
     while (Date.now() < deadline) {
-      const acquired = await this.client.set(lockKey, token, { NX: true, PX: 20_000 });
+      const acquired = await this.client.set(lockKey, token, { NX: true, PX: SESSION_LOCK_LEASE_MS });
       if (acquired === 'OK') {
+        let renewalRunning = false;
+        const renewal = setInterval(() => {
+          if (renewalRunning) return;
+          renewalRunning = true;
+          void this.client.eval(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end",
+            { keys: [lockKey], arguments: [token, String(SESSION_LOCK_LEASE_MS)] },
+          ).catch((error) => {
+            logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Portal session lock renewal failed');
+          }).finally(() => {
+            renewalRunning = false;
+          });
+        }, SESSION_LOCK_RENEW_MS);
+        renewal.unref();
         try {
           return await callback();
         } finally {
-          await this.client.eval(
-            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
-            { keys: [lockKey], arguments: [token] },
-          );
+          clearInterval(renewal);
+          try {
+            await this.client.eval(
+              "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+              { keys: [lockKey], arguments: [token] },
+            );
+          } catch (error) {
+            logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Portal session lock release failed');
+          }
         }
       }
       await new Promise((resolve) => setTimeout(resolve, 80 + Math.floor(Math.random() * 40)));
@@ -151,7 +231,8 @@ class RedisSessionStore implements SessionStore {
   }
 
   async close(): Promise<void> {
-    if (this.connected) await this.client.quit();
+    if (this.client.isOpen) await this.client.quit();
+    this.connection = undefined;
   }
 
   async ping(): Promise<void> {
@@ -163,13 +244,23 @@ class RedisSessionStore implements SessionStore {
   async hitRateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
     await this.ready();
     const redisKey = `kr:portal:ratelimit:${key}`;
-    const count = await this.client.incr(redisKey);
-    if (count === 1) await this.client.expire(redisKey, windowSeconds);
-    return count > limit;
+    const count = await this.client.eval(
+      "local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]); end; return count",
+      { keys: [redisKey], arguments: [String(windowSeconds)] },
+    );
+    return Number(count) > limit;
   }
 
   private sessionKey(id: string) {
     return `kr:portal:session:${id}`;
+  }
+
+  private revocationKey(id: string) {
+    return `kr:portal:revoked:${id}`;
+  }
+
+  private lockKey(id: string) {
+    return `kr:portal:lock:${id}`;
   }
 }
 
@@ -194,5 +285,11 @@ export function createSession(input: {
     tokens: input.tokens,
     createdAt: now,
     updatedAt: now,
+    revision: 0,
   };
+}
+
+function normalizeSession(session: PortalSession): PortalSession {
+  if (!Number.isSafeInteger(session.revision) || session.revision < 0) session.revision = 0;
+  return session;
 }

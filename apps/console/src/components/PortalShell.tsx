@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Component, Suspense, type ReactNode, useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity, BookOpen, ChevronDown, CircleGauge, CreditCard, Gift,
@@ -6,6 +6,7 @@ import {
   Settings, Sun, UserRound, X,
 } from 'lucide-react';
 import { Brand } from './Brand';
+import { ErrorState, LoadingState } from './Ui';
 import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
@@ -74,7 +75,7 @@ export function PortalShell() {
   const initials = accountName.slice(0, 1).toUpperCase();
   const visibleNav = nav.filter((item) => {
     if (item.to === '/status') return capabilities?.channelMonitor !== false;
-    if (item.to === '/redeem') return capabilities?.promoCode !== false && user?.runMode !== 'simple';
+    if (item.to === '/redeem') return user?.runMode !== 'simple';
     if (item.to === '/subscriptions') return user?.runMode !== 'simple';
     return true;
   });
@@ -146,9 +147,30 @@ export function PortalShell() {
           </div>}
         </div>
       </header>
-      <main className="content" key={location.pathname}><Outlet /></main>
+      <main className="content" key={location.pathname}>
+        <RouteBoundary>
+          <Suspense fallback={<div className="route-loading"><LoadingState label="Loading page" /></div>}>
+            <Outlet />
+          </Suspense>
+        </RouteBoundary>
+      </main>
     </section>
   </div>;
+}
+
+class RouteBoundary extends Component<{ children: ReactNode }, { error?: Error }> {
+  state: { error?: Error } = {};
+
+  static getDerivedStateFromError(error: unknown) {
+    return { error: error instanceof Error ? error : new Error('The page could not be loaded.') };
+  }
+
+  render() {
+    if (this.state.error) {
+      return <div className="route-loading"><ErrorState error={this.state.error} retry={() => window.location.reload()} /></div>;
+    }
+    return this.props.children;
+  }
 }
 
 function readSidebarPreference() {

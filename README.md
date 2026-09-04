@@ -50,6 +50,8 @@ Only the public-session and logout endpoints accept credentialed requests from e
 - The console, BFF, and Redis use `deploy/compose.yaml` and the console Caddy route.
 - The existing Sub2API Compose project, database, admin UI, and inference route are not modified.
 
+Follow the [production runbook](deploy/README.md) for environment setup, immutable image tags, TLS routing, health checks, rollback, and write-gate activation.
+
 Production write operations remain disabled by default through the `ENABLE_*_WRITES` flags. Enable a write only after disposable-account contract and rollback testing.
 
 Never commit environment files, test credentials, VPS credentials, tokens, API keys, session secrets, dependencies, or generated build output.

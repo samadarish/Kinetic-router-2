@@ -51,10 +51,5 @@ export const config = {
   publicSiteOrigins,
   logLevel: process.env.LOG_LEVEL ?? 'info',
   serverTimezone: process.env.SERVER_TIMEZONE ?? 'Asia/Kolkata',
-  compatibility: {
-    version: '0.1.183',
-    revision: 'e8cb019fabf8b55199436229044cbf9aa7a82564',
-    imageDigest: 'sha256:cff6bc3ed1a6eba7ea240bad8637cf12856161a4efb98be0882c2fa7aff371e3',
-  },
 } as const;
 import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
