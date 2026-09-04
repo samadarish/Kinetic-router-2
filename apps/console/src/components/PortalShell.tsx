@@ -88,8 +88,10 @@ export function PortalShell() {
   return <div className={`portal-frame ${sidebarCollapsed ? 'portal-frame-collapsed' : ''}`}>
     <aside id="portal-navigation" ref={sidebarRef} className={`sidebar ${menuOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <div className="sidebar-brand">
-        <Brand className="sidebar-wordmark" />
-        <span className="brand-mark sidebar-brand-mark" aria-hidden="true" />
+        <a className="sidebar-home-link" href={publicSiteHref('/')} aria-label="Go to kineticRouter homepage">
+          <Brand decorative className="sidebar-wordmark" />
+          <span className="brand-mark sidebar-brand-mark" aria-hidden="true" />
+        </a>
         <button
           aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           className="icon-button sidebar-collapse"
@@ -127,7 +129,9 @@ export function PortalShell() {
     <section className="portal-main">
       <header className="topbar">
         <button className="icon-button menu-button" aria-label="Open menu" aria-controls="portal-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} /></button>
-        <div className="mobile-brand"><Brand className="mobile-wordmark" /></div>
+        <a className="mobile-brand" href={publicSiteHref('/')} aria-label="Go to kineticRouter homepage">
+          <Brand decorative className="mobile-wordmark" />
+        </a>
         <nav className="console-topnav" aria-label="Console links">
           {consoleLinks.map((item) => isPortalRoute(item.href)
             ? <NavLink key={item.id} to={item.href} className={({ isActive }) => `console-topnav-link ${isActive ? 'active' : ''}`}>{item.label}</NavLink>
