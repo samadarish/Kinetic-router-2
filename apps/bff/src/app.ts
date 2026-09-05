@@ -13,6 +13,7 @@ import {
   totpInputSchema,
   updateApiKeySchema,
   usageSummaryQuerySchema,
+  analyticsQuerySchema,
   type CapabilityMap,
   type PortalUser,
   type RedeemResult,
@@ -51,6 +52,8 @@ import { constantTimeEqual } from './crypto.js';
 import { logger } from './logger.js';
 import { toPublicErrorCode, toPublicText, toPublicUpstreamMessage } from './public-errors.js';
 import { createSession, createSessionStore, type PortalSession, type SessionStore } from './session-store.js';
+import { AnalyticsService } from './analytics/service.js';
+import { analyticsDay, type AnalyticsStore, type ReportKind } from './analytics/model.js';
 
 type Variables = {
   requestId: string;
@@ -82,13 +85,15 @@ const configuredWriteGates: WriteGates = {
 
 export function createApp(
   store: SessionStore = createSessionStore(),
-  options: { client?: AccountServiceClient; writeGates?: Partial<WriteGates> } = {},
+  options: { client?: AccountServiceClient; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
 ) {
   const client = options.client ?? defaultUpstream;
   const writeGates = { ...configuredWriteGates, ...options.writeGates };
   const defaultCapabilities = readCapabilities({}, writeGates);
   const settingsCache: SettingsCache = { expiresAt: 0 };
   const app = new Hono<{ Variables: Variables }>();
+  const analytics = new AnalyticsService({ store: options.analyticsStore, enabled: options.analyticsEnabled, now: options.analyticsNow, identify: async cookie => (await store.get(cookie))?.user });
+  const adminProfiles = new Map<string, { until: number; value: Promise<boolean> }>();
 
   app.use('*', secureHeaders({
     contentSecurityPolicy: {
@@ -112,6 +117,7 @@ export function createApp(
   });
 
   app.get('/healthz', (c) => c.json({ status: 'ok' }));
+  app.route('/portal/v1/analytics', analytics.publicApp);
   app.get('/readyz', async (c) => {
     try {
       await Promise.all([getPublicSettings(client, settingsCache), store.ping()]);
@@ -164,14 +170,18 @@ export function createApp(
     const result = await client.login(input);
     if (result.requires2fa) return success(c, result);
 
-    return establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    analytics.recordAction(c, result.user, 'sign_in', '/sign-in');
+    return response;
   });
 
   app.post('/portal/v1/auth/totp', requireOrigin, authRateLimit, async (c) => {
     const input = totpInputSchema.parse(await c.req.json());
     const result = await client.login2fa({ tempToken: input.tempToken, code: input.code });
     if (result.requires2fa) throw new Sub2ApiError({ status: 400, code: 'TOTP_REQUIRED', message: 'A valid authenticator code is required.' });
-    return establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    analytics.recordAction(c, result.user, 'sign_in', '/sign-in');
+    return response;
   });
 
   app.options('/portal/v1/auth/logout', (c) => logoutCorsPreflight(c));
@@ -180,6 +190,8 @@ export function createApp(
     if (sessionId) {
       try {
         const revoked = await store.revoke(sessionId);
+        analytics.revokeSession(sessionId);
+        adminProfiles.delete(sessionId);
         if (revoked?.tokens.refreshToken) void revokeRefreshToken(client, sessionId, revoked.tokens.refreshToken);
       } catch (error) {
         logger.warn({ err: error, sessionId: sessionId.slice(0, 8) }, 'Session cleanup failed during sign out');
@@ -211,6 +223,40 @@ export function createApp(
     c.set('session', loaded);
     await next();
   });
+
+  app.use('/portal/v1/admin/analytics/*', async (c, next) => {
+    const session = requireSession(c);
+    if (session.user.role !== 'admin' || session.user.status !== 'active') return failure(c, 403, 'ADMIN_REQUIRED', 'Administrator access is required.');
+    try {
+      let entry = adminProfiles.get(session.id);
+      if (!entry || entry.until <= Date.now()) {
+        if (adminProfiles.size >= 100) adminProfiles.delete(adminProfiles.keys().next().value!);
+        const value = authRequest(c, store, client, token => client.request('user/profile', {}, authOptions(token))).then(raw => {
+          const profile = asRecord(raw);
+          void settleSessionUpdate(updateSessionUser(store, session.id, mapUser(profile), session.revision), session.id, 'profile');
+          return profile.role === 'admin' && profile.status === 'active';
+        });
+        entry = { until: Date.now() + 30_000, value }; adminProfiles.set(session.id, entry);
+      }
+      if (!await entry.value) return failure(c, 403, 'ADMIN_REQUIRED', 'Administrator access is required.');
+    } catch { adminProfiles.delete(session.id); return failure(c, 503, 'ADMIN_VERIFICATION_UNAVAILABLE', 'Administrator access could not be verified. Try again shortly.'); }
+    await next();
+  });
+  app.get('/portal/v1/admin/analytics/live', c => {
+    if (!analytics.enabled) return failure(c, 503, 'ANALYTICS_DISABLED', 'Analytics collection is disabled or its database is not configured.');
+    const today = analyticsDay(Date.now(), config.serverTimezone);
+    const query = analyticsQuerySchema.parse({ startDate: today, endDate: today, ...c.req.query() });
+    return success(c, analytics.live(query.surface, query.page, query.pageSize));
+  });
+  for (const kind of ['overview', 'pages', 'acquisition', 'actions', 'performance'] as ReportKind[]) {
+    app.get(`/portal/v1/admin/analytics/${kind}`, async c => {
+      try { return success(c, await analytics.report(kind, c.req.query())); }
+      catch (error) {
+        if (error instanceof RangeError || (error && typeof error === 'object' && 'issues' in error)) return failure(c, 400, 'ANALYTICS_RANGE_INVALID', 'Choose a valid date range within the last thirteen months.');
+        return failure(c, 503, 'ANALYTICS_UNAVAILABLE', 'Analytics reports are temporarily unavailable.');
+      }
+    });
+  }
 
   app.get('/portal/v1/dashboard', async (c) => {
     const session = requireSession(c);
@@ -284,6 +330,7 @@ export function createApp(
     const raw = await authWrite(c, store, client, (token) => client.request('keys', {
       method: 'POST', body: JSON.stringify(toCreateKeyBody(input)),
     }, authOptions(token)));
+    analytics.recordAction(c, requireSession(c).user, 'api_key_created', '/api-keys');
     return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : raw, 201);
   });
 
@@ -387,6 +434,7 @@ export function createApp(
     }, authOptions(token)));
     const result = mapRedeemResult(raw);
     await settleSessionUpdate(updateSessionAfterRedemption(store, session.id, result), session.id, 'redemption');
+    analytics.recordAction(c, session.user, 'redemption', '/redeem');
     return success(c, publicRedeemResult(result));
   });
 
@@ -427,7 +475,7 @@ export function createApp(
     return failure(c, 500, 'INTERNAL_ERROR', 'The portal could not complete the request.');
   });
 
-  return { app, store };
+  return { app, store, analytics };
 }
 
 function isPublicPortalPath(path: string) {

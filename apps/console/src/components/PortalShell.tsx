@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity, BookOpen, ChevronDown, CircleGauge, CreditCard, Gift,
   KeyRound, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, PanelsTopLeft,
-  Settings, Sun, UserRound, X,
+  Settings, Sun, UserRound, X, ChartNoAxesCombined,
 } from 'lucide-react';
 import { Brand } from './Brand';
 import { ErrorState, LoadingState } from './Ui';
@@ -19,6 +19,7 @@ const nav = [
   { to: '/subscriptions', label: 'My Subscriptions', icon: CreditCard },
   { to: '/redeem', label: 'Redeem', icon: Gift },
   { to: '/profile', label: 'Profile', icon: UserRound },
+  { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
 ];
 
 const SIDEBAR_STORAGE_KEY = 'kineticrouter-sidebar-collapsed';
@@ -74,6 +75,7 @@ export function PortalShell() {
   const accountName = user?.username || user?.email || 'kineticRouter user';
   const initials = accountName.slice(0, 1).toUpperCase();
   const visibleNav = nav.filter((item) => {
+    if (item.to === '/analytics') return user?.role === 'admin' && user.status === 'active';
     if (item.to === '/status') return capabilities?.channelMonitor !== false;
     if (item.to === '/redeem') return user?.runMode !== 'simple';
     if (item.to === '/subscriptions') return user?.runMode !== 'simple';

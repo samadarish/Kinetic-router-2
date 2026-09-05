@@ -17,6 +17,8 @@ dist/
 !.env.example
 !**/.env.example
 coverage/
+.cache/
+output/analytics/
 **/coverage/
 playwright-report/
 test-results/

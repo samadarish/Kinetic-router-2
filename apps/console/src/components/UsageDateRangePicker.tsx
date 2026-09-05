@@ -38,10 +38,12 @@ export default function UsageDateRangePicker({
   value,
   onApply,
   timezone = 'Asia/Kolkata',
+  calendarOnly = false,
 }: {
   value: UsageDateRange;
   onApply: (range: UsageDateRange) => void;
   timezone?: string;
+  calendarOnly?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState(value.startDate);
@@ -122,7 +124,7 @@ export default function UsageDateRangePicker({
       <button type="button" className="usage-range-backdrop" aria-label="Close time range picker" onClick={() => close(true)} />
       <div id="usage-range-panel" className="usage-range-panel" role="dialog" aria-label="Choose usage time range">
       <div className="usage-preset-grid" role="group" aria-label="Quick ranges">
-        {presets.map((preset, index) => <button
+        {presets.filter(preset => !calendarOnly || preset.id !== 'last-24-hours').map((preset, index) => <button
           ref={selectedPreset === preset.label || (!selectedPreset && index === 0) ? firstPresetRef : undefined}
           type="button"
           key={preset.id}

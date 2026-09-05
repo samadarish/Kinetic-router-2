@@ -8,6 +8,7 @@ COPY packages/platform-config/package.json packages/platform-config/package.json
 COPY packages/brand-ui/package.json packages/brand-ui/package.json
 COPY packages/portal-contract/package.json packages/portal-contract/package.json
 COPY packages/sub2api-client/package.json packages/sub2api-client/package.json
+COPY packages/analytics-client/package.json packages/analytics-client/package.json
 RUN npm ci --no-audit --no-fund
 COPY packages/platform-config packages/platform-config
 COPY packages/portal-contract packages/portal-contract
@@ -29,6 +30,7 @@ COPY packages/platform-config/package.json packages/platform-config/package.json
 COPY packages/brand-ui/package.json packages/brand-ui/package.json
 COPY packages/portal-contract/package.json packages/portal-contract/package.json
 COPY packages/sub2api-client/package.json packages/sub2api-client/package.json
+COPY packages/analytics-client/package.json packages/analytics-client/package.json
 RUN npm ci --omit=dev --no-audit --no-fund \
  --workspace @kineticrouter/bff \
  --workspace @kineticrouter/platform-config \

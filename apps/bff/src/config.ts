@@ -51,5 +51,7 @@ export const config = {
   publicSiteOrigins,
   logLevel: process.env.LOG_LEVEL ?? 'info',
   serverTimezone: process.env.SERVER_TIMEZONE ?? 'Asia/Kolkata',
+  analyticsEnabled: readBoolean(process.env.ANALYTICS_ENABLED, nodeEnv !== 'production'),
+  analyticsDatabaseUrl: process.env.ANALYTICS_DATABASE_URL ?? '',
 } as const;
 import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';

@@ -7,6 +7,7 @@ export const CONSOLE_ROUTES = {
   subscriptions: '/subscriptions',
   redeem: '/redeem',
   profile: '/profile',
+  analytics: '/analytics',
 } as const;
 
 export type ConsoleRoute = typeof CONSOLE_ROUTES[keyof typeof CONSOLE_ROUTES];

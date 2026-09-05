@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@kineticrouter/analytics-client": "0.1.0",
     "@kineticrouter/brand-ui": "0.1.0",
     "@kineticrouter/platform-config": "0.1.0",
     "@kineticrouter/portal-contract": "0.1.0",

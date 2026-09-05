@@ -182,6 +182,7 @@ export function QuickIntegration() {
   async function copy(value: string, target: CopyTarget) {
     try {
       await writeClipboard(value);
+      window.dispatchEvent(new Event('portal:analytics-docs-copy'));
       setCopyError(null);
       setCopied(target);
       if (resetCopyRef.current !== null) window.clearTimeout(resetCopyRef.current);

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { THEME_BOOTSTRAP_SCRIPT } from '@kineticrouter/platform-config/theme';
 import './globals.css';
+import { AnalyticsTracker } from '@/components/analytics-tracker';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://kineticrouter.com'),
@@ -38,7 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
-      <body>{children}</body>
+      <body>{children}<AnalyticsTracker /></body>
     </html>
   );
 }

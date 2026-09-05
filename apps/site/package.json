@@ -22,6 +22,7 @@
     "check": "npm run check:provider-availability && npm run check:content && npm run test:public && npm run lint && npm run build && npm run check:brand"
   },
   "dependencies": {
+    "@kineticrouter/analytics-client": "0.1.0",
     "@kineticrouter/brand-ui": "0.1.0",
     "@kineticrouter/platform-config": "0.1.0",
     "@kineticrouter/portal-contract": "0.1.0",

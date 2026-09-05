@@ -1,4 +1,5 @@
 'use client';
+import { trackDocsCopy } from '@kineticrouter/analytics-client';
 
 import { Fragment, useState } from 'react';
 import type { ProviderId } from '@/data/provider-availability';
@@ -103,7 +104,9 @@ export function HomeHero({ home, providers }: { home: SiteConfig['home']; provid
 
   async function copy() {
     if (!available) return;
-    await navigator.clipboard?.writeText(code);
+    if (!navigator.clipboard) return;
+    await navigator.clipboard.writeText(code);
+    trackDocsCopy();
     setCopied(true);
     setTimeout(() => setCopied(false), 1_200);
   }

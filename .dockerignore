@@ -1,4 +1,6 @@
 .git
+.cache
+output/analytics
 .agents
 .codex
 node_modules

@@ -43,13 +43,15 @@ services:
       SUB2API_BASE_URL: https://api.kineticrouter.com/api/v1
       REDIS_URL: redis://redis:6379/0
       TRUST_PROXY: "true"
+      ANALYTICS_ENABLED: ${ANALYTICS_ENABLED:-false}
+      ANALYTICS_DATABASE_URL: postgresql://analytics:${ANALYTICS_DB_PASSWORD:?Set ANALYTICS_DB_PASSWORD in deploy/.env}@analytics-db:5432/kineticrouter_analytics
     ports:
       - "127.0.0.1:3101:3101"
     depends_on:
       redis:
         condition: service_healthy
-    cpus: 0.50
-    mem_limit: 256m
+    cpus: 1.0
+    mem_limit: 512m
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -57,6 +59,33 @@ services:
     read_only: true
     tmpfs:
       - /tmp:size=16m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+    networks:
+      - backend
+
+  analytics-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kineticrouter_analytics
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:?Set ANALYTICS_DB_PASSWORD in deploy/.env}
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=30", "-c", "work_mem=8MB"]
+    cpus: 1.0
+    mem_limit: 1g
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - analytics-postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytics -d kineticrouter_analytics"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     logging:
       driver: json-file
       options:
@@ -98,3 +127,4 @@ networks:
 
 volumes:
   portal-redis:
+  analytics-postgres:

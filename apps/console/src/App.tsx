@@ -12,6 +12,7 @@ const StatusPage = lazy(() => import('./pages/StatusPage').then((module) => ({ d
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage').then((module) => ({ default: module.SubscriptionsPage })));
 const RedeemPage = lazy(() => import('./pages/RedeemPage').then((module) => ({ default: module.RedeemPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage })));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 
 export function App() {
   const auth = useAuth();
@@ -28,6 +29,7 @@ export function App() {
       <Route path="/subscriptions" element={<SubscriptionsPage />} />
       <Route path="/redeem" element={<RedeemPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/analytics" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <AnalyticsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
     </Route>
     <Route path="/" element={<Navigate to={auth.authenticated ? '/dashboard' : '/sign-in'} replace />} />
     <Route path="*" element={<Navigate to={auth.authenticated ? '/dashboard' : '/sign-in'} replace />} />

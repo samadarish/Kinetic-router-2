@@ -1,4 +1,5 @@
 'use client';
+import { trackDocsCopy } from '@kineticrouter/analytics-client';
 
 import { useState } from 'react';
 import type { Model } from '@/data/model-utils';
@@ -27,7 +28,7 @@ function CodeExamples({ model }: { model: Model }) {
     return <aside className="docs-pending-example mt-5"><div className="flex items-center gap-2"><ProviderLogo provider={model.provider} className="h-5 w-5" /><strong>{status.badgeLabel} provider example</strong></div><p>{status.summary} The imported example remains in the reference snapshot, but copying is disabled until the route is enabled and tested.</p></aside>;
   }
 
-  async function copy() { await navigator.clipboard?.writeText(visibleExamples[active].code); setCopied(true); setTimeout(() => setCopied(false), 1000); }
+  async function copy() { if (!navigator.clipboard) return; await navigator.clipboard.writeText(visibleExamples[active].code); trackDocsCopy(); setCopied(true); setTimeout(() => setCopied(false), 1000); }
   return <div className="mt-5 overflow-hidden rounded-xl border border-border bg-[var(--code)]"><div className="flex items-end border-b border-border px-3">{visibleExamples.map((example, index) => <button key={`${example.label}-${index}`} onClick={() => setActive(index)} className={`h-11 border-b-2 px-3 text-[11px] font-semibold ${active === index ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'}`}>{example.label}</button>)}<button aria-label="Copy code" onClick={copy} className="ml-auto flex h-11 items-center gap-1 text-[10px] text-muted-foreground"><ClipboardIcon className="h-4 w-4" />{copied && 'Copied'}</button></div><pre className="max-h-[430px] overflow-auto bg-[var(--terminal)] p-5 font-mono text-[12px] leading-7 text-[#e4e2de]"><code>{visibleExamples[active].code}</code></pre></div>;
 }
 

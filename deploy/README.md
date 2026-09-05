@@ -5,6 +5,10 @@ The public site and customer console are one product but have separate runtime t
 - Build and publish the public site from the repository root with `npm run build:site`.
 - Run the console, BFF, and Redis on the VPS with `deploy/compose.yaml`.
 
+The admin analytics dashboard adds an isolated PostgreSQL service. Follow the
+[analytics release and backup instructions](../docs/website-analytics.md) and set
+`ANALYTICS_DB_PASSWORD` before using the updated Compose configuration.
+
 ## 1. Validate the release
 
 Use Node 22.13 or newer and deploy a clean, committed revision.

@@ -1,0 +1,42 @@
+# Website analytics
+
+The console `/analytics` route is for active Sub2API administrators. The backend verifies `user/profile` before returning reports, with a maximum thirty-second authorization cache. Customer usage/billing and the external gateway are separate from website analytics.
+
+## Collection and definitions
+
+- Production uses a dedicated PostgreSQL database. Development can use bounded memory storage; the dashboard labels that history as temporary.
+- Browser IDs use a signed, host-only, HttpOnly, SameSite=Lax cookie on the console host. Website and console requests share it through exact-origin credentialed requests. Authentication cookies retain their existing scope and behavior. Different browsers/devices count as different visitors; the live customer count deduplicates server-verified account IDs.
+- Live activity means a visible page observed within ninety seconds. Foreground heartbeats run every thirty seconds. Background tabs stop periodic collection. Sequence numbers prevent delayed packets moving a visitor back to an old page.
+- Sessions expire after thirty minutes without activity. Historical session totals count distinct sessions with activity during the selected dates; they are not sums of daily session counts. First-touch external source/campaign stays with the session across public-site and console navigation and sign-in.
+- Pageviews count document/SPA navigation and back-forward cache restoration once. Query strings and fragments do not become page dimensions. Current console paths use a fixed allowlist; public paths allow known route families. Unknown paths aggregate under `/other`.
+- Engagement is foreground time, capped across device suspension and split at reporting midnight. `(page_id, day)` retains the cumulative high-water mark, so retries and out-of-order snapshots cannot double-count. Engaged sessions have ten seconds of engagement, two pageviews, or a confirmed sign-in/key creation/redemption. Bounce rate is the complement.
+- The funnel is ordered console CTA → successful sign-in → API-key creation in one session and within the selected date range. Its cross-site view requires the combined surface filter. Existing customers may skip steps.
+- Web Vitals use the standard deferred library. Values are document-level, with the latest observation per metric ID retained. Reports use the actual discrete 75th percentile, omit missing/unsupported metrics, and label small samples. SPA routes do not invent new document LCP measurements.
+
+The browser sends no form contents, API keys, copied code, query strings, or exception text. Referrer paths/queries are removed before transmission. Raw IPs are not persisted in analytics; short-lived HMAC-derived rate-limit keys are held in memory. Account names and IDs exist only in short-lived live presence/tokens. Historical facts use pseudonymous visitor/session IDs. Administrator traffic and known bots are excluded. Per the owner's requested policy, browser DNT/GPC signals do not disable collection. Legacy browser-signal exclusion cookies are ignored and expired on the next enabled bootstrap. Per the requested experience, there is no visitor-facing analytics prompt or control.
+
+Detailed non-heartbeat events expire after ninety days. Compact page/day facts, action facts, metric observations, and pseudonymous membership are retained for thirteen calendar months; reporting queries count distinct visitors rather than summing daily uniques. Cleanup runs each minute in bounded chunks and drops expired raw-event partitions. The browser identity cookie lasts up to 395 days. History starts when collection is enabled and can be incomplete when browsers block storage or network delivery.
+
+## Deployment
+
+1. Check VPS CPU, memory, and disk headroom. Compose now assigns the BFF a 1 CPU/512 MiB ceiling and the isolated PostgreSQL service 1 CPU/1 GiB. The existing session Redis retains its separate limit. These are initial ceilings, not capacity guarantees.
+2. Generate a long alphanumeric `ANALYTICS_DB_PASSWORD` in `deploy/.env`. Set `ANALYTICS_ENABLED=false` while releasing. Compose supplies the private `ANALYTICS_DATABASE_URL`; PostgreSQL has no published host port and uses its own `analytics-postgres` volume.
+3. Start `analytics-db`, then build/release the BFF and console using the existing runbook. Additive, versioned schema setup and current event partitions initialize on analytics startup/maintenance. Database failure does not fail portal readiness or account operations.
+4. Publish the validated public-site tracker through the existing Sites project. Production collection accepts only the configured actual website/console origins; unrelated preview origins are excluded. Local development must consistently use `localhost`.
+5. Enable `ANALYTICS_ENABLED=true`, recreate the BFF, sign in as an administrator, and visit `/analytics`. Use a separate customer/anonymous browser to check Live and Traffic, a successful action, and public-site → console continuity. Confirm ordinary users receive 403. Existing account write gates remain unchanged.
+
+The kill switch is `ANALYTICS_ENABLED=false` followed by BFF recreation. Bootstrap then disables collection and current clients stop sending after their next refresh. For code rollback, restore the prior immutable BFF/console release and Sites version; retain both database volumes. Do not delete analytics or session volumes for ordinary rollback.
+
+Use PostgreSQL `pg_dump -Fc` for daily analytics backups stored outside the container and encrypt/restrict access to backups. Retain seven daily backups and remove older copies; backup retention is additional to application retention. Run a restore into a disposable database before activating analytics and after database upgrades. Restore with `pg_restore --no-owner` into that separate database; never test restoration against the live database. The schema is owned by the analytics service, not the external Sub2API installation.
+
+Watch database disk usage, collection failures, pending/dropped observations, and cached report latency. The dashboard health counters reset with the BFF process. Collection acknowledgments follow commit; browser retries reuse event IDs. Server-confirmed actions are best effort and do not delay customer operations. Live presence is local to the current single BFF instance and repopulates after a restart; adding BFF replicas requires shared presence storage first.
+
+## Verification
+
+For browser checks, use a separate anonymous session and keep its page visible. Reload any tab running the older tracker so it picks up the updated collection policy. Global Privacy Control and Do Not Track do not disable app collection; administrator visits remain excluded. Browser extensions, blocked requests, disabled JavaScript, and rejected cookies can still prevent delivery, so collection cannot guarantee every visit. Zero accepted observations with "Collection ready" means storage is ready but no events have been accepted. Check bootstrap and collect responses when diagnosing missing visits.
+
+Run `npm run check` for the repository suite. `npm run test:analytics` covers security, counting, and browser lifecycle. For real PostgreSQL tests, point `TEST_ANALYTICS_DATABASE_URL` to a disposable database and run `npm run test:analytics:postgres`. Tests create/drop only their own randomly named schema.
+
+For an isolated Windows test database, install `@embedded-postgres/windows-x64@18.4.0-beta.17` into `.cache/pg-test` with `npm install --prefix .cache/pg-test --no-save --package-lock=false --workspaces=false --ignore-scripts`. Run `node scripts/analytics-test-db.mjs start`; use `postgresql://analytics_test@127.0.0.1:55432/postgres` as the test URL. This disposable cluster accepts only loopback connections. Stop it using `node scripts/analytics-test-db.mjs stop` when finished.
+
+With the test URL set, `npm run benchmark:analytics` seeds 197,500 page/day facts across 395 days and simulates 500 live visitors at 25 collection requests/second. It writes measurements to ignored `output/analytics/benchmark.json` and removes only its temporary schema afterward. Measurements cover local Hono processing and real PostgreSQL; they exclude browser/network/proxy costs. Measure production throughput and disk growth before treating these results as deployment capacity.

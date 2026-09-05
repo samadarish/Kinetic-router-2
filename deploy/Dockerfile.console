@@ -8,15 +8,18 @@ COPY packages/platform-config/package.json packages/platform-config/package.json
 COPY packages/brand-ui/package.json packages/brand-ui/package.json
 COPY packages/portal-contract/package.json packages/portal-contract/package.json
 COPY packages/sub2api-client/package.json packages/sub2api-client/package.json
+COPY packages/analytics-client/package.json packages/analytics-client/package.json
 RUN npm ci --no-audit --no-fund
 COPY scripts scripts
 COPY packages/platform-config packages/platform-config
 COPY packages/brand-ui packages/brand-ui
 COPY packages/portal-contract packages/portal-contract
+COPY packages/analytics-client packages/analytics-client
 COPY apps/console apps/console
 RUN npm run build -w @kineticrouter/platform-config \
  && npm run build -w @kineticrouter/brand-ui \
  && npm run build -w @kineticrouter/portal-contract \
+ && npm run build -w @kineticrouter/analytics-client \
  && npm run build -w @kineticrouter/console
 
 FROM nginx:1.29-alpine

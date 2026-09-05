@@ -1,4 +1,5 @@
 'use client';
+import { trackDocsCopy } from '@kineticrouter/analytics-client';
 
 import { useEffect, useRef } from 'react';
 
@@ -63,6 +64,7 @@ export function DocsArticle({ html }: { html: string }) {
       const write = navigator.clipboard?.writeText(code);
       if (!write) return;
       void write.then(() => {
+        trackDocsCopy();
         const originalTitle = button.title;
         button.title = 'Copied';
         button.setAttribute('aria-label', 'Copied');

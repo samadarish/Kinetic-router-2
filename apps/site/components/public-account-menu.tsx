@@ -75,6 +75,7 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
     const timeout = window.setTimeout(() => controller.abort(), 5_000);
     try {
       await requestPublicLogout(consoleOrigin, { signal: controller.signal });
+      window.dispatchEvent(new Event('portal:analytics-identity'));
       setSession(null);
       setOpen(false);
     } catch {
