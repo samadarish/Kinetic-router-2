@@ -328,6 +328,8 @@ textarea:focus-visible {
 .docs-article th { background: var(--muted); color: var(--foreground); font-weight: 650; }
 .docs-article blockquote { margin-top: 1.2rem; border-left: 3px solid var(--primary); background: color-mix(in oklab, var(--primary) 7%, transparent); padding: .8rem 1rem; border-radius: 0 .5rem .5rem 0; }
 .docs-article img { display: block; max-width: 100%; height: auto; margin-top: 1rem; border: 1px solid var(--border); border-radius: .7rem; }
+.docs-article .docs-screenshot-link { display: block; max-width: 100%; border-radius: .7rem; cursor: zoom-in; }
+.docs-article .docs-screenshot-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
 .docs-article svg { display: inline-block; width: 1em; height: 1em; vertical-align: -.12em; }
 .docs-article details { margin-top: 1rem; border: 1px solid var(--border); border-radius: .6rem; padding: .8rem 1rem; }
 .docs-article summary { cursor: pointer; color: var(--foreground); font-size: .85rem; font-weight: 600; }
@@ -339,7 +341,7 @@ textarea:focus-visible {
 .docs-article pre.docs-code-wrapped,
 .docs-article pre.docs-code-wrapped code { white-space: pre-wrap; overflow-wrap: anywhere; }
 .docs-article .docs-protocol-card, .docs-article .nextra-callout { margin-top: 1.2rem; border: 1px solid var(--border); border-radius: .7rem; background: var(--muted); padding: 1rem; }
-.docs-article .docs-pending-callout, .docs-image-note { margin-top: 1.2rem; border: 1px solid var(--brand-soft-border); border-radius: .7rem; background: var(--brand-soft-bg); padding: 1rem; color: var(--brand-soft-text); }
+.docs-article .docs-pending-callout { margin-top: 1.2rem; border: 1px solid var(--brand-soft-border); border-radius: .7rem; background: var(--brand-soft-bg); padding: 1rem; color: var(--brand-soft-text); }
 .docs-article .docs-pending-callout p { color: var(--muted-foreground); }
 .docs-pending-example { margin-top: 1.2rem; border: 1px dashed color-mix(in oklab, #d97757 55%, var(--border)); border-radius: .7rem; background: color-mix(in oklab, #d97757 8%, var(--background)); padding: 1rem; color: var(--foreground); }
 .docs-pending-example strong { font-size: .75rem; }

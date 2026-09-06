@@ -1,6 +1,7 @@
 import { providerAvailability } from './provider-availability';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
 import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
+import { localizeDocumentationImages } from './documentation-images';
 
 const openAiBaseUrl = providerAvailability.openai.baseUrl!;
 const anthropicBaseUrl = providerAvailability.anthropic.previewBaseUrl!;
@@ -40,15 +41,7 @@ export function rebrandHtml(value: string) {
     /<a\b[^>]*href=["']https:\/\/(?:t\.me|x\.com|github\.com)\/[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi,
     '$1',
   );
-  const withoutUnavailableSources = withoutLegacyExternalLinks.replace(
-    /<source\b[^>]*(?:\/docs\/|%2Fdocs%2F|kineticrouter\.com\/docs\/)[^>]*>/gi,
-    '',
-  );
-  const withScreenshotCallouts = withoutUnavailableSources.replace(
-    /<img\b[^>]*(?:\/docs\/|%2Fdocs%2F|kineticrouter\.com\/docs\/)[^>]*>/gi,
-    '<div class="docs-image-note">This screenshot will be refreshed with kineticRouter branding during the integration documentation pass.</div>',
-  );
-  return rebrandText(withScreenshotCallouts);
+  return rebrandText(localizeDocumentationImages(withoutLegacyExternalLinks));
 }
 
 export function rebrandValue<T>(value: T): T {
