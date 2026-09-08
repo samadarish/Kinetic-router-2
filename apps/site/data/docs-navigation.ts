@@ -29,7 +29,7 @@ const integrationLinks: Array<Omit<DocsNavigationLink, 'iconSvg'> & { iconRoute?
   { label: 'Codex Local Client Setup', href: '/docs/integrations/codex' },
   { label: 'Install Codex CLI', href: '/docs/integrations/codex/installation', depth: 1, iconRoute: '/docs/integrations/codex' },
   { label: 'Configure Model Provider', href: '/docs/integrations/codex/model-provider', depth: 1, iconRoute: '/docs/integrations/codex' },
-  { label: 'Enable WebSocket (Recommended)', href: '/docs/integrations/codex/websocket', depth: 1, iconRoute: '/docs/integrations/codex' },
+  { label: 'WebSocket validation', href: '/docs/integrations/codex/websocket', depth: 1, iconRoute: '/docs/integrations/codex' },
   { label: 'CC-Switch', href: '/docs/integrations/cc-switch' },
   { label: 'OpenClaw', href: '/docs/integrations/openclaw' },
   { label: 'OpenCode', href: '/docs/integrations/opencode' },

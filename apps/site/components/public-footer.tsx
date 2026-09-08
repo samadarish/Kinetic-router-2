@@ -1,3 +1,4 @@
+import { SiteLink } from './site-link';
 import { Brand } from './brand';
 import { ProviderLogo } from './provider-logo';
 import { displayStateLabel, type ProviderId } from '@/data/provider-availability';
@@ -9,9 +10,9 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
     <footer className="overflow-hidden border-t border-border/70 bg-background pt-12">
       <div className="page-container grid gap-10 lg:grid-cols-[minmax(280px,.95fr)_minmax(0,1.55fr)]">
         <div className="min-w-0">
-          <a href="/" aria-label={`${brand.displayName} home`} className="inline-flex max-w-full">
+          <SiteLink href="/" aria-label={`${brand.displayName} home`} className="inline-flex max-w-full">
             <Brand className="w-[180px] max-w-full" label={brand.displayName} />
-          </a>
+          </SiteLink>
           <p className="mt-4 text-xs text-muted-foreground">© 2026 {brand.legalName}. All rights reserved.</p>
           <p className="mt-3 max-w-sm text-xs leading-5 text-muted-foreground">{home.footerDescription || brand.tagline}</p>
         </div>
@@ -25,11 +26,11 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
                   const status = provider ? providers[provider] : undefined;
                   return (
                     <li key={link.id}>
-                      <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noreferrer' : undefined} className={`inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground ${provider === 'anthropic' ? 'text-[#D97757]' : ''}`}>
+                      <SiteLink href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noreferrer' : undefined} className={`inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground ${provider === 'anthropic' ? 'text-[#D97757]' : ''}`}>
                         {provider && <ProviderLogo provider={provider} className="h-3.5 w-3.5" />}
                         {link.label}
                         {status && <span className="text-[7px] tracking-wider opacity-60">{displayStateLabel(status.modelAccessState).toUpperCase()}</span>}
-                      </a>
+                      </SiteLink>
                     </li>
                   );
                 })}

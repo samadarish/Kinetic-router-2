@@ -1,7 +1,8 @@
-import { useId, useMemo, useState } from 'react';
+import { memo, useId, useMemo, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { ProviderIcon } from './ProviderIcon';
 import { Card } from './Ui';
+import { formatMoney } from '../lib/format';
 
 export type DistributionItem = {
   id: string;
@@ -9,14 +10,13 @@ export type DistributionItem = {
   requests: number;
   totalTokens: number;
   actualCost: string;
-  standardCost: string;
 };
 
 type Metric = 'tokens' | 'actualCost';
 const colors = ['#3789ef', '#38b6e8', '#38cce4', '#7567f8', '#a05ee8', '#5275d8', '#29a7c7', '#7fc7f1'];
 const minimumVisibleSliceAngle = 3;
 
-export default function UsageDistributionCard({
+function UsageDistributionCard({
   title,
   dimension,
   items,
@@ -45,8 +45,8 @@ export default function UsageDistributionCard({
     <div className="usage-card-header">
       <h2 id={headingId}>{title}</h2>
       <div className="metric-toggle" role="group" aria-label={`${title} metric`}>
-        <button type="button" aria-pressed={metric === 'tokens'} className={metric === 'tokens' ? 'active' : ''} onClick={() => setMetric('tokens')}>By Tokens</button>
-        <button type="button" aria-pressed={metric === 'actualCost'} className={metric === 'actualCost' ? 'active' : ''} onClick={() => setMetric('actualCost')}>By Actual Cost</button>
+        <button type="button" aria-pressed={metric === 'tokens'} className={metric === 'tokens' ? 'active' : ''} onClick={() => setMetric('tokens')}>Tokens</button>
+        <button type="button" aria-pressed={metric === 'actualCost'} className={metric === 'actualCost' ? 'active' : ''} onClick={() => setMetric('actualCost')}>Billed cost</button>
       </div>
     </div>
     {rows.length === 0 ? <div className="usage-analytics-empty"><span>No {dimension.toLowerCase()} usage in this period.</span></div> : <div className="distribution-layout">
@@ -65,6 +65,7 @@ export default function UsageDistributionCard({
               paddingAngle={nonZeroSliceCount > 1 ? 0.5 : 0}
               stroke="var(--card)"
               strokeWidth={1}
+              isAnimationActive={false}
             >
               {chartData.map((item) => <Cell key={item.id} fill={item.color} />)}
             </Pie>
@@ -78,19 +79,20 @@ export default function UsageDistributionCard({
       <div className="distribution-table-wrap">
         <table className="distribution-table">
           <caption className="sr-only">{title} details sorted by {metric === 'tokens' ? 'tokens' : 'actual cost'}</caption>
-          <thead><tr><th>{dimension}</th><th>Requests</th><th>Tokens</th><th>Actual</th><th>Standard</th></tr></thead>
+          <thead><tr><th>{dimension}</th><th>Requests</th><th>Tokens</th><th>Billed cost</th></tr></thead>
           <tbody>{rows.map((item) => <tr key={item.id}>
             <td title={item.label}><span className={`distribution-name${showProviderIcons ? ' distribution-name-with-provider' : ''}`}><span className="distribution-dot" style={{ background: colorMap.get(item.id) ?? colors[0] }} />{showProviderIcons && <ProviderIcon model={item.label} size={14} />}<span className="distribution-label">{item.label}</span></span></td>
             <td>{formatUsageNumber(item.requests)}</td>
             <td>{formatUsageNumber(item.totalTokens)}</td>
             <td className="distribution-actual">{formatUsageMoney(item.actualCost)}</td>
-            <td className="distribution-standard">{formatUsageMoney(item.standardCost)}</td>
           </tr>)}</tbody>
         </table>
       </div>
     </div>}
   </Card>;
 }
+
+export default memo(UsageDistributionCard);
 
 export function createDistributionColorMap(items: readonly Pick<DistributionItem, 'id'>[]) {
   const colorMap = new Map<string, string>();
@@ -130,21 +132,16 @@ function compareIds(left: string, right: string) {
   return 0;
 }
 
+const usageNumberFormats = {
+  compact: new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }),
+  standard: new Intl.NumberFormat('en-US', { notation: 'standard', maximumFractionDigits: 2 }),
+};
+
 function formatUsageNumber(value: string | number) {
   const number = Number(value) || 0;
-  return new Intl.NumberFormat('en-US', {
-    notation: Math.abs(number) >= 1_000 ? 'compact' : 'standard',
-    maximumFractionDigits: 2,
-  }).format(number);
+  return usageNumberFormats[Math.abs(number) >= 1_000 ? 'compact' : 'standard'].format(number);
 }
 
 function formatUsageMoney(value: string | number) {
-  const number = Number(value) || 0;
-  const digits = Math.abs(number) < 1 ? 4 : 2;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(number);
+  return formatMoney(value, 6);
 }

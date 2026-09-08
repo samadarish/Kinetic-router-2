@@ -4,22 +4,20 @@ import type {
   CapabilityMap,
   ChannelMonitor,
   DashboardStats,
-  Group,
   ModelUsage,
   Paginated,
   PortalUser,
   Redemption,
   RedeemResult,
-  Subscription,
   TrendPoint,
-  UsageEndpointBreakdown,
-  UsageError,
-  UsageEvent,
-  UsageGroupBreakdown,
-  UsageModelBreakdown,
-  UsageRangeStats,
-  UsageTrendPoint,
 } from '@kineticrouter/portal-contract';
+import type {
+  InternalApiKey, InternalGroup, InternalSubscription, InternalUsageEndpointBreakdown,
+  InternalUsageError, InternalUsageEvent, InternalUsageGroupBreakdown, InternalUsageModelBreakdown,
+  InternalUsageRangeStats, InternalUsageTrendPoint,
+} from './internal-types.js';
+export type * from './internal-types.js';
+export * from './playground.js';
 
 type JsonRecord = Record<string, unknown>;
 type RequestOptions = {
@@ -232,7 +230,7 @@ export function mapUser(raw: JsonRecord): PortalUser {
   };
 }
 
-export function mapGroup(rawValue: unknown): Group {
+export function mapGroup(rawValue: unknown): InternalGroup {
   const raw = asRecord(rawValue);
   return {
     id: stringValue(raw.id),
@@ -244,7 +242,7 @@ export function mapGroup(rawValue: unknown): Group {
   };
 }
 
-export function mapApiKey(rawValue: unknown): ApiKey {
+export function mapApiKey(rawValue: unknown): InternalApiKey {
   const raw = asRecord(rawValue);
   const key = stringValue(raw.key);
   const group = isRecord(raw.group) ? mapGroup(raw.group) : null;
@@ -367,7 +365,7 @@ export function calculateCacheHitRate(
   return denominator > 0 ? (cacheReadTokens / denominator) * 100 : 0;
 }
 
-export function mapUsageRangeStats(rawValue: unknown): UsageRangeStats {
+export function mapUsageRangeStats(rawValue: unknown): InternalUsageRangeStats {
   const raw = asRecord(rawValue);
   const inputTokens = numberValue(raw.total_input_tokens);
   const cacheReadTokens = numberValue(raw.total_cache_read_tokens);
@@ -386,7 +384,7 @@ export function mapUsageRangeStats(rawValue: unknown): UsageRangeStats {
   };
 }
 
-export function mapUsageTrend(rawValue: unknown): UsageTrendPoint[] {
+export function mapUsageTrend(rawValue: unknown): InternalUsageTrendPoint[] {
   const raw = asRecord(rawValue);
   const values = Array.isArray(rawValue) ? rawValue : arrayValue(raw.trend);
   return values.map((value, index) => {
@@ -412,7 +410,7 @@ export function mapUsageTrend(rawValue: unknown): UsageTrendPoint[] {
   });
 }
 
-export function mapUsageModels(rawValue: unknown): UsageModelBreakdown[] {
+export function mapUsageModels(rawValue: unknown): InternalUsageModelBreakdown[] {
   const raw = asRecord(rawValue);
   const values = Array.isArray(rawValue) ? rawValue : arrayValue(raw.models);
   return values.map((value) => {
@@ -431,7 +429,7 @@ export function mapUsageModels(rawValue: unknown): UsageModelBreakdown[] {
   });
 }
 
-export function mapUsageGroups(rawValue: unknown): UsageGroupBreakdown[] {
+export function mapUsageGroups(rawValue: unknown): InternalUsageGroupBreakdown[] {
   const raw = asRecord(rawValue);
   const values = Array.isArray(rawValue) ? rawValue : arrayValue(raw.groups);
   return values.map((value) => {
@@ -447,7 +445,7 @@ export function mapUsageGroups(rawValue: unknown): UsageGroupBreakdown[] {
   });
 }
 
-export function mapUsageEndpoints(rawValue: unknown): UsageEndpointBreakdown[] {
+export function mapUsageEndpoints(rawValue: unknown): InternalUsageEndpointBreakdown[] {
   const raw = asRecord(rawValue);
   const values = Array.isArray(rawValue) ? rawValue : arrayValue(raw.endpoints);
   return values.map((value) => {
@@ -462,7 +460,7 @@ export function mapUsageEndpoints(rawValue: unknown): UsageEndpointBreakdown[] {
   });
 }
 
-export function mapUsageEvent(rawValue: unknown): UsageEvent {
+export function mapUsageEvent(rawValue: unknown): InternalUsageEvent {
   const raw = asRecord(rawValue);
   const key = asRecord(raw.api_key);
   const group = asRecord(raw.group);
@@ -490,7 +488,7 @@ export function mapUsageEvent(rawValue: unknown): UsageEvent {
   };
 }
 
-export function mapUsageError(rawValue: unknown): UsageError {
+export function mapUsageError(rawValue: unknown): InternalUsageError {
   const raw = asRecord(rawValue);
   return {
     id: stringValue(raw.id),
@@ -530,7 +528,7 @@ export function mapChannel(rawValue: unknown): ChannelMonitor {
   };
 }
 
-export function mapSubscription(rawValue: unknown): Subscription {
+export function mapSubscription(rawValue: unknown): InternalSubscription {
   const raw = asRecord(rawValue);
   const group = isRecord(raw.group) ? mapGroup(raw.group) : undefined;
   return {

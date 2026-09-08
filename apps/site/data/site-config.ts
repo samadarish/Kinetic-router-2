@@ -84,6 +84,7 @@ export const siteConfig: SiteConfig = {
     publicHeader: [
       { id: 'home', label: 'Home', href: '/', enabled: true, order: 10 },
       { id: 'models', label: 'Model pricing', href: '/models', enabled: true, order: 20 },
+      { id: 'playground', label: 'Playground', href: '/account/sign-in?next=%2Fplayground', enabled: true, order: 25 },
       { id: 'docs', label: 'Docs', href: '/docs', enabled: true, order: 30 },
     ],
     docsHeader: [

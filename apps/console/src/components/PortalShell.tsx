@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity, BookOpen, ChevronDown, CircleGauge, CreditCard, Gift,
   KeyRound, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, PanelsTopLeft,
-  Settings, Sun, UserRound, X, ChartNoAxesCombined,
+  Settings, Sun, UserRound, X, ChartNoAxesCombined, MessageSquare,
 } from 'lucide-react';
 import { Brand } from './Brand';
 import { ErrorState, LoadingState } from './Ui';
@@ -14,12 +14,15 @@ import { useTheme } from '../lib/theme';
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: CircleGauge },
   { to: '/api-keys', label: 'API Keys', icon: KeyRound },
+  { to: '/playground', label: 'Playground', icon: MessageSquare },
   { to: '/usage', label: 'Usage', icon: Activity },
   { to: '/status', label: 'Channel Status', icon: PanelsTopLeft },
   { to: '/subscriptions', label: 'My Subscriptions', icon: CreditCard },
   { to: '/redeem', label: 'Redeem', icon: Gift },
   { to: '/profile', label: 'Profile', icon: UserRound },
   { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
+  { to: '/admin/playground', label: 'Playground settings', icon: Settings },
+  { to: '/admin/playground/chats', label: 'Playground chats', icon: MessageSquare },
 ];
 
 const SIDEBAR_STORAGE_KEY = 'kineticrouter-sidebar-collapsed';
@@ -30,7 +33,7 @@ export function PortalShell() {
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string>();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarPreference);
-  const { user, capabilities, logout } = useAuth();
+  const { user, capabilities, logout, playgroundEnabled } = useAuth();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,7 +78,8 @@ export function PortalShell() {
   const accountName = user?.username || user?.email || 'kineticRouter user';
   const initials = accountName.slice(0, 1).toUpperCase();
   const visibleNav = nav.filter((item) => {
-    if (item.to === '/analytics') return user?.role === 'admin' && user.status === 'active';
+    if (item.to === '/playground') return playgroundEnabled;
+    if (item.to === '/analytics' || item.to.startsWith('/admin/')) return user?.role === 'admin' && user.status === 'active';
     if (item.to === '/status') return capabilities?.channelMonitor !== false;
     if (item.to === '/redeem') return user?.runMode !== 'simple';
     if (item.to === '/subscriptions') return user?.runMode !== 'simple';
@@ -83,11 +87,11 @@ export function PortalShell() {
   });
   const consoleLinks = [
     { id: 'home', label: 'Home', href: '/dashboard' },
-    { id: 'models', label: 'Model pricing', href: publicSiteHref('/models'), external: true },
+    ...(playgroundEnabled ? [{ id: 'playground', label: 'Playground', href: '/playground' }] : []),
     { id: 'docs', label: 'Docs', href: publicSiteHref('/docs'), external: true },
   ];
 
-  return <div className={`portal-frame ${sidebarCollapsed ? 'portal-frame-collapsed' : ''}`}>
+  return <div className={`portal-frame ${sidebarCollapsed ? 'portal-frame-collapsed' : ''}${location.pathname === '/playground' ? ' portal-frame-playground' : ''}`}>
     <aside id="portal-navigation" ref={sidebarRef} className={`sidebar ${menuOpen ? 'sidebar-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <div className="sidebar-brand">
         <a className="sidebar-home-link" href={publicSiteHref('/')} aria-label="Go to kineticRouter homepage">
@@ -114,6 +118,7 @@ export function PortalShell() {
         {visibleNav.map(({ to, label, icon: Icon }) => <NavLink
           key={to}
           to={to}
+          end={to === '/admin/playground'}
           title={sidebarCollapsed ? label : undefined}
           aria-label={sidebarCollapsed ? label : undefined}
           onClick={() => setMenuOpen(false)}
@@ -153,7 +158,7 @@ export function PortalShell() {
           </div>}
         </div>
       </header>
-      <main className="content" key={location.pathname}>
+      <main className={`content${location.pathname === '/playground' ? ' content-playground' : ''}`} key={location.pathname}>
         <RouteBoundary>
           <Suspense fallback={<div className="route-loading"><LoadingState label="Loading page" /></div>}>
             <Outlet />
@@ -183,6 +188,6 @@ function readSidebarPreference() {
   try { return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true'; } catch { return false; }
 }
 
-const portalRoutes = new Set(['/dashboard', '/api-keys', '/usage', '/status', '/subscriptions', '/redeem', '/profile']);
+const portalRoutes = new Set(['/dashboard', '/api-keys', '/playground', '/usage', '/status', '/subscriptions', '/redeem', '/profile']);
 function isPortalRoute(href: string) { return portalRoutes.has(href); }
 function siteLinkHref(href: string) { return href.startsWith('/') ? publicSiteHref(href) : href; }

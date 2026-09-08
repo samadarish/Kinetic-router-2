@@ -7,6 +7,7 @@ import { AnalyticsTracker } from './components/AnalyticsTracker';
 import { AuthProvider } from './lib/auth';
 import { ThemeProvider } from './lib/theme';
 import { applyTheme, readStoredTheme } from '@kineticrouter/platform-config/theme';
+import { shouldRetryQuery } from './lib/query-policy';
 import '@kineticrouter/brand-ui/brand.css';
 import './styles.css';
 
@@ -19,7 +20,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,
-      retry: (attempt, error) => attempt < 1 && !(error instanceof Error && error.message.includes('Sign in')),
+      retry: shouldRetryQuery,
       refetchOnWindowFocus: false,
     },
     mutations: { retry: false },

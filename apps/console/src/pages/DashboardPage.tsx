@@ -14,8 +14,8 @@ import { formatLatency, formatMoney, formatNumber } from '../lib/format';
 
 export function DashboardPage() {
   const { capabilities } = useAuth();
-  const query = useQuery({ queryKey: ['dashboard'], queryFn: () => portalApi<Dashboard>('/dashboard') });
-  const readiness = useQuery({ queryKey: ['readiness'], queryFn: readReadiness, retry: false, staleTime: 60_000 });
+  const query = useQuery({ queryKey: ['dashboard'], queryFn: ({ signal }) => portalApi<Dashboard>('/dashboard', { signal }) });
+  const readiness = useQuery({ queryKey: ['readiness'], queryFn: ({ signal }) => readReadiness(signal), retry: false, staleTime: 60_000 });
   if (query.isLoading) return <><PageHeader title="Dashboard" description="Your kineticRouter account at a glance." /><LoadingState label="Loading account overview" /></>;
   if (query.error || !query.data) return <><PageHeader title="Dashboard" /><ErrorState error={query.error} retry={() => void query.refetch()} /></>;
 
@@ -29,11 +29,11 @@ export function DashboardPage() {
     <section className="overview-welcome" aria-labelledby="overview-title">
       <div className="overview-welcome-copy">
         <div className="overview-kicker">
-          <span>{formatDashboardDate(new Date())}</span>
+          <span>{accountName}</span>
           <span className={`readiness-badge ${readinessState}`}><i />{readinessLabel}</span>
         </div>
-        <h1 id="overview-title">{getGreeting()}, {accountName}</h1>
-        <p>Everything you need to connect, monitor, and manage your kineticRouter API.</p>
+        <h1 id="overview-title">Dashboard</h1>
+        <p>Account balance, usage, and connection details.</p>
       </div>
       <div className="overview-actions" aria-label="Account actions">
         {capabilities?.redeemWrites && user.runMode !== 'simple' && <Link className="button button-secondary" to="/redeem"><Gift size={15} />Redeem balance</Link>}
@@ -45,7 +45,7 @@ export function DashboardPage() {
     <section className="overview-kpi-grid" aria-label="Account statistics">
       <DashboardMetric label="Total Balance" value={formatMoney(user.balance)} helper="Available credit" icon={<WalletCards size={18} />} />
       <DashboardMetric label="Available Keys" value={formatNumber(stats.activeApiKeys)} helper={`${formatNumber(stats.totalApiKeys)} total`} icon={<KeyRound size={18} />} />
-      <DashboardMetric label="Total Cost" value={formatMoney(stats.totalActualCost, 4)} helper="Lifetime spend" icon={<CircleDollarSign size={18} />} />
+      <DashboardMetric label="Billed cost" value={formatMoney(stats.totalActualCost, 4)} helper="Lifetime spend" icon={<CircleDollarSign size={18} />} />
       <DashboardMetric label="Total Tokens" value={formatNumber(stats.totalTokens)} helper={`${formatNumber(stats.totalInputTokens)} in / ${formatNumber(stats.totalOutputTokens)} out`} icon={<Layers3 size={18} />} />
       <DashboardMetric label="Total Requests" value={formatNumber(stats.totalRequests)} helper="All time" icon={<Send size={18} />} />
       <DashboardMetric label="Average Latency" value={formatLatency(stats.averageDurationMs)} helper="Across all requests" icon={<Clock3 size={18} />} />
@@ -57,28 +57,17 @@ export function DashboardPage() {
 
 function DashboardMetric({ label, value, helper, icon }: { label: string; value: string; helper: string; icon: ReactNode }) {
   return <Card className="overview-kpi">
-    <div className="overview-kpi-heading"><span className="overview-kpi-icon">{icon}</span><span className="overview-kpi-accent" aria-hidden="true" /></div>
+    <div className="overview-kpi-heading"><span className="overview-kpi-icon">{icon}</span></div>
     <span className="overview-kpi-label">{label}</span>
     <strong>{value}</strong>
     <small>{helper}</small>
   </Card>;
 }
 
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
-
-function formatDashboardDate(date: Date) {
-  return new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date);
-}
-
 type ReadinessResponse = { status: 'ready' | 'degraded'; upstream?: string; sessions?: string };
 
-async function readReadiness(): Promise<ReadinessResponse> {
-  const response = await fetch('/readyz', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+async function readReadiness(signal: AbortSignal): Promise<ReadinessResponse> {
+  const response = await fetch('/readyz', { credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: AbortSignal.any([signal, AbortSignal.timeout(20_000)]) });
   const payload: unknown = await response.json().catch(() => null);
   if (!payload || typeof payload !== 'object' || !('status' in payload)) throw new Error('Readiness status is unavailable.');
   const status = (payload as { status?: unknown }).status;

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 export * from './analytics.js';
+export * from './playground.js';
+export * from './conversations.js';
 export const idSchema = z.union([z.string(), z.number()]).transform(String);
 export const moneySchema = z.union([z.string(), z.number()]).transform(String);
 export const dateSchema = z.string().nullable().optional();
@@ -86,7 +88,6 @@ const usageRangeStatsSchema = z.object({
     totalCacheCreationTokens: z.number().finite().nonnegative(),
     totalTokens: z.number().finite().nonnegative(),
     actualCost: usageMoneySchema,
-    standardCost: usageMoneySchema,
     averageDurationMs: z.number().finite().nonnegative(),
     cacheHitRate: z.number().finite().min(0).max(100),
 });
@@ -99,7 +100,6 @@ const usageTrendPointSchema = z.object({
     cacheReadTokens: z.number().finite().nonnegative(),
     totalTokens: z.number().finite().nonnegative(),
     actualCost: usageMoneySchema,
-    standardCost: usageMoneySchema,
     cacheHitRate: z.number().finite().min(0).max(100),
 });
 const usageModelBreakdownSchema = z.object({
@@ -111,13 +111,11 @@ const usageModelBreakdownSchema = z.object({
     cacheReadTokens: z.number().finite().nonnegative(),
     totalTokens: z.number().finite().nonnegative(),
     actualCost: usageMoneySchema,
-    standardCost: usageMoneySchema,
 });
 const usageDistributionBreakdownSchema = z.object({
     requests: z.number().finite().nonnegative(),
     totalTokens: z.number().finite().nonnegative(),
     actualCost: usageMoneySchema,
-    standardCost: usageMoneySchema,
 });
 export const usageSummarySchema = z.object({
     range: z.object({
@@ -188,6 +186,7 @@ export type PortalConfig = {
 
 export type SessionView = {
     authenticated: boolean;
+    playgroundEnabled: boolean;
     csrfToken?: string;
     user?: PortalUser;
     capabilities: CapabilityMap;
@@ -214,7 +213,6 @@ export type Group = {
     name: string;
     description?: string;
     platform?: string;
-    rateMultiplier?: string;
     subscriptionType?: string;
 };
 
@@ -249,6 +247,9 @@ export type ApiKey = {
     todayActualCost?: string;
     totalActualCost?: string;
 };
+
+export type ApiKeyCreateResult = ApiKey | { created: true };
+export type ApiKeyUpdateResult = ApiKey | { updated: true };
 
 export type Paginated<T> = {
     items: T[];
@@ -311,7 +312,6 @@ export type UsageRangeStats = {
     totalCacheCreationTokens: number;
     totalTokens: number;
     actualCost: string;
-    standardCost: string;
     averageDurationMs: number;
     cacheHitRate: number;
 };
@@ -325,7 +325,6 @@ export type UsageTrendPoint = {
     cacheReadTokens: number;
     totalTokens: number;
     actualCost: string;
-    standardCost: string;
     cacheHitRate: number;
 };
 
@@ -338,7 +337,6 @@ export type UsageModelBreakdown = {
     cacheReadTokens: number;
     totalTokens: number;
     actualCost: string;
-    standardCost: string;
 };
 
 export type UsageGroupBreakdown = {
@@ -347,7 +345,6 @@ export type UsageGroupBreakdown = {
     requests: number;
     totalTokens: number;
     actualCost: string;
-    standardCost: string;
 };
 
 export type UsageEndpointBreakdown = {
@@ -355,7 +352,6 @@ export type UsageEndpointBreakdown = {
     requests: number;
     totalTokens: number;
     actualCost: string;
-    standardCost: string;
 };
 
 export type UsageSummary = {
@@ -394,7 +390,6 @@ export type UsageEvent = {
     cacheReadTokens: number;
     cacheCreationTokens: number;
     actualCost: string;
-    totalCost: string;
     firstTokenMs?: number;
     durationMs?: number;
     statusCode?: number;
@@ -409,7 +404,6 @@ export type UsageError = {
     category: string;
     message: string;
     platform?: string;
-    errorBody?: string;
 };
 
 export type ChannelModelStatus = {
@@ -481,5 +475,6 @@ export type Announcement = {
 
 export type PublicSessionPresentation = {
     authenticated: boolean;
+    playgroundEnabled: boolean;
     user?: Pick<PortalUser, 'id' | 'username' | 'avatarUrl'>;
 };

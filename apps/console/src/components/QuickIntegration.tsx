@@ -148,13 +148,12 @@ console.log(response.choices[0].message.content);`,
   },
 };
 
-const codexConfig = `# ~/.codex/config.toml
-model_provider = "kineticrouter"
-
+const codexConfig = `# Add this provider alongside your existing configuration.
 [model_providers.kineticrouter]
+name = "kineticRouter"
 base_url = "${providerEndpoints.openai}"
-wire_api = "responses"
-supports_websockets = true`;
+env_key = "KINETICROUTER_API_KEY"
+wire_api = "responses"`;
 
 const integrationGuides = [
   { label: 'Codex', description: 'OpenAI coding agent', href: publicSiteHref('/docs/integrations/codex') },
@@ -264,14 +263,15 @@ export function QuickIntegration() {
 
     <div className="integration-support-grid">
       <Card className="codex-integration-card">
-        <header><span><CodexIcon size={18} /></span><div><h2>Codex WebSocket</h2><p>Route Codex Responses through kineticRouter.</p></div></header>
+        <header><span><CodexIcon size={18} /></span><div><h2>Connect Codex</h2><p>Set KINETICROUTER_API_KEY in your terminal, then test an available Responses model.</p></div></header>
         <details className="codex-config-disclosure">
           <summary><span>Configuration</span><span>~/.codex/config.toml</span><ChevronDown size={15} /></summary>
           <pre className="codex-code" tabIndex={0}><code>{codexConfig}</code></pre>
+          <pre className="codex-code" tabIndex={0}><code>{'codex -c model_provider="kineticrouter" -m "YOUR_AVAILABLE_MODEL_ID"'}</code></pre>
         </details>
         <div className="codex-actions">
           <button type="button" onClick={() => void copy(codexConfig, 'codex')}>{copied === 'codex' ? <Check size={14} /> : <Copy size={14} />}{copied === 'codex' ? 'Copied' : copyError === 'codex' ? 'Copy failed' : 'Copy config'}</button>
-          <a className="integration-guide-link" href={publicSiteHref('/docs/integrations/codex/websocket')} target="_blank" rel="noreferrer">View tutorial <ExternalLink size={14} /></a>
+          <a className="integration-guide-link" href={publicSiteHref('/docs/integrations/codex')} target="_blank" rel="noreferrer">View tutorial <ExternalLink size={14} /></a>
         </div>
       </Card>
 

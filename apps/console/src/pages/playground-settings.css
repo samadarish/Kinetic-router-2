@@ -1,0 +1,41 @@
+.playground-admin { max-width: 980px; font-size: 14px; }
+.playground-global-setting { margin-bottom: 24px; padding: 18px 0; border-block: 1px solid var(--border); }
+.playground-admin label.playground-global-toggle { display: flex; align-items: center; gap: 12px; width: fit-content; cursor: pointer; font-size: 15px; }
+.playground-global-toggle input { accent-color: var(--primary); width: 18px; height: 18px; }
+.playground-global-setting p { margin-top: 8px; }
+.playground-admin-intro { display: flex; align-items: start; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+.playground-admin p { color: var(--muted-foreground); line-height: 1.6; margin: 0; }
+.playground-admin-intro p { max-width: 620px; }
+.playground-admin-intro a { flex: none; color: var(--foreground); text-underline-offset: 3px; }
+.playground-admin-source { padding: 22px; border: 1px solid var(--border); border-radius: 9px; background: var(--elevated); margin-bottom: 24px; }
+.playground-admin-source > label { max-width: 440px; }
+.playground-admin-source > p, .playground-admin-source > button { margin-top: 12px; }
+.playground-admin label:not(.playground-admin-model):not(.playground-admin-search) { display: grid; gap: 8px; font-weight: 500; }
+.playground-admin select, .playground-admin input:not([type="checkbox"]) { width: 100%; border: 1px solid var(--border); border-radius: 6px; color: var(--foreground); background: var(--background); font: inherit; padding: 10px 12px; min-width: 0; }
+.playground-admin-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 12px; }
+.playground-admin-search { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 6px; padding-left: 12px; flex: 1; max-width: 450px; color: var(--muted-foreground); }
+.playground-admin-search input:not([type="checkbox"]) { border: 0; background: none; }
+.playground-admin-toolbar strong { white-space: nowrap; font-size: 13px; font-weight: 500; }
+.playground-admin-models { border: 1px solid var(--border); border-radius: 8px; max-height: 440px; overflow-y: auto; }
+.playground-admin-models > p { padding: 36px 20px; text-align: center; }
+.playground-admin-model { display: flex; align-items: center; gap: 12px; padding: 13px 18px; cursor: pointer; }
+.playground-admin-row + .playground-admin-row { border-top: 1px solid var(--border); }
+.playground-admin-model:hover { background: var(--elevated); }
+.playground-admin-model input { accent-color: var(--primary); width: 16px; height: 16px; flex: none; }
+.playground-admin-model span { overflow-wrap: anywhere; }
+.playground-admin-model small { margin-left: auto; color: var(--muted-foreground); font-size: 12px; }
+.playground-admin .playground-identity-help { margin: 0 0 14px; font-size: 13px; }
+.playground-identity-editor { padding: 0 18px 12px 46px; }
+.playground-identity-editor summary { cursor: pointer; color: var(--foreground); font-size: 13px; width: fit-content; }
+.playground-identity-editor summary span { margin-left: 8px; color: var(--muted-foreground); font-size: 12px; }
+.playground-identity-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(170px, .6fr); gap: 12px 18px; padding-top: 14px; max-width: 680px; }
+.playground-identity-clear { grid-column: 1 / -1; justify-self: start; color: var(--muted-foreground); padding: 0; border: 0; background: none; font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.playground-identity-clear:disabled { opacity: .5; cursor: default; }
+.playground-admin-manual { display: flex; align-items: end; gap: 12px; margin: 22px 0; }
+.playground-admin-manual > label { flex: 1; max-width: 450px; }
+.playground-admin-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; border-top: 1px solid var(--border); padding-top: 22px; margin-top: 26px; }
+.playground-admin-footer strong { font-weight: 500; }
+.playground-admin-footer p { font-size: 13px; margin-top: 5px; }
+.playground-admin-footer > div:last-child { display: flex; gap: 10px; flex: none; }
+@media(max-width:700px) { .playground-admin-intro, .playground-admin-footer { flex-direction: column; } .playground-admin-source { padding: 16px; } .playground-admin-model { padding: 12px; } }
+@media(max-width:500px) { .playground-identity-editor { padding: 0 12px 12px; } .playground-identity-fields { grid-template-columns: minmax(0, 1fr); } .playground-identity-fields input { font-size: 16px; } }

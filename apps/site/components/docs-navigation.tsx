@@ -1,5 +1,6 @@
 'use client';
 
+import { SiteLink } from './site-link';
 import { useEffect, useRef } from 'react';
 import type { DocsNavigationGroup } from '@/data/docs-navigation';
 
@@ -26,7 +27,7 @@ export function DocsNavigation({ groups, route, className = '', onNavigate }: { 
         <nav aria-label={`${group.label} documentation`}>
           {group.links.map((link) => {
             const active = route === link.href;
-            return <a
+            return <SiteLink
               key={link.href}
               href={link.href}
               aria-current={active ? 'page' : undefined}
@@ -36,7 +37,7 @@ export function DocsNavigation({ groups, route, className = '', onNavigate }: { 
             >
               {link.iconSvg && <span className="docs-navigation-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: link.iconSvg }} />}
               <span>{link.label}</span>
-            </a>;
+            </SiteLink>;
           })}
         </nav>
       </section>)}

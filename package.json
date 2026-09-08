@@ -35,7 +35,8 @@
     "check:brand": "node scripts/sync-brand-assets.mjs && npm run check:brand -w @kineticrouter/site && node scripts/check-brand-assets.mjs",
     "optimize:brand": "node scripts/optimize-brand-assets.mjs && node scripts/sync-brand-assets.mjs",
     "check": "npm run test && npm run typecheck && npm run lint && npm run check:providers && npm run check:content && npm run build && npm run check:brand",
-    "start": "npm run start -w @kineticrouter/bff"
+    "start": "npm run start -w @kineticrouter/bff",
+    "dev:playground-db": "node scripts/playground-dev-db.mjs start"
   },
   "devDependencies": {
     "@types/node": "^22.19.0",

@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { UsageTrendPoint } from '@kineticrouter/portal-contract';
 import { Card } from './Ui';
@@ -12,10 +12,10 @@ const series = [
   { key: 'cacheHitRate', label: 'Cache Hit Rate', color: '#805cf5' },
 ] as const;
 
-export default function TokenUsageTrend({ data }: { data: UsageTrendPoint[] }) {
+function TokenUsageTrend({ data }: { data: UsageTrendPoint[] }) {
   const headingId = useId();
   return <Card className="usage-analytics-card token-trend-card" role="region" aria-labelledby={headingId}>
-    <div className="usage-card-header"><h2 id={headingId}>Token Usage Trend</h2></div>
+    <div className="usage-card-header"><h2 id={headingId}>Token usage</h2></div>
     <div className="token-trend-legend" aria-label="Chart legend">
       {series.map((item) => <span key={item.key}><i style={{ borderColor: item.color, background: `${item.color}20` }} />{item.label}</span>)}
     </div>
@@ -38,11 +38,11 @@ export default function TokenUsageTrend({ data }: { data: UsageTrendPoint[] }) {
                   : [formatNumber(Number(value ?? 0)), item?.label ?? name];
               }}
             />
-            <Area yAxisId="tokens" type="monotone" dataKey="cacheReadTokens" stroke="#14b8d4" strokeWidth={2.4} fill="url(#cacheReadGradient)" dot={false} activeDot={{ r: 3 }} />
-            <Line yAxisId="tokens" type="monotone" dataKey="inputTokens" stroke="#3789ef" strokeWidth={2.2} dot={false} activeDot={{ r: 3 }} />
-            <Line yAxisId="tokens" type="monotone" dataKey="outputTokens" stroke="#33c7a6" strokeWidth={2.2} dot={false} activeDot={{ r: 3 }} />
-            <Line yAxisId="tokens" type="monotone" dataKey="cacheCreationTokens" stroke="#f59e0b" strokeWidth={2.2} dot={false} activeDot={{ r: 3 }} />
-            <Line yAxisId="rate" type="monotone" dataKey="cacheHitRate" stroke="#805cf5" strokeWidth={2.4} strokeDasharray="6 5" dot={false} activeDot={{ r: 3 }} />
+            <Area yAxisId="tokens" type="monotone" dataKey="cacheReadTokens" stroke="#14b8d4" strokeWidth={2} fill="url(#cacheReadGradient)" dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            <Line yAxisId="tokens" type="monotone" dataKey="inputTokens" stroke="#3789ef" strokeWidth={2} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            <Line yAxisId="tokens" type="monotone" dataKey="outputTokens" stroke="#33c7a6" strokeWidth={2} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            <Line yAxisId="tokens" type="monotone" dataKey="cacheCreationTokens" stroke="#f59e0b" strokeWidth={2} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            <Line yAxisId="rate" type="monotone" dataKey="cacheHitRate" stroke="#805cf5" strokeWidth={2} strokeDasharray="6 5" dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -55,14 +55,17 @@ export default function TokenUsageTrend({ data }: { data: UsageTrendPoint[] }) {
   </Card>;
 }
 
+export default memo(TokenUsageTrend);
+
+const trendDateFormats = {
+  date: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }),
+  time: new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric' }),
+};
+
 function formatTrendLabel(value: unknown) {
   const text = String(value);
   const parsed = new Date(text.includes('T') ? text : text.replace(' ', 'T'));
   if (Number.isNaN(parsed.getTime())) return text;
   const includeTime = /[T ]\d{2}:/.test(text);
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    ...(includeTime ? { hour: 'numeric' } : {}),
-  }).format(parsed);
+  return trendDateFormats[includeTime ? 'time' : 'date'].format(parsed);
 }

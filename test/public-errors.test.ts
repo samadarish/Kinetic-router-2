@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { toPublicErrorCode, toPublicText, toPublicUpstreamMessage } from '../apps/bff/src/public-errors';
 
 describe('public account-service messages', () => {
+  it.each([
+    'rateMultiplier', 'rate_multiplier', 'userRateMultiplier', 'user_rate_multiplier',
+    'resolvedRateMultiplier', 'resolved_rate_multiplier', 'effectiveRateMultiplier', 'effective_rate_multiplier',
+    'standardCost', 'standard_cost', 'totalCost', 'total_cost',
+  ])('does not expose %s in upstream diagnostic strings or codes', field => {
+    expect(toPublicUpstreamMessage(`Invalid request: {"${field}":0.25}`, 400)).toBe('The request could not be completed.');
+    expect(toPublicText(`Account detail ${field}=0.25`, '')).toBe('');
+    expect(toPublicErrorCode(`${field}_INVALID`, 400)).toBe('REQUEST_FAILED');
+  });
+
   it('removes the internal product name from user-facing text', () => {
     expect(toPublicText('Sub2API account updated.', 'Updated.')).toBe('kineticRouter account updated.');
     expect(toPublicText('Hao.ai reference', 'Reference')).toBe('kineticRouter reference');

@@ -9,16 +9,18 @@ const statusClasses: Record<DocumentationStatus['status'], string> = {
 };
 
 export function DocsStatusBanner({ status }: { status: DocumentationStatus }) {
+  const guide = status.guide;
   return (
-    <aside className={`docs-status-banner ${statusClasses[status.status]}`} aria-label="Documentation availability">
+    <aside className={`docs-status-banner ${statusClasses[guide ? 'reference' : status.status]}`} aria-label={guide ? 'Documentation provenance' : 'Documentation availability'}>
       <div className="docs-status-heading">
         {status.provider && <ProviderLogo provider={status.provider} className="h-4 w-4" />}
-        <strong>{status.label}</strong>
-        <span>{status.status}</span>
+        <strong>{guide ? 'Customer guide' : status.label}</strong>
+        {(!guide || status.provider) && <span>{guide ? `${status.label} route` : status.status}</span>}
       </div>
       <p>{status.summary}</p>
       <div className="docs-status-meta">
-        <span>Checked {new Date(`${status.verifiedAt}T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
+        <span>{guide ? 'Updated' : 'Checked'} {new Date(`${guide?.updatedAt ?? status.verifiedAt}T00:00:00Z`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
+        {guide && status.provider && <span>Route status checked {status.verifiedAt}</span>}
         {status.sources.map((source) => <a key={source} href={source} target="_blank" rel="noreferrer">Source ↗</a>)}
       </div>
     </aside>

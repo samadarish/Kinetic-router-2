@@ -1,0 +1,18 @@
+.chat-inspector-filters { display: grid; grid-template-columns: minmax(180px, 2fr) minmax(150px, 1.3fr) minmax(160px, 1.3fr) 140px 140px; gap: 12px; margin-bottom: 24px; }
+.chat-inspector-filters label { display: grid; gap: 7px; font-size: 14px; color: var(--muted-foreground); }
+.chat-inspector-filters input, .chat-inspector-filters select { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--elevated); color: var(--foreground); font: inherit; }
+.chat-inspector { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 50dvh; gap: 28px; }
+.chat-inspector-list { max-height: 70dvh; overflow-y: auto; overscroll-behavior: contain; }
+.chat-inspector-list > button { display: block; width: 100%; border: 0; border-radius: 7px; background: none; color: var(--foreground); padding: 12px; margin-bottom: 4px; text-align: left; font: inherit; cursor: pointer; }
+.chat-inspector-list > button:hover, .chat-inspector-list > button.is-selected { background: var(--muted); }
+.chat-inspector-list strong, .chat-inspector-list span, .chat-inspector-list small { display: block; overflow-wrap: anywhere; }
+.chat-inspector-list strong { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.chat-inspector-list span { font-size: 14px; color: var(--muted-foreground); }
+.chat-inspector-list small { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin-top: 6px; }
+.chat-inspector-detail { min-width: 0; }
+.chat-inspector-detail > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+.chat-inspector-detail h2 { font-size: 20px; margin: 0 0 10px; overflow-wrap: anywhere; }
+.chat-inspector-detail header p { color: var(--muted-foreground); font-size: 13px; line-height: 1.6; margin: 4px 0; overflow-wrap: anywhere; }
+.chat-inspector-detail header button { flex: none; }
+@media (max-width: 1200px) { .chat-inspector-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); } .chat-inspector { grid-template-columns: 240px minmax(0, 1fr); gap: 20px; } }
+@media (max-width: 750px) { .chat-inspector-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .chat-inspector { grid-template-columns: minmax(0, 1fr); } .chat-inspector-list { max-height: 240px; } .chat-inspector-detail > header { flex-direction: column; } }

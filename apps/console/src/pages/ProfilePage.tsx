@@ -10,7 +10,7 @@ import { formatDate, formatMoney } from '../lib/format';
 export function ProfilePage() {
   const client = useQueryClient();
   const { capabilities } = useAuth();
-  const query = useQuery({ queryKey:['profile'], queryFn:() => portalApi<PortalUser>('/me') });
+  const query = useQuery({ queryKey:['profile'], queryFn:({ signal }) => portalApi<PortalUser>('/me', { signal }) });
   const [username,setUsername] = useState(''); const [avatarUrl,setAvatarUrl] = useState('');
   const [oldPassword,setOldPassword] = useState(''); const [newPassword,setNewPassword] = useState(''); const [confirmPassword,setConfirmPassword] = useState('');
   const [notice,setNotice] = useState('');

@@ -28,6 +28,12 @@ Use `localhost` consistently in the browser so the local host-scoped session wor
 
 Focused commands are available as `npm run dev:site`, `npm run dev:console`, `npm run build:site`, `npm run build:console`, and `npm run build:bff`.
 
+Open the public header's **Playground** link to test models. Signed-out visitors go through login and return to Playground. An active administrator must first enable models in **Playground settings** inside the Kinetic console; the initial selection is empty. Administrators can also set an optional identity name and knowledge cutoff per model for Playground replies. See [Playground setup and local testing](docs/playground.md), including the backend-first upgrade instructions.
+
+Saved Playground chats require PostgreSQL. Set `PLAYGROUND_DATABASE_URL` (or reuse `ANALYTICS_DATABASE_URL`) before starting the BFF. The optional `npm run dev:playground-db` helper starts a persistent, loopback-only development database; see [the local setup steps](docs/playground.md#local-development).
+
+Local development connects to the configured account service. Check `http://127.0.0.1:3101/readyz` before signing in. If it reports degraded and the console says the account service could not complete the request, check outbound network access from the terminal running the BFF. Restarting the development BFF without Redis clears in-memory login sessions, so sign in again afterward. Sending a real Playground message uses your selected key and incurs normal usage charges.
+
 ## Validation
 
 ```powershell

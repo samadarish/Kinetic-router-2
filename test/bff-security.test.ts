@@ -40,7 +40,7 @@ describe('portal BFF security boundary', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('access-control-allow-origin')).toBe(origin);
     expect(response.headers.get('access-control-allow-credentials')).toBe('true');
-    expect((await response.json() as { data: unknown }).data).toEqual({ authenticated: false });
+    expect((await response.json() as { data: unknown }).data).toEqual({ authenticated: false, playgroundEnabled: true });
 
     const denied = await app.request('/portal/v1/public-session', {
       headers: { origin: 'https://attacker.example' },

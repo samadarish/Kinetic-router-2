@@ -1,12 +1,15 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Clipboard, Eye, EyeOff, KeyRound, MoreHorizontal, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Check, Clipboard, Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck } from 'lucide-react';
 import type { ApiKey, Group, Paginated } from '@kineticrouter/portal-contract';
 import { ConfirmDialog, Modal } from '../components/Modal';
+import { KeyQuota } from '../components/KeyQuota';
+import { RowActionsMenu } from '../components/RowActionsMenu';
 import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, PageHeader } from '../components/Ui';
 import { useAuth } from '../lib/auth';
 import { jsonBody, portalApi, queryString } from '../lib/api';
-import { formatDate, formatMoney } from '../lib/format';
+import { formatDate } from '../lib/format';
+import { pageAfterKeyDeletion } from '../lib/key-quota';
 
 type KeyForm = {
   name: string; groupId: string; customKey: string; quota: string; expirationDate: string;
@@ -31,12 +34,29 @@ export function ApiKeysPage() {
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState('');
   const [notice, setNotice] = useState('');
+  const copyTimer = useRef<number | undefined>(undefined);
   const debouncedSearch = useDebouncedValue(search, 300);
 
   const query = useQuery({
     queryKey: ['api-keys', page, debouncedSearch, status],
     queryFn: ({ signal }) => portalApi<Paginated<ApiKey>>(`/api-keys${queryString({ page, pageSize: 20, search: debouncedSearch, status, sortBy: 'created_at', sortOrder: 'desc' })}`, { signal }),
+    placeholderData: keepPreviousData,
   });
+  const resultsPending = query.isPlaceholderData || search !== debouncedSearch;
+
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+  useEffect(() => { setRevealed(new Set()); }, [page, debouncedSearch, status]);
+  useEffect(() => {
+    if (!query.isPlaceholderData && query.data && page > Math.max(1, query.data.pages)) setPage(Math.max(1, query.data.pages));
+  }, [page, query.data, query.isPlaceholderData]);
+
+  async function refreshKeys() {
+    await Promise.all([
+      client.invalidateQueries({ queryKey: ['api-keys'] }),
+      client.invalidateQueries({ queryKey: ['dashboard'] }),
+      client.invalidateQueries({ queryKey: ['playground'] }),
+    ]);
+  }
   const groups = useQuery({
     queryKey: ['groups'],
     queryFn: ({ signal }) => portalApi<Group[]>('/groups', { signal }),
@@ -46,19 +66,25 @@ export function ApiKeysPage() {
   const remove = useMutation({
     mutationFn: (id: string) => portalApi(`/api-keys/${encodeURIComponent(id)}`, { method: 'DELETE' }),
     onMutate: () => setNotice(''),
-    onSuccess: async () => { setDeleteKey(null); setNotice('API key deleted.'); await client.invalidateQueries({ queryKey: ['api-keys'] }); },
+    onSuccess: async () => {
+      setDeleteKey(null);
+      setNotice('API key deleted.');
+      setPage((current) => pageAfterKeyDeletion(current, query.data?.items.length ?? 0));
+      await refreshKeys();
+    },
   });
   const toggle = useMutation({
     mutationFn: (key: ApiKey) => portalApi(`/api-keys/${encodeURIComponent(key.id)}`, { method: 'PATCH', ...jsonBody({ status: key.status === 'active' ? 'inactive' : 'active' }) }),
     onMutate: () => setNotice(''),
-    onSuccess: async () => { setNotice('API key status updated.'); await client.invalidateQueries({ queryKey: ['api-keys'] }); },
+    onSuccess: async () => { setNotice('API key status updated.'); await refreshKeys(); },
   });
 
   async function copy(key: ApiKey) {
     try {
       await navigator.clipboard.writeText(key.key);
       setCopied(key.id);
-      window.setTimeout(() => setCopied(''), 1600);
+      window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(''), 1600);
     } catch {
       setNotice('Clipboard access was blocked. Reveal the key and copy it manually.');
     }
@@ -73,7 +99,8 @@ export function ApiKeysPage() {
     {!capabilities?.keyWrites && <div className="info-banner"><ShieldCheck size={17} /><div><strong>Read-only mode</strong><span>API key changes are temporarily unavailable.</span></div></div>}
     {capabilities?.keyWrites && groups.error && <div className="info-banner"><ShieldCheck size={17} /><div><strong>Groups unavailable</strong><span>Key creation and editing are paused to prevent an unintended group assignment.</span></div></div>}
     <Card className="toolbar-card"><div className="search-field"><Search size={15} /><input aria-label="Search API keys" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search key names…" /></div><select className="compact-select" aria-label="Filter by status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option><option value="quota_exhausted">Quota exhausted</option><option value="expired">Expired</option></select></Card>
-    <Card className="table-card">
+    {(query.isFetching || resultsPending) && query.data && <p className="query-updating" role="status">Updating keys…{resultsPending ? ' Showing the previous results.' : ''}</p>}
+    <Card className="table-card" aria-busy={query.isFetching || resultsPending}>
       {query.isLoading ? <LoadingState label="Loading API keys" /> : query.error ? <ErrorState error={query.error} retry={() => void query.refetch()} /> : !query.data?.items.length ? <EmptyState title="No API keys yet" description="Create a key to start making requests through api.kineticrouter.com/v1." action={capabilities?.keyWrites && groups.isSuccess ? <Button onClick={() => { setNotice(''); setEditor('create'); }}><Plus size={16} /> Create your first key</Button> : undefined} /> : <>
         <div className="data-table-wrap">
           <table className="data-table keys-table">
@@ -82,16 +109,20 @@ export function ApiKeysPage() {
               <td><div className="key-name-cell"><span><KeyRound size={15} /></span><div><strong>{key.name}</strong><small>Created {formatDate(key.createdAt)}</small></div></div></td>
               <td><div className="secret-cell"><code>{revealed.has(key.id) ? key.key : key.maskedKey}</code><button aria-label={revealed.has(key.id) ? 'Hide API key' : 'Show API key'} onClick={() => toggleReveal(key.id)}>{revealed.has(key.id) ? <EyeOff size={14} /> : <Eye size={14} />}</button><button aria-label="Copy API key" onClick={() => void copy(key)}>{copied === key.id ? <Check size={14} /> : <Clipboard size={14} />}</button></div></td>
               <td>{key.group?.name || 'Default'}</td><td><StatusBadge status={key.status} /></td>
-              <td><div className="quota-cell"><span>{hasQuotaLimit(key.quota) ? formatMoney(key.quota, 4) : 'Unlimited'}</span>{hasQuotaLimit(key.quota) && <small>{formatMoney(key.quotaUsed, 4)} used</small>}</div></td>
+              <td><KeyQuota name={key.name} quota={key.quota} used={key.quotaUsed} /></td>
               <td>{formatDate(key.lastUsedAt, true)}</td>
-              <td><div className="row-actions">{capabilities?.keyWrites && <><button disabled={toggle.isPending} title={key.status === 'active' ? 'Disable key' : 'Enable key'} onClick={() => toggle.mutate(key)}><MoreHorizontal size={16} /></button>{groups.isSuccess && <button title="Edit key" onClick={() => { setNotice(''); setEditor(key); }}>Edit</button>}<button className="danger-icon" title="Delete key" onClick={() => { setNotice(''); setDeleteKey(key); }}><Trash2 size={15} /></button></>}</div></td>
+              <td><div className="row-actions">{capabilities?.keyWrites && <RowActionsMenu label={`Actions for ${key.name}`} disabled={toggle.isPending || remove.isPending || resultsPending} items={[
+                { label: 'Edit key', disabled: !groups.isSuccess, onSelect: () => { setNotice(''); setEditor(key); } },
+                { label: key.status === 'active' ? 'Disable key' : 'Enable key', disabled: key.status === 'expired' || key.status === 'quota_exhausted', onSelect: () => toggle.mutate(key) },
+                { label: 'Delete key', danger: true, onSelect: () => { setNotice(''); setDeleteKey(key); } },
+              ]} />}</div></td>
             </tr>)}</tbody>
           </table>
         </div>
-        <Pagination page={query.data.page} pages={query.data.pages} total={query.data.total} onPage={setPage} />
+        <Pagination page={query.data.page} pages={query.data.pages} total={query.data.total} onPage={setPage} busy={resultsPending} />
       </>}
     </Card>
-    <KeyEditor key={editor === 'create' ? 'create' : editor?.id ?? 'closed'} open={Boolean(editor)} existing={editor === 'create' ? undefined : editor ?? undefined} groups={groups.data ?? []} onClose={() => setEditor(null)} onSaved={async () => { setEditor(null); setNotice(editor === 'create' ? 'API key created.' : 'API key updated.'); await client.invalidateQueries({ queryKey: ['api-keys'] }); }} />
+    <KeyEditor key={editor === 'create' ? 'create' : editor?.id ?? 'closed'} open={Boolean(editor)} existing={editor === 'create' ? undefined : editor ?? undefined} groups={groups.data ?? []} onClose={() => setEditor(null)} onSaved={async () => { setEditor(null); setNotice(editor === 'create' ? 'API key created.' : 'API key updated.'); await refreshKeys(); }} />
     <ConfirmDialog open={Boolean(deleteKey)} title="Delete API key?" description={`“${deleteKey?.name ?? ''}” will stop working immediately. This cannot be undone.`} confirmLabel="Delete key" danger busy={remove.isPending} onCancel={() => setDeleteKey(null)} onConfirm={() => deleteKey && remove.mutate(deleteKey.id)} />
     {(notice || toggle.error || remove.error) && <div className="toast" role="status">{notice || (toggle.error instanceof Error ? toggle.error.message : '') || (remove.error instanceof Error ? remove.error.message : '')}</div>}
   </>;
@@ -171,7 +202,6 @@ function lines(value: string) { return value.split(/[\n,]/).map((line) => line.t
 function hasPositiveValue(value?: string | null) { return Number(value) > 0; }
 function expirationDays(value: string) { const timestamp = Date.parse(value); return Number.isFinite(timestamp) ? Math.max(1, Math.ceil((timestamp - Date.now()) / 86_400_000)) : null; }
 function toLocalDateTimeInput(value: Date) { if (!Number.isFinite(value.getTime())) return ''; const local = new Date(value.getTime() - value.getTimezoneOffset() * 60_000); return local.toISOString().slice(0, 16); }
-function hasQuotaLimit(value?: string | null) { const numeric = Number(value); return value !== null && value !== undefined && Number.isFinite(numeric) && numeric > 0; }
 function useDebouncedValue<T>(value: T, delayMs: number) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -181,4 +211,4 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
   return debounced;
 }
 function StatusBadge({ status }: { status: ApiKey['status'] }) { const map = { active: ['Active', 'success'], inactive: ['Inactive', 'neutral'], quota_exhausted: ['Quota used', 'warning'], expired: ['Expired', 'danger'] } as const; const value = map[status]; return <Badge tone={value[1]}>{value[0]}</Badge>; }
-function Pagination({ page, pages, total, onPage }: { page: number; pages: number; total: number; onPage(value: number): void }) { return <div className="pagination"><span>{total} {total === 1 ? 'key' : 'keys'}</span><div><Button variant="secondary" disabled={page <= 1} onClick={() => onPage(page - 1)}>Previous</Button><span>{page} / {pages}</span><Button variant="secondary" disabled={page >= pages} onClick={() => onPage(page + 1)}>Next</Button></div></div>; }
+function Pagination({ page, pages, total, onPage, busy }: { page: number; pages: number; total: number; onPage(value: number): void; busy: boolean }) { return <div className="pagination"><span>{total} {total === 1 ? 'key' : 'keys'}</span><div><Button variant="secondary" disabled={busy || page <= 1} onClick={() => onPage(page - 1)}>Previous</Button><span>{page} / {Math.max(1, pages)}</span><Button variant="secondary" disabled={busy || page >= pages} onClick={() => onPage(page + 1)}>Next</Button></div></div>; }

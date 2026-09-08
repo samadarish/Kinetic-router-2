@@ -7,7 +7,7 @@ import { portalApi } from '../lib/api';
 import { formatLatency } from '../lib/format';
 
 export function StatusPage() {
-  const query = useQuery({ queryKey: ['channel-status'], queryFn: () => portalApi<ChannelMonitor[]>('/channels/status'), refetchInterval: 60_000 });
+  const query = useQuery({ queryKey: ['channel-status'], queryFn: ({ signal }) => portalApi<ChannelMonitor[]>('/channels/status', { signal }), refetchInterval: 60_000 });
   const healthy = query.data?.filter((channel) => isHealthy(channel.primaryStatus)).length ?? 0;
   return <>
     <PageHeader title="Channel Status" description="Live availability and latency for user-visible model channels." />

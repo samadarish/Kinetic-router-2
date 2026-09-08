@@ -3,6 +3,7 @@ import type { Model } from './model-utils';
 import { PENDING_PORTAL_ROUTES, pendingPortalHtml, rebrandValue } from './brand';
 import { correctMirroredDocumentation, documentationStatusFor } from './documentation';
 import { providerDisplayStatus } from './provider-availability';
+import { authoredGuides, authoredGuidesUpdatedAt, documentationPlainText, renderAuthoredGuide } from './authored-guides';
 export type { Model } from './model-utils';
 export { discountRate, formatTokens, formatUsd, priceFor, usdPrice } from './model-utils';
 
@@ -76,5 +77,22 @@ export function getDocsPage(route: string) {
       status,
     };
   }
-  return { meta, content: content ? { ...content, html: correctMirroredDocumentation(route, content.html) } : content, status };
+  const authored = authoredGuides[route];
+  if (authored && meta && content) {
+    const resolved = renderAuthoredGuide(authored);
+    return {
+      meta: { ...meta, title: resolved.title, description: resolved.description, headings: resolved.headings },
+      content: { route, html: resolved.html, text: resolved.text },
+      status: { ...status, summary: 'Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.', guide: { updatedAt: authoredGuidesUpdatedAt } },
+    };
+  }
+  const html = content ? correctMirroredDocumentation(route, content.html) : undefined;
+  if (route === '/docs/api/openai/images' && meta && content && html !== undefined) {
+    return {
+      meta: { ...meta, headings: meta.headings.map((heading) => heading.startsWith('Billing (') ? 'Billing reference prices' : heading) },
+      content: { route, html, text: documentationPlainText(html) },
+      status: { ...status, status: 'reference' as const, label: 'Reference snapshot', summary: 'Imported image API reference from August 30, 2026. Image generation, editing, model access and pricing require verification with your account; an available base route does not confirm image support.', provider: undefined },
+    };
+  }
+  return { meta, content: content && html !== undefined ? { ...content, html, text: documentationPlainText(html) } : content, status };
 }

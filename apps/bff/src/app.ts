@@ -21,6 +21,8 @@ import {
 import {
   Sub2ApiClient,
   Sub2ApiError,
+  PlaygroundClient,
+  PlaygroundGatewayError,
   arrayValue,
   asRecord,
   mapAnnouncement,
@@ -42,6 +44,7 @@ import {
   mapUser,
   readCapabilities,
   type LoginResult,
+  type PlaygroundGateway,
 } from '@kineticrouter/sub2api-client';
 import { config } from './config.js';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
@@ -50,10 +53,20 @@ import { OPENAI_API_BASE_URL } from '@kineticrouter/platform-config/origins';
 import { DEFAULT_THEME } from '@kineticrouter/platform-config/theme';
 import { constantTimeEqual } from './crypto.js';
 import { logger } from './logger.js';
-import { toPublicErrorCode, toPublicText, toPublicUpstreamMessage } from './public-errors.js';
+import { toPublicErrorCode, toPublicUpstreamMessage } from './public-errors.js';
+import {
+  publicAnnouncement, publicApiKey, publicCapabilities, publicChannel, publicDashboardStats,
+  publicGroup, publicRedeemResult, publicRedemption, publicSubscription, publicUsageEndpoint,
+  publicUsageError, publicUsageEvent, publicUsageGroup, publicUsageModel, publicUsageRangeStats,
+  publicUsageTrendPoint, publicUser,
+} from './public-serializers.js';
 import { createSession, createSessionStore, type PortalSession, type SessionStore } from './session-store.js';
 import { AnalyticsService } from './analytics/service.js';
 import { analyticsDay, type AnalyticsStore, type ReportKind } from './analytics/model.js';
+import { installPlaygroundRoutes } from './playground.js';
+import { createConversationStore } from './conversations-postgres.js';
+import { ConversationError, type ConversationStore } from './conversations.js';
+import { createPlaygroundSettingsStore, publicPlaygroundEnabled, PlaygroundSettingsError, type PlaygroundSettingsStore } from './playground-settings.js';
 
 type Variables = {
   requestId: string;
@@ -85,9 +98,11 @@ const configuredWriteGates: WriteGates = {
 
 export function createApp(
   store: SessionStore = createSessionStore(),
-  options: { client?: AccountServiceClient; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
+  options: { client?: AccountServiceClient; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; conversationStore?: ConversationStore; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
 ) {
   const client = options.client ?? defaultUpstream;
+  const conversations = options.conversationStore ?? createConversationStore();
+  const playgroundSettings = options.playgroundSettingsStore ?? createPlaygroundSettingsStore();
   const writeGates = { ...configuredWriteGates, ...options.writeGates };
   const defaultCapabilities = readCapabilities({}, writeGates);
   const settingsCache: SettingsCache = { expiresAt: 0 };
@@ -105,8 +120,12 @@ export function createApp(
     strictTransportSecurity: config.production ? 'max-age=31536000; includeSubDomains' : false,
     referrerPolicy: 'no-referrer',
   }));
-  const standardBodyLimit = bodyLimit({ maxSize: 128 * 1024 });
-  app.use('*', standardBodyLimit);
+  const standardBodyLimit = bodyLimit({
+    maxSize: 128 * 1024,
+    onError: c => failure(c, 413, 'PAYLOAD_TOO_LARGE', 'The request is too large. Shorten it and try again.'),
+  });
+  const importBodyLimit = bodyLimit({ maxSize: 2 * 1024 * 1024, onError: c => failure(c, 413, 'IMPORT_TOO_LARGE', 'This chat is too large to import. Your local copy is unchanged.') });
+  app.use('*', (c, next) => c.req.path === '/portal/v1/playground/conversations/import' ? importBodyLimit(c, next) : standardBodyLimit(c, next));
   app.use('*', async (c, next) => {
     const requestId = c.req.header('x-request-id')?.slice(0, 128) || randomUUID();
     c.set('requestId', requestId);
@@ -132,10 +151,12 @@ export function createApp(
     const denied = applyCredentialedPublicCors(c);
     if (denied) return denied;
     const loaded = await loadSession(c, store);
+    const playgroundEnabled = await publicPlaygroundEnabled(playgroundSettings);
     return success(c, loaded ? {
       authenticated: true,
+      playgroundEnabled,
       user: { id: loaded.user.id, username: loaded.user.username, avatarUrl: loaded.user.avatarUrl },
-    } : { authenticated: false });
+    } : { authenticated: false, playgroundEnabled });
   });
 
   app.get('/portal/v1/config', async (c) => {
@@ -144,22 +165,24 @@ export function createApp(
       brand: PRODUCT.name,
       apiBaseUrl: OPENAI_API_BASE_URL,
       defaultTheme: DEFAULT_THEME,
-      capabilities,
+      capabilities: publicCapabilities(capabilities),
       serverTimezone: config.serverTimezone,
     });
   });
-  app.get('/portal/v1/capabilities', async (c) => success(c, await getCapabilities(client, settingsCache, writeGates)));
+  app.get('/portal/v1/capabilities', async (c) => success(c, publicCapabilities(await getCapabilities(client, settingsCache, writeGates))));
 
   app.get('/portal/v1/auth/session', async (c) => {
     const loaded = await loadSession(c, store);
-    if (!loaded) return success(c, { authenticated: false, capabilities: cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities });
+    const playgroundEnabled = await publicPlaygroundEnabled(playgroundSettings);
+    if (!loaded) return success(c, { authenticated: false, playgroundEnabled, capabilities: publicCapabilities(cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities) });
     const capabilities = applyWriteGates(cachedCapabilities(settingsCache, writeGates) ?? loaded.capabilities, writeGates);
     if (settingsCache.expiresAt <= Date.now()) refreshSessionCapabilities(store, client, settingsCache, writeGates, loaded.id, capabilities);
     return success(c, {
       authenticated: true,
+      playgroundEnabled,
       csrfToken: loaded.csrfToken,
-      user: loaded.user,
-      capabilities,
+      user: publicUser(loaded.user),
+      capabilities: publicCapabilities(capabilities),
     });
   });
 
@@ -168,9 +191,9 @@ export function createApp(
   app.post('/portal/v1/auth/password/login', requireOrigin, authRateLimit, async (c) => {
     const input = loginInputSchema.parse(await c.req.json());
     const result = await client.login(input);
-    if (result.requires2fa) return success(c, result);
+    if (result.requires2fa) return success(c, { requires2fa: true, tempToken: result.tempToken, maskedEmail: result.maskedEmail });
 
-    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result, await publicPlaygroundEnabled(playgroundSettings));
     analytics.recordAction(c, result.user, 'sign_in', '/sign-in');
     return response;
   });
@@ -179,7 +202,7 @@ export function createApp(
     const input = totpInputSchema.parse(await c.req.json());
     const result = await client.login2fa({ tempToken: input.tempToken, code: input.code });
     if (result.requires2fa) throw new Sub2ApiError({ status: 400, code: 'TOTP_REQUIRED', message: 'A valid authenticator code is required.' });
-    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result);
+    const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result, await publicPlaygroundEnabled(playgroundSettings));
     analytics.recordAction(c, result.user, 'sign_in', '/sign-in');
     return response;
   });
@@ -224,17 +247,18 @@ export function createApp(
     await next();
   });
 
-  app.use('/portal/v1/admin/analytics/*', async (c, next) => {
+  app.use('/portal/v1/admin/*', async (c, next) => {
     const session = requireSession(c);
     if (session.user.role !== 'admin' || session.user.status !== 'active') return failure(c, 403, 'ADMIN_REQUIRED', 'Administrator access is required.');
     try {
       let entry = adminProfiles.get(session.id);
-      if (!entry || entry.until <= Date.now()) {
+      if (!SAFE_METHODS.has(c.req.method) || !entry || entry.until <= Date.now()) {
         if (adminProfiles.size >= 100) adminProfiles.delete(adminProfiles.keys().next().value!);
         const value = authRequest(c, store, client, token => client.request('user/profile', {}, authOptions(token))).then(raw => {
           const profile = asRecord(raw);
+          if (String(profile.id) !== session.user.id) return false;
           void settleSessionUpdate(updateSessionUser(store, session.id, mapUser(profile), session.revision), session.id, 'profile');
-          return profile.role === 'admin' && profile.status === 'active';
+          return String(profile.id) === session.user.id && profile.role === 'admin' && profile.status === 'active';
         });
         entry = { until: Date.now() + 30_000, value }; adminProfiles.set(session.id, entry);
       }
@@ -267,8 +291,8 @@ export function createApp(
     const user = mapUser(asRecord(profileRaw));
     void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
     return success(c, {
-      user,
-      stats: mapDashboardStats(statsRaw),
+      user: publicUser(user),
+      stats: publicDashboardStats(mapDashboardStats(statsRaw)),
     });
   });
 
@@ -277,7 +301,7 @@ export function createApp(
     const raw = await authRequest(c, store, client, (token) => client.request('user/profile', {}, authOptions(token)));
     const user = mapUser(asRecord(raw));
     void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
-    return success(c, user);
+    return success(c, publicUser(user));
   });
 
   app.patch('/portal/v1/me', requireFeature(writeGates, 'profile'), async (c) => {
@@ -294,7 +318,7 @@ export function createApp(
     }, authOptions(token)));
     const user = mapUser(asRecord(raw));
     await settleSessionUpdate(updateSessionUser(store, session.id, user), session.id, 'profile');
-    return success(c, user);
+    return success(c, publicUser(user));
   });
 
   app.put('/portal/v1/me/password', requireFeature(writeGates, 'profile'), async (c) => {
@@ -331,7 +355,7 @@ export function createApp(
       method: 'POST', body: JSON.stringify(toCreateKeyBody(input)),
     }, authOptions(token)));
     analytics.recordAction(c, requireSession(c).user, 'api_key_created', '/api-keys');
-    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : raw, 201);
+    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : { created: true }, 201);
   });
 
   app.patch('/portal/v1/api-keys/:id', requireFeature(writeGates, 'keys'), async (c) => {
@@ -339,7 +363,7 @@ export function createApp(
     const raw = await authWrite(c, store, client, (token) => client.request(`keys/${encodeURIComponent(c.req.param('id'))}`, {
       method: 'PUT', body: JSON.stringify(toUpdateKeyBody(input)),
     }, authOptions(token)));
-    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : raw);
+    return success(c, isObjectWithKey(raw) ? publicApiKey(mapApiKey(raw)) : { updated: true });
   });
 
   app.delete('/portal/v1/api-keys/:id', requireFeature(writeGates, 'keys'), async (c) => {
@@ -376,11 +400,11 @@ export function createApp(
     ]);
     return success(c, {
       range: { ...range, granularity, timezone: config.serverTimezone },
-      stats: mapUsageRangeStats(stats),
-      trend: mapUsageTrend(snapshot),
-      models: mapUsageModels(models),
+      stats: publicUsageRangeStats(mapUsageRangeStats(stats)),
+      trend: mapUsageTrend(snapshot).map(publicUsageTrendPoint),
+      models: mapUsageModels(models).map(publicUsageModel),
       groups: mapUsageGroups(snapshot).map(publicUsageGroup),
-      endpoints: mapUsageEndpoints(stats),
+      endpoints: mapUsageEndpoints(stats).map(publicUsageEndpoint),
     });
   });
 
@@ -442,14 +466,7 @@ export function createApp(
     const unread = c.req.query('unreadOnly') === 'true' ? '?unread_only=1' : '';
     const raw = await authRequest(c, store, client, (token) => client.request(`announcements${unread}`, {}, authOptions(token)));
     const record = asRecord(raw);
-    return success(c, arrayValue(record.items ?? raw).map((item) => {
-      const announcement = mapAnnouncement(item);
-      return {
-        ...announcement,
-        title: toPublicText(announcement.title, 'Service announcement'),
-        content: toPublicText(announcement.content, ''),
-      };
-    }));
+    return success(c, arrayValue(record.items ?? raw).map((item) => publicAnnouncement(mapAnnouncement(item))));
   });
 
   app.post('/portal/v1/announcements/:id/read', requireFeature(writeGates, 'announcements'), async (c) => {
@@ -459,10 +476,26 @@ export function createApp(
     return success(c, { read: true });
   });
 
+  installPlaygroundRoutes(app, {
+    accountRequest: (c, path) => authRequest(c, store, client, token => client.request(path, {}, authOptions(token))),
+    getUserId: c => requireSession(c).user.id,
+    getOwner: c => { const user = requireSession(c).user; return { id: user.id, label: user.email || user.username }; },
+    history: conversations,
+    client: options.playgroundClient ?? new PlaygroundClient(OPENAI_API_BASE_URL),
+    settings: playgroundSettings,
+    modelPricesEnabled: async () => (await getCapabilities(client, settingsCache, writeGates)).modelPlaza,
+  });
+
   app.notFound((c) => failure(c, 404, 'NOT_FOUND', 'The requested portal endpoint does not exist.'));
 
   app.onError((error, c) => {
     const requestId = c.get('requestId') || randomUUID();
+    if (error instanceof ConversationError) return failure(c, error.status, error.code, error.message);
+    if (error instanceof PlaygroundSettingsError) return failure(c, error.status, error.code, error.message);
+    if (error instanceof PlaygroundGatewayError) {
+      if (error.status >= 500) logger.error({ requestId, upstreamStatus: error.upstreamStatus, failure: error.failure, path: c.req.path }, 'Playground model request failed');
+      return failure(c, normalizeStatus(error.status), error.code, error.message);
+    }
     if (error instanceof Sub2ApiError) {
       const status = normalizeStatus(error.status);
       if (status >= 500) logger.error({ err: error, requestId, upstreamStatus: error.status }, 'Upstream request failed');
@@ -475,7 +508,7 @@ export function createApp(
     return failure(c, 500, 'INTERNAL_ERROR', 'The portal could not complete the request.');
   });
 
-  return { app, store, analytics };
+  return { app, store, analytics, playgroundSettings, conversations };
 }
 
 function isPublicPortalPath(path: string) {
@@ -575,6 +608,7 @@ async function establishSession(
   writeGates: WriteGates,
   defaultCapabilities: CapabilityMap,
   result: Extract<LoginResult, { requires2fa: false }>,
+  playgroundEnabled: boolean,
 ) {
   const capabilities = cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities;
   const session = createSession({ user: result.user, capabilities, tokens: result.tokens });
@@ -583,9 +617,10 @@ async function establishSession(
   refreshSessionCapabilities(store, client, settingsCache, writeGates, session.id, capabilities);
   return success(c, {
     requires2fa: false as const,
-    user: session.user,
+    playgroundEnabled,
+    user: publicUser(session.user),
     csrfToken: session.csrfToken,
-    capabilities: session.capabilities,
+    capabilities: publicCapabilities(session.capabilities),
   });
 }
 
@@ -768,71 +803,6 @@ function refreshSessionCapabilities(
     .catch((error) => {
       logger.warn({ err: error, sessionId: id.slice(0, 8) }, 'Could not refresh account capabilities');
     });
-}
-
-function publicOptionalText(value: string | undefined): string | undefined {
-  return value === undefined ? undefined : toPublicText(value, '');
-}
-
-function publicGroup(group: ReturnType<typeof mapGroup>): ReturnType<typeof mapGroup> {
-  return {
-    ...group,
-    name: toPublicText(group.name, 'Default'),
-    description: publicOptionalText(group.description),
-    platform: publicOptionalText(group.platform),
-  };
-}
-
-function publicApiKey(apiKey: ReturnType<typeof mapApiKey>): ReturnType<typeof mapApiKey> {
-  return { ...apiKey, group: apiKey.group ? publicGroup(apiKey.group) : apiKey.group };
-}
-
-function publicUsageGroup(group: ReturnType<typeof mapUsageGroups>[number]): ReturnType<typeof mapUsageGroups>[number] {
-  return { ...group, groupName: toPublicText(group.groupName, 'Ungrouped') };
-}
-
-function publicUsageEvent(event: ReturnType<typeof mapUsageEvent>): ReturnType<typeof mapUsageEvent> {
-  return { ...event, groupName: publicOptionalText(event.groupName) };
-}
-
-function publicUsageError(error: ReturnType<typeof mapUsageError>): ReturnType<typeof mapUsageError> {
-  return {
-    ...error,
-    message: toPublicUpstreamMessage(error.message, error.statusCode),
-    platform: publicOptionalText(error.platform),
-    errorBody: error.errorBody === undefined
-      ? undefined
-      : toPublicUpstreamMessage(error.errorBody, error.statusCode),
-  };
-}
-
-function publicChannel(channel: ReturnType<typeof mapChannel>): ReturnType<typeof mapChannel> {
-  return {
-    ...channel,
-    name: toPublicText(channel.name, 'Channel'),
-    provider: toPublicText(channel.provider, 'Provider'),
-    groupName: publicOptionalText(channel.groupName),
-  };
-}
-
-function publicSubscription(subscription: ReturnType<typeof mapSubscription>): ReturnType<typeof mapSubscription> {
-  return { ...subscription, group: subscription.group ? publicGroup(subscription.group) : undefined };
-}
-
-function publicRedemption(redemption: ReturnType<typeof mapRedemption>): ReturnType<typeof mapRedemption> {
-  return {
-    ...redemption,
-    groupName: publicOptionalText(redemption.groupName),
-    notes: publicOptionalText(redemption.notes),
-  };
-}
-
-function publicRedeemResult(result: RedeemResult): RedeemResult {
-  return {
-    ...result,
-    message: toPublicText(result.message, 'Code redeemed.', 500),
-    groupName: publicOptionalText(result.groupName),
-  };
 }
 
 const requireOrigin: MiddlewareHandler<{ Variables: Variables }> = async (c, next) => {

@@ -1,8 +1,12 @@
 const INTERNAL_PRODUCT_NAME = /(?:sub\s*2\s*api|hao\s*\.?\s*ai|\bnewapi\b)/gi;
 const INTERNAL_PRODUCT_CODE = /(?:SUB2API|HAOAI|NEWAPI)/i;
+const INTERNAL_BILLING_FIELD = /(?:rate_?multiplier|standard_?cost|total_?cost)/i;
 const INTERNAL_ERROR_DETAIL = /(?:json:\s*cannot\s+unmarshal|sqlstate|stack\s+trace|panic:|node_modules|\.go:\d+|github\.com\/|dial\s+(?:tcp|udp)|connection\s+(?:refused|reset)|\b(?:\d{1,3}\.){3}\d{1,3}:\d+\b|(?:[a-z]:\\|\/var\/|\/etc\/|\/srv\/))/i;
 
 export function toPublicText(value: string, fallback: string, maxLength = 5_000) {
+  // Upstream diagnostics sometimes embed internal billing fields in JSON/text.
+  // Replacing their labels would still disclose the values and mechanism.
+  if (INTERNAL_BILLING_FIELD.test(value)) return fallback;
   const text = value.trim().replace(INTERNAL_PRODUCT_NAME, 'kineticRouter');
   return (text || fallback).slice(0, maxLength);
 }
@@ -17,7 +21,7 @@ export function toPublicUpstreamMessage(message: string, status: number) {
 export function toPublicErrorCode(code: string, status: number) {
   if (status >= 500) return 'ACCOUNT_SERVICE_UNAVAILABLE';
   const normalized = code.trim().toUpperCase();
-  if (!/^[A-Z][A-Z0-9_]{0,63}$/.test(normalized) || INTERNAL_PRODUCT_CODE.test(normalized)) {
+  if (!/^[A-Z][A-Z0-9_]{0,63}$/.test(normalized) || INTERNAL_PRODUCT_CODE.test(normalized) || INTERNAL_BILLING_FIELD.test(normalized)) {
     return 'REQUEST_FAILED';
   }
   return normalized;

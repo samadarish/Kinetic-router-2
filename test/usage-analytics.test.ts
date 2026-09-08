@@ -40,7 +40,6 @@ describe('usage analytics date ranges', () => {
         totalCacheCreationTokens: 0,
         totalTokens: 0,
         actualCost: '0',
-        standardCost: '0',
         averageDurationMs: 0,
         cacheHitRate: 0,
       },

@@ -3,15 +3,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityMap, PortalUser, SessionView } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
 import { applyLoggedOutQueryState } from './auth-cache';
+import { browserPlaygroundStorage, clearPlaygroundStorage } from './playground-storage';
 
 type LoginResult =
   | { requires2fa: true; tempToken: string; maskedEmail?: string }
-  | { requires2fa: false; user: PortalUser; csrfToken: string; capabilities: CapabilityMap };
+  | { requires2fa: false; user: PortalUser; csrfToken: string; capabilities: CapabilityMap; playgroundEnabled: boolean };
 
 type AuthContextValue = {
   loading: boolean;
   error?: unknown;
   authenticated: boolean;
+  playgroundEnabled: boolean;
   user?: PortalUser;
   capabilities?: CapabilityMap;
   login(email: string, password: string): Promise<LoginResult>;
@@ -26,7 +28,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const client = useQueryClient();
   const session = useQuery({
     queryKey: ['session'],
-    queryFn: () => portalApi<SessionView>('/auth/session'),
+    queryFn: ({ signal }) => portalApi<SessionView>('/auth/session', { signal }),
     staleTime: 60_000,
     retry: false,
     refetchInterval: 60_000,
@@ -42,7 +44,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     setCsrfToken(session.data?.csrfToken);
-  }, [session.data?.csrfToken]);
+    if (session.data && !session.data.authenticated) clearPlaygroundStorage(browserPlaygroundStorage());
+  }, [session.data?.csrfToken, session.data?.authenticated]);
 
   useEffect(() => {
     const unauthorized = () => {
@@ -58,6 +61,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setCsrfToken(result.csrfToken);
       client.setQueryData<SessionView>(['session'], {
         authenticated: true,
+        playgroundEnabled: result.playgroundEnabled === true,
         csrfToken: result.csrfToken,
         user: result.user,
         capabilities: result.capabilities,
@@ -70,6 +74,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     loading: session.isLoading,
     error: session.data ? undefined : session.error,
     authenticated: Boolean(session.data?.authenticated),
+    playgroundEnabled: !session.isError && session.data?.playgroundEnabled === true,
     user: session.data?.user,
     capabilities: session.data?.capabilities,
     login: async (email, password) => finishLogin(await portalApi<LoginResult>('/auth/password/login', {
@@ -79,6 +84,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       method: 'POST', ...jsonBody({ tempToken, code }),
     })),
     logout: async () => {
+      window.dispatchEvent(new CustomEvent('portal:signing-out'));
       await portalApi('/auth/logout', { method: 'POST', ...jsonBody({}) });
       setCsrfToken();
       await applyLoggedOutQueryState(client, session.data?.capabilities ?? emptyCapabilities);
