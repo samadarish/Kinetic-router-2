@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/data/seo';
 import { LegalPage } from '@/components/legal-page';
-import { getPageMeta } from '@/data/content';
 
-const fallbackPage = getPageMeta('/privacy');
-const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Privacy Policy', description: fallbackPage?.description };
-
-export const metadata = fallbackMetadata;
+export const metadata = pageMetadata('/privacy');
 const sections = [
   { title: '1. Scope', paragraphs: ['This Privacy Policy explains how kineticRouter handles information when you use our website, account services, API gateway, documentation, and related services.'] },
   { title: '2. Information We Collect', paragraphs: ['We collect account details you provide, transaction and billing records, API credentials, request metadata, device and browser information, and support communications.'], bullets: ['Account and contact information', 'Usage, latency, model, token, and cost records', 'Payment and credit transaction records', 'Security and diagnostic logs'] },
@@ -24,5 +20,5 @@ const sections = [
   { title: '15. Contact', paragraphs: ['For privacy questions or requests, use the support channel available in your customer console.'] },
 ];
 export default function PrivacyPage() {
-  return <LegalPage title="Privacy Policy" updated="June 4, 2026" intro="kineticRouter operates the kineticRouter website, console, APIs, payments, support, and related services. This Privacy Policy explains how we collect, use, retain, share, and protect personal information, API usage data, and related logs, and how you may exercise your rights." sections={sections} />;
+  return <LegalPage seoRoute="/privacy" title="Privacy Policy" updated="June 4, 2026" intro="kineticRouter operates the kineticRouter website, console, APIs, payments, support, and related services. This Privacy Policy explains how we collect, use, retain, share, and protect personal information, API usage data, and related logs, and how you may exercise your rights." sections={sections} />;
 }

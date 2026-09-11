@@ -1,17 +1,18 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { Model } from '@/data/model-utils';
+import type { CatalogModel } from '@/data/model-utils';
 import { displayContextWindow } from '@/data/model-utils';
 import { providerDisplayStatus } from '@/data/provider-availability';
 import { CatalogNotice } from './catalog-notice';
+import { catalogUpdateNotice } from '@/data/catalog-summary';
 import { FilterIcon, SearchIcon } from './icons';
 import { ModelCard } from './model-card';
 import { ProviderLogo, providerLabel } from './provider-logo';
 
 const capabilities = ['vision', 'function', 'reasoning', 'search', 'cache', 'pdf'];
 
-export function ModelCatalog({ models, initialProvider }: { models: Model[]; initialProvider?: string }) {
+export function ModelCatalog({ models, initialProvider }: { models: CatalogModel[]; initialProvider?: string }) {
   const openAiStatus = providerDisplayStatus('openai');
   const anthropicStatus = providerDisplayStatus('anthropic');
   const grokStatus = providerDisplayStatus('grok');
@@ -40,7 +41,7 @@ export function ModelCatalog({ models, initialProvider }: { models: Model[]; ini
   return (
     <div className="page-container py-10 md:py-14">
       <div className="mb-7"><p className="text-xs font-semibold text-primary">MODEL CATALOG</p><h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Models & reference pricing</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground">Browse the imported model and price snapshot. OpenAI is {openAiStatus.badgeLabel.toLowerCase()} on kineticRouter; Anthropic and Grok native routes are {anthropicStatus.badgeLabel.toLowerCase()} and {grokStatus.badgeLabel.toLowerCase()}.</p></div>
-      <CatalogNotice />
+      <CatalogNotice supplement={catalogUpdateNotice} />
       <div className="flex gap-7">
         <aside className="hidden w-[250px] shrink-0 border-r border-border pr-6 lg:block">{filters}</aside>
         <div className="min-w-0 flex-1">

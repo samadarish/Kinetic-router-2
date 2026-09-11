@@ -1,3 +1,4 @@
+import { isIndexableRoute } from '../data/seo-policy.mjs';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { documentationRouteStatus, providerAvailability, providerForAlias } from './provider-availability.mjs';
@@ -9,6 +10,7 @@ const manifestBytes = await readFile(manifestUrl);
 const manifestJson = manifestBytes.toString('utf8');
 const manifest = JSON.parse(manifestJson);
 const status = JSON.parse(await readFile(statusUrl, 'utf8'));
+const additions = JSON.parse(await readFile(new URL('data/catalog-additions.json', root), 'utf8'));
 const llms = await readFile(new URL('public/llms.txt', root), 'utf8');
 const llmsFull = await readFile(new URL('public/llms-full.txt', root), 'utf8');
 const homeHero = await readFile(new URL('components/home-hero.tsx', root), 'utf8');
@@ -38,6 +40,17 @@ const activePrices = manifest.modelFixture.models.flatMap((model) => model.price
 expect(activePrices.length === 188, `Expected 188 active price rows, found ${activePrices.length}`);
 expect(unique(activePrices.map((price) => price.id)), 'Duplicate active price IDs found');
 expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked reference snapshot');
+const catalogModels = [...additions.models, ...manifest.modelFixture.models];
+expect(unique(catalogModels.map((model) => model.id)), 'Supplemental model IDs overlap the base snapshot');
+expect(unique(catalogModels.flatMap((model) => model.prices).filter((price) => price.active).map((price) => price.id)), 'Supplemental price IDs overlap the base snapshot');
+for (const model of additions.models) {
+  expect(model.catalogCapturedAt === additions.capturedAt && model.sourceVerifiedAt >= model.date, `${model.id}: supplemental reference dates are inconsistent`);
+  const officialSource = { openai: 'https://developers.openai.com/', anthropic: 'https://platform.claude.com/', grok: 'https://docs.x.ai/' }[model.provider];
+  expect(officialSource && model.sourceUrl?.startsWith(officialSource), `${model.id}: official model source missing`);
+  expect(model.prices.every((price) => price.modelId === model.id && Number.isSafeInteger(price.priceMicroUsd) && price.priceMicroUsd >= 0), `${model.id}: invalid reference price`);
+  const url = `https://kineticrouter.com/models/${model.provider}/${model.slug}`;
+  expect(llms.includes(url) && llmsFull.includes(url), `${model.id}: supplemental model missing from LLM inventories`);
+}
 expect(providerAvailability.version === 1 && providerAvailability.displayOnly === true, 'Provider availability registry metadata is invalid');
 expect(providerAvailability.checkedAt >= manifest.capturedAt, 'Provider availability fact check cannot predate the reference snapshot');
 const providerAliasOwners = new Map();
@@ -59,7 +72,7 @@ for (const provider of ['anthropic', 'grok']) {
 expect(providerForAlias('codex')?.apiState === 'verified', 'Codex must resolve through the available OpenAI provider status');
 expect(providerForAlias('claude')?.apiState === 'planned', 'Claude must resolve through the Anthropic provider status');
 
-const indexableDocs = manifest.docsRoutes.filter((route) => documentationRouteStatus(route, status) !== 'planned');
+const indexableDocs = manifest.docsRoutes.filter((route) => isIndexableRoute(route, documentationRouteStatus(route, status)));
 const sitemapRoutes = [...docsSitemap.matchAll(/<loc>https:\/\/kineticrouter\.com([^<]+)<\/loc>/g)].map((match) => match[1]);
 expect(JSON.stringify(sitemapRoutes) === JSON.stringify(indexableDocs), 'docs-sitemap.xml is out of sync with route availability');
 

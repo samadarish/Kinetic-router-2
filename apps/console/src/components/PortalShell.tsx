@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity, BookOpen, ChevronDown, CircleGauge, CreditCard, Gift,
   KeyRound, LogOut, Menu, Moon, PanelLeftClose, PanelLeftOpen, PanelsTopLeft,
-  Settings, Sun, UserRound, X, ChartNoAxesCombined, MessageSquare,
+  Settings, Sun, UserRound, X, ChartNoAxesCombined, MessageSquare, Globe,
 } from 'lucide-react';
 import { Brand } from './Brand';
 import { ErrorState, LoadingState } from './Ui';
@@ -23,6 +23,7 @@ const nav = [
   { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
   { to: '/admin/playground', label: 'Playground settings', icon: Settings },
   { to: '/admin/playground/chats', label: 'Playground chats', icon: MessageSquare },
+  { to: '/admin/website', label: 'Website settings', icon: Globe },
 ];
 
 const SIDEBAR_STORAGE_KEY = 'kineticrouter-sidebar-collapsed';

@@ -6,6 +6,7 @@
 
 - The model names and price values are a locked reference snapshot captured 2026-08-30.
 - The snapshot contains 20 models, 188 active price records, and 57 documentation pages.
+- Supplementary Astra and Claude Fable 5.1 references were added on 2026-09-11. The combined catalog contains 22 models and 208 active reference price records; the August snapshot is unchanged.
 - Snapshot values are not an authoritative account billing feed. Use the authenticated customer console for balances, subscriptions, usage, and actual billing.
 - OpenAI-compatible `/v1` routes are available for authenticated requests.
 - Anthropic-native and dedicated Grok routes are planned. Their reference pages are retained but request examples are disabled and excluded from indexing.
@@ -18,6 +19,19 @@
 - Documentation: https://kineticrouter.com/docs
 - Quick start: https://kineticrouter.com/quickstart
 - Customer console: https://console.kineticrouter.com/sign-in
+
+## Supplementary model references
+
+- GPT-6 Astra: https://kineticrouter.com/models/openai/gpt-6-astra
+- Model ID: `openai/gpt-6-astra`. Reference captured 2026-09-11.
+- Standard reference prices per 1M tokens: input $1.50, output $7.50, cache read $0.15, cache write $1.875. Actual account rates and additional charges are shown in the customer console.
+- Upstream context: 1,050,000 tokens; maximum output: 128,000 tokens. The captured gateway catalog records 1,000,000 input tokens.
+
+- Claude Fable 5.1: https://kineticrouter.com/models/anthropic/claude-fable-5-1
+- Model ID: `anthropic/claude-fable-5-1`. Reference captured 2026-09-11.
+- Standard reference prices per 1M tokens: input $2.50, output $12.50, cache read $0.0625, five-minute cache write $3.125, one-hour cache write $5. Native Anthropic routing remains planned.
+
+The homepage features the newest captured chat model from each provider, with prices drawn from the same catalog records as the model detail pages.
 
 ## Available OpenAI-compatible API references
 

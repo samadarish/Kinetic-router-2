@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/data/seo';
 import { LegalPage } from '@/components/legal-page';
-import { getPageMeta } from '@/data/content';
 
-const fallbackPage = getPageMeta('/terms-of-service');
-const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Terms of Service', description: fallbackPage?.description };
-
-export const metadata = fallbackMetadata;
+export const metadata = pageMetadata('/terms-of-service');
 const sections = [
   { title: '1. Definitions', paragraphs: ['“kineticRouter,” “we,” and “us” mean kineticRouter. “Services” means the kineticRouter website, API gateway, console, documentation, and related offerings. “Content” includes prompts, files, inputs, and AI-generated outputs.'] },
   { title: '2. Scope of Terms', paragraphs: ['These Terms govern access to and use of the Services. By creating an account, purchasing credits, or using an API key, you agree to these Terms and applicable policies.'] },
@@ -24,5 +20,5 @@ const sections = [
   { title: '15. Contact', paragraphs: ['Questions about these Terms may be sent through the support channels identified on the kineticRouter website.'] },
 ];
 export default function TermsPage() {
-  return <LegalPage title="Terms of Service" updated="June 4, 2026" intro="Welcome to kineticRouter. These Terms of Service govern your access to and use of the kineticRouter website, console, APIs, documentation, payments, support, and related services. The services are provided by kineticRouter. By registering, accessing, or continuing to use the services, you agree to these Terms." sections={sections} />;
+  return <LegalPage seoRoute="/terms-of-service" title="Terms of Service" updated="June 4, 2026" intro="Welcome to kineticRouter. These Terms of Service govern your access to and use of the kineticRouter website, console, APIs, documentation, payments, support, and related services. The services are provided by kineticRouter. By registering, accessing, or continuing to use the services, you agree to these Terms." sections={sections} />;
 }

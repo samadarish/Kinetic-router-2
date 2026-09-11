@@ -30,6 +30,8 @@ Focused commands are available as `npm run dev:site`, `npm run dev:console`, `np
 
 Open the public header's **Playground** link to test models. Signed-out visitors go through login and return to Playground. An active administrator must first enable models in **Playground settings** inside the Kinetic console; the initial selection is empty. Administrators can also set an optional identity name and knowledge cutoff per model for Playground replies. See [Playground setup and local testing](docs/playground.md), including the backend-first upgrade instructions.
 
+Administrators can edit or hide the public footer's social links in **Website settings** in the console. See [website social links](docs/website-settings.md) for deployment and persistence details.
+
 Saved Playground chats require PostgreSQL. Set `PLAYGROUND_DATABASE_URL` (or reuse `ANALYTICS_DATABASE_URL`) before starting the BFF. The optional `npm run dev:playground-db` helper starts a persistent, loopback-only development database; see [the local setup steps](docs/playground.md#local-development).
 
 Local development connects to the configured account service. Check `http://127.0.0.1:3101/readyz` before signing in. If it reports degraded and the console says the account service could not complete the request, check outbound network access from the terminal running the BFF. Restarting the development BFF without Redis clears in-memory login sessions, so sign in again afterward. Sending a real Playground message uses your selected key and incurs normal usage charges.
@@ -44,7 +46,11 @@ npm run check
 
 The checks cover both applications, shared provider/origin/route contracts, BFF security, documentation integrity, branding, and production builds.
 
+See [SEO and Google Search Console](docs/seo.md) for domain verification, sitemap submission, canonical/indexing rules, and `npm run check:seo -- --origin=https://kineticrouter.com --production` after deploying the public site.
+
 ## Authentication and security boundary
+
+For verified email signup and Google sign-in, follow [the Brevo and Google setup guide](docs/authentication-setup.md). Both options stay disabled until their provider settings and `ENABLE_EMAIL_SIGNUP` / `ENABLE_GOOGLE_SIGNIN` switches are configured.
 
 Existing Sub2API users sign in with the same credentials. The BFF owns encrypted server sessions and never exposes upstream tokens to the browser. Production uses the host-only `__Host-kr_session` cookie with Secure, HttpOnly, SameSite=Lax, Path `/`, and no Domain attribute.
 

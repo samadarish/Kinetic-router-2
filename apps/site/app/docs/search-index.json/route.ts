@@ -10,5 +10,5 @@ const entries: DocsSearchEntry[] = docsRoutes.flatMap((route) => {
 });
 
 export function GET() {
-  return Response.json(entries, { headers: { 'Cache-Control': 'public, max-age=300' } });
+  return Response.json(entries, { headers: { 'Cache-Control': 'public, max-age=300', 'X-Robots-Tag': 'noindex, follow' } });
 }

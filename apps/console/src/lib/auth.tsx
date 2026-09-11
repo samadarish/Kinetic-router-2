@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, type PropsWithChildren } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CapabilityMap, PortalUser, SessionView } from '@kineticrouter/portal-contract';
+import type { CapabilityMap, PortalUser, SessionView, SignupInput, GoogleRegistrationInput } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
 import { applyLoggedOutQueryState } from './auth-cache';
 import { browserPlaygroundStorage, clearPlaygroundStorage } from './playground-storage';
@@ -18,6 +18,8 @@ type AuthContextValue = {
   capabilities?: CapabilityMap;
   login(email: string, password: string): Promise<LoginResult>;
   completeTotp(tempToken: string, code: string): Promise<LoginResult>;
+  register(input: SignupInput): Promise<LoginResult>;
+  completeGoogle(input: GoogleRegistrationInput): Promise<LoginResult & { next: string }>;
   logout(): Promise<void>;
   refresh(): Promise<void>;
 };
@@ -58,6 +60,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   async function finishLogin(result: LoginResult) {
     if (!result.requires2fa) {
+      await client.cancelQueries();
+      client.removeQueries({ predicate: query => query.queryKey[0] !== 'session' });
+      clearPlaygroundStorage(browserPlaygroundStorage());
       setCsrfToken(result.csrfToken);
       client.setQueryData<SessionView>(['session'], {
         authenticated: true,
@@ -83,6 +88,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     completeTotp: async (tempToken, code) => finishLogin(await portalApi<LoginResult>('/auth/totp', {
       method: 'POST', ...jsonBody({ tempToken, code }),
     })),
+    register: async input => finishLogin(await portalApi<LoginResult>('/auth/email/register', { method: 'POST', ...jsonBody(input) })),
+    completeGoogle: async input => {
+      const result = await portalApi<LoginResult & { next: string }>('/auth/google/complete', { method: 'POST', ...jsonBody(input) });
+      await finishLogin(result);
+      return result;
+    },
     logout: async () => {
       window.dispatchEvent(new CustomEvent('portal:signing-out'));
       await portalApi('/auth/logout', { method: 'POST', ...jsonBody({}) });

@@ -1,5 +1,7 @@
 # Production deployment
 
+For signup and Google activation, see [authentication setup](../docs/authentication-setup.md) for provider settings, callback URLs, and the default-off BFF flags.
+
 The public site and customer console are one product but have separate runtime targets:
 
 - Build and publish the public site from the repository root with `npm run build:site`.

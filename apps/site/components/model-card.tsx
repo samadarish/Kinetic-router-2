@@ -1,10 +1,10 @@
 import { SiteLink } from './site-link';
-import type { Model } from '@/data/model-utils';
+import type { CatalogModel } from '@/data/model-utils';
 import { displayContextWindow, formatTokens, formatUsd, usdPrice } from '@/data/model-utils';
 import { ArrowRightIcon } from './icons';
 import { ProviderLogo } from './provider-logo';
 
-export function ModelCard({ model }: { model: Model }) {
+export function ModelCard({ model }: { model: CatalogModel }) {
   return (
     <SiteLink href={`/models/${model.provider}/${model.slug}`} className="surface group flex min-h-[250px] flex-col p-5 transition duration-200 hover:border-primary/50">
       <div className="flex items-start gap-3">

@@ -1,0 +1,11 @@
+# Website social links
+
+Sign in to the kineticRouter console as an active administrator and open **Website settings** in the sidebar (`/admin/website`). Edit the X, Facebook, Instagram, WhatsApp, or Telegram link, then choose **Save social links**. Leave a field blank to hide its icon. **Reload saved** discards unsaved edits and retrieves the current settings.
+
+The five owner-provided links are the initial defaults. Icons appear below the footer description on all pages using the public footer. Each opens in a new tab and has an accessible platform label. They use the existing muted color and cyan hover/focus treatment. Brand glyphs come from [Simple Icons](https://github.com/simple-icons/simple-icons), licensed under [CC0 1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md).
+
+Deploy the updated public site, console, BFF, and shared packages together to enable the editor. Later link changes do not require rebuilding or redeploying. The public site's server retrieves the latest saved links on page load from `/portal/v1/website` at the configured console origin, without cookies, and renders them into the HTML for visitors and crawlers. The BFF supplies the initial defaults only when no settings have been saved. If the settings service is unavailable, the icon row is omitted instead of bringing back removed links. Reload an already-open public page after saving to see the update. The site server must be able to reach the configured console origin.
+
+The public endpoint exposes only social URLs. Administrative reads and writes use `/portal/v1/admin/website/settings`, with existing session authentication, active-admin verification, Origin checks, and CSRF protection. HTTPS links must use a supported host for their selected platform. Revision checks prevent one admin from overwriting another admin's newer changes; reload saved settings if a conflict occurs.
+
+Production stores the settings under the Redis key `kr:portal:settings:website`, without an expiry. The existing deployment uses append-only Redis persistence and the `portal-redis` volume; keep that volume when redeploying and include it in backups. Local development uses `.cache/website-settings.json` with atomic writes. Settings are independent of Playground configuration. These links, including group invitation URLs, are intentionally public.

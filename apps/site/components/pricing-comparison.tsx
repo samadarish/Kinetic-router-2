@@ -2,16 +2,17 @@
 
 import { SiteLink } from './site-link';
 import { useMemo, useState } from 'react';
-import type { Model } from '@/data/model-utils';
+import type { CatalogModel } from '@/data/model-utils';
 import { displayContextWindow, formatTokens, formatUsd, usdPrice } from '@/data/model-utils';
 import { displayStateLabel, providerDisplayStatus } from '@/data/provider-availability';
 import { SearchIcon } from './icons';
 import { CatalogNotice } from './catalog-notice';
+import { catalogUpdateNotice } from '@/data/catalog-summary';
 import { ProviderLogo, providerLabel } from './provider-logo';
 
 const providers = ['all', 'openai', 'anthropic', 'grok'] as const;
 
-export function PricingComparison({ models }: { models: Model[] }) {
+export function PricingComparison({ models }: { models: CatalogModel[] }) {
   const [query, setQuery] = useState('');
   const [provider, setProvider] = useState<(typeof providers)[number]>('all');
   const filtered = useMemo(
@@ -36,7 +37,7 @@ export function PricingComparison({ models }: { models: Model[] }) {
           ))}
         </div>
       </div>
-      <CatalogNotice compact />
+      <CatalogNotice compact supplement={catalogUpdateNotice} />
       <label className="relative mb-4 block"><SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-xs" placeholder="Search model pricing" /></label>
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[940px] border-collapse text-left text-xs">

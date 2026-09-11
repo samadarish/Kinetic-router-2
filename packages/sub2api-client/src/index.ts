@@ -18,6 +18,7 @@ import type {
 } from './internal-types.js';
 export type * from './internal-types.js';
 export * from './playground.js';
+export * from './onboarding.js';
 
 type JsonRecord = Record<string, unknown>;
 type RequestOptions = {

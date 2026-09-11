@@ -1,17 +1,18 @@
 import type { Metadata, Viewport } from 'next';
 import { THEME_BOOTSTRAP_SCRIPT } from '@kineticrouter/platform-config/theme';
 import './globals.css';
+import { SITE_ORIGIN } from '@/data/seo-policy.mjs';
 import { AnalyticsTracker } from '@/components/analytics-tracker';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://kineticrouter.com'),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: 'kineticRouter — OpenAI-compatible API and model reference',
     template: '%s — kineticRouter',
   },
   description: 'OpenAI-compatible API access with a transparent model and pricing reference catalog. Native Anthropic and Grok routes are planned.',
   applicationName: 'kineticRouter',
-  alternates: { canonical: '/' },
+  verification: process.env.GOOGLE_SITE_VERIFICATION?.trim() ? { google: process.env.GOOGLE_SITE_VERIFICATION.trim() } : undefined,
   manifest: '/manifest.webmanifest',
   icons: {
     icon: [
@@ -38,7 +39,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
+      <head><link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /><script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
       <body>{children}<AnalyticsTracker /></body>
     </html>
   );

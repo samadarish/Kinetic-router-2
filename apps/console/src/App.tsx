@@ -5,6 +5,7 @@ import { ErrorState, LoadingState } from './components/Ui';
 import { useAuth } from './lib/auth';
 import { PlaygroundProvider } from './lib/playground-context';
 import { SignInPage } from './pages/SignInPage';
+import { SignUpPage } from './pages/SignUpPage';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
 const ApiKeysPage = lazy(() => import('./pages/ApiKeysPage').then((module) => ({ default: module.ApiKeysPage })));
@@ -17,6 +18,7 @@ const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage').then((m
 const RedeemPage = lazy(() => import('./pages/RedeemPage').then((module) => ({ default: module.RedeemPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then((module) => ({ default: module.ProfilePage })));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
+const WebsiteSettingsPage = lazy(() => import('./pages/WebsiteSettingsPage').then(module => ({ default: module.WebsiteSettingsPage })));
 
 export function App() {
   const auth = useAuth();
@@ -25,12 +27,15 @@ export function App() {
   if (auth.error) return <div className="app-loading"><ErrorState error={auth.error} retry={() => void auth.refresh()} /></div>;
   return <Routes>
     <Route path="/sign-in" element={<SignInPage />} />
+    <Route path="/sign-up" element={<SignUpPage key="email" />} />
+    <Route path="/auth/google/complete" element={<SignUpPage key="google" google />} />
     <Route element={auth.authenticated && auth.user ? <PlaygroundProvider key={auth.user.id} userId={auth.user.id}><PortalShell /></PlaygroundProvider> : <Navigate to="/sign-in" replace state={{ from: location.pathname + location.search }} />}>
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/api-keys" element={<ApiKeysPage />} />
       <Route path="/playground" element={auth.playgroundEnabled ? <PlaygroundPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/admin/playground" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <PlaygroundSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/admin/playground/chats" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <PlaygroundChatsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
+      <Route path="/admin/website" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <WebsiteSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/usage" element={<UsagePage />} />
       <Route path="/status" element={<StatusPage />} />
       <Route path="/subscriptions" element={<SubscriptionsPage />} />

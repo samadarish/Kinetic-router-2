@@ -1,22 +1,18 @@
-import type { Metadata } from 'next';
+import { pageMetadata } from '@/data/seo';
 import { ArrowRightIcon, CheckIcon, SparklesIcon } from '@/components/icons';
 import { ProviderLogo } from '@/components/provider-logo';
 import { SiteFrame } from '@/components/site-frame';
-import { getPageMeta } from '@/data/content';
 import { providerAvailabilityCheckedAt, providerDisplayStatus } from '@/data/provider-availability';
 import { codexProviderConfig as codex, codexStartCommand } from '@/data/codex-example';
 
-const fallbackPage = getPageMeta('/vibe-coding');
-const fallbackMetadata: Metadata = { title: fallbackPage?.title ?? 'Coding-agent setup', description: 'Status-marked kineticRouter setup references for Codex and Claude Code.' };
-
-export const metadata = fallbackMetadata;
+export const metadata = pageMetadata('/vibe-coding');
 const setup = `export KINETICROUTER_API_KEY="YOUR_KINETICROUTER_API_KEY"`;
 
 export default function VibeCodingPage() {
   const openAiStatus = providerDisplayStatus('openai');
   const anthropicStatus = providerDisplayStatus('anthropic');
   const grokStatus = providerDisplayStatus('grok');
-  return <SiteFrame>
+  return <SiteFrame seoRoute="/vibe-coding">
     <section className="hero-grid hero-glow relative overflow-hidden border-b border-border pb-14 pt-10 text-center md:pb-16 md:pt-14"><div className="relative z-10 mx-auto max-w-4xl px-4"><div className="inline-flex items-center gap-2 rounded-full border border-[var(--brand-soft-border)] bg-[var(--brand-soft-bg)] px-4 py-1.5 text-[10px] text-primary"><ProviderLogo provider="openai" className="h-3.5 w-3.5" /> {openAiStatus.protocolLabel} · {openAiStatus.badgeLabel} · account testing required</div><h1 className="mt-5 text-4xl font-semibold tracking-[-.045em] md:text-[3.5rem]">Configure coding agents<br />with route status visible</h1><p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">Start with the OpenAI-compatible base URL. Claude Code remains a {anthropicStatus.badgeLabel.toLowerCase()} native-route integration and is intentionally not presented as ready today.</p><div className="mt-7 flex justify-center gap-3"><a href="/account/sign-in" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white">Get API Key <ArrowRightIcon className="h-4 w-4" /></a><a href="/docs/integrations/codex" className="rounded-lg border border-primary px-6 py-3 text-sm font-semibold text-primary">Read {openAiStatus.badgeLabel.toLowerCase()} guide</a></div><div className="mx-auto mt-8 max-w-2xl overflow-hidden rounded-lg border border-border bg-[var(--terminal)] text-left shadow-2xl"><div className="flex items-center border-b border-border bg-[var(--code)] px-4 py-2.5 text-[11px] text-muted-foreground"><ProviderLogo provider="openai" className="mr-2 h-4 w-4" />Environment configuration</div><pre className="p-4 font-mono text-[11px] leading-6 text-[#dce2f8]"><code>{setup}</code></pre></div></div></section>
     <section className="bg-muted/20 py-14 md:py-20"><div className="page-container"><h2 className="text-center text-4xl font-semibold tracking-tight">What is actually documented</h2><p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-7 text-muted-foreground">No universal throughput, latency, uptime, or rate-limit promise is made here. Those values depend on your account and deployment.</p><div className="mt-10 grid gap-3 md:grid-cols-3">{[
       ['OpenAI-compatible', 'Detected base route', 'The /v1 surface responds and is suitable for authenticated conformance testing.', 'Validate the exact model and feature you use'],

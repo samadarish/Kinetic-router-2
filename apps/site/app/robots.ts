@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { SITE_ORIGIN } from '@/data/seo-policy.mjs';
 
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: '*', allow: '/', disallow: ['/account/', '/console/'] }, sitemap: ['https://kineticrouter.com/sitemap.xml', 'https://kineticrouter.com/docs-sitemap.xml'] };
+  // Allow crawling so canonical and noindex directives can be read, including redirects.
+  return { rules: { userAgent: '*', allow: '/' }, sitemap: [SITE_ORIGIN + '/sitemap.xml', SITE_ORIGIN + '/docs-sitemap.xml'] };
 }

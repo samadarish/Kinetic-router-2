@@ -52,7 +52,7 @@ describe('authored customer documentation', () => {
     expect(guide.text).toContain(codexStartCommand);
     expect(codexProviderConfig).toContain('env_key = "KINETICROUTER_API_KEY"');
     expect(codexProviderConfig).not.toContain('supports_websockets');
-    for (const file of ['apps/site/components/home-sections.tsx', 'apps/site/app/vibe-coding/page.tsx']) {
+    for (const file of ['apps/site/components/home-codex-card.tsx', 'apps/site/app/vibe-coding/page.tsx']) {
       const source = readFileSync(file, 'utf8');
       expect(source).toContain('@/data/codex-example');
       expect(source).not.toMatch(/supports_websockets|Codex WebSocket/);
@@ -77,6 +77,13 @@ describe('authored customer documentation', () => {
     const entry = { route: '/docs/api/openai/images', title: page.meta!.title, headings: page.meta!.headings, text: page.content!.text };
     expect(searchDocumentation([entry], '0.15')).toEqual([]);
     expect(searchDocumentation([entry], '$4.50/M')).toHaveLength(1);
+  });
+
+  it('keeps pending platform endpoint advertisements out of the published API index', () => {
+    const page = getDocsPage('/docs/api');
+    expect(page.content?.html).not.toContain('id="kineticrouter-openapi-platform"');
+    expect(page.content?.html).not.toContain('/v1/user/balance');
+    expect(page.content?.html).toContain('id="rate-limits"');
   });
 
   it('keeps copyable shell examples structured and account links routed through sign-in', () => {

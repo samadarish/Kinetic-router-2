@@ -4,6 +4,7 @@ export const CONSOLE_ROUTES = {
   apiKeys: '/api-keys',
   playground: '/playground',
   playgroundSettings: '/admin/playground',
+  websiteSettings: '/admin/website',
   usage: '/usage',
   status: '/status',
   subscriptions: '/subscriptions',

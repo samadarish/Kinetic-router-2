@@ -32,6 +32,7 @@
     "lint": "npm run lint -w @kineticrouter/site",
     "check:providers": "npm run check:provider-availability -w @kineticrouter/site",
     "check:content": "npm run check:content -w @kineticrouter/site",
+    "check:seo": "node scripts/check-site-seo.mjs",
     "check:brand": "node scripts/sync-brand-assets.mjs && npm run check:brand -w @kineticrouter/site && node scripts/check-brand-assets.mjs",
     "optimize:brand": "node scripts/optimize-brand-assets.mjs && node scripts/sync-brand-assets.mjs",
     "check": "npm run test && npm run typecheck && npm run lint && npm run check:providers && npm run check:content && npm run build && npm run check:brand",

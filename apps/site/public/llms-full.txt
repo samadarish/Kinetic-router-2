@@ -5,12 +5,17 @@ Customer console: https://console.kineticrouter.com/sign-in
 Reference snapshot source: imported catalog archive
 Snapshot captured: 2026-08-30
 Snapshot scope: 20 models, 188 active price records, 57 documentation pages
+Supplementary references: GPT-6 Astra and Claude Fable 5.1, captured 2026-09-11
+Combined catalog: 22 models, 208 active reference price records
 
 ## Interpretation
 
 This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is available for authenticated requests. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
 
 ## Main pages
+
+- https://kineticrouter.com/models/openai/gpt-6-astra
+- https://kineticrouter.com/models/anthropic/claude-fable-5-1
 
 - https://kineticrouter.com/
 - https://kineticrouter.com/models

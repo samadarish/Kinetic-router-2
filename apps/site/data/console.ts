@@ -2,9 +2,17 @@ import { consolePageUrl, resolvePublicConsoleOrigin } from './public-console-ori
 import { resolveConsoleReturnPath } from '@kineticrouter/platform-config/routes';
 
 export function consoleSignInDestination(next?: string, runtimeOrigin?: string) {
+  return consoleAuthDestination('/sign-in', next, runtimeOrigin);
+}
+
+export function consoleSignUpDestination(next?: string, runtimeOrigin?: string) {
+  return consoleAuthDestination('/sign-up', next, runtimeOrigin);
+}
+
+function consoleAuthDestination(path: string, next?: string, runtimeOrigin?: string) {
   const configured = process.env.KINETICROUTER_CONSOLE_URL ?? process.env.KINETICROUTER_CONSOLE_ORIGIN;
   const consoleOrigin = resolvePublicConsoleOrigin(configured, runtimeOrigin, process.env.NODE_ENV === 'development');
-  const destination = new URL(consolePageUrl(consoleOrigin, '/sign-in'));
+  const destination = new URL(consolePageUrl(consoleOrigin, path));
   if (next) destination.searchParams.set('next', resolveConsoleReturnPath(next));
   return destination.toString();
 }

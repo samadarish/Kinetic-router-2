@@ -1,5 +1,7 @@
 console.kineticrouter.com {
   encode zstd gzip
+  # Authorization codes and state must not enter access logs (Caddy >= 2.8).
+  log_skip /portal/v1/auth/google/callback
 
   header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"

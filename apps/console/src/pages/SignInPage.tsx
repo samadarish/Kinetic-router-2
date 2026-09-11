@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { ArrowRight, Eye, EyeOff, LoaderCircle, Moon, Sun } from 'lucide-react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Brand } from '../components/Brand';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
+import { useAuthOptions } from '../lib/onboarding';
 import { Button } from '../components/Ui';
 import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
@@ -13,13 +15,17 @@ export function SignInPage() {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const options = useAuthOptions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const [challenge, setChallenge] = useState<{ token: string; maskedEmail?: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(() => {
+    const error = new URLSearchParams(location.search).get('error');
+    return error === 'google_cancelled' ? 'Google sign-in was cancelled. You can try again.' : error === 'google_failed' ? 'Google sign-in could not be completed. Please try again.' : '';
+  });
 
   const next = resolveSignInNext(location.search, location.state);
   if (!loading && authenticated) return <Navigate to={next} replace />;
@@ -52,7 +58,7 @@ export function SignInPage() {
       <section className="auth-card">
         <header><span className="auth-kicker">CUSTOMER CONSOLE</span><h1>{challenge ? 'Two-step verification' : 'Welcome back'}</h1><p>{challenge ? `Enter the code from your authenticator${challenge.maskedEmail ? ` for ${challenge.maskedEmail}` : ''}.` : 'Sign in to manage your kineticRouter account.'}</p></header>
         {!challenge && <>
-          <button type="button" className="google-button" onClick={() => setMessage('Google sign-in is coming soon.')}><GoogleMark /> Continue with Google <span>Coming soon</span></button>
+          <GoogleSignInButton next={next} onError={setMessage} />
           <div className="auth-divider"><span>or continue with email</span></div>
         </>}
         <form onSubmit={submit} className="auth-form">
@@ -63,6 +69,7 @@ export function SignInPage() {
           {message && <div className="auth-message" role="status">{message}</div>}
           <Button className="auth-submit" disabled={submitting}>{submitting ? <LoaderCircle className="spin" size={17} /> : <>{challenge ? 'Verify and sign in' : 'Sign in'}<ArrowRight size={17} /></>}</Button>
           {challenge && <button className="auth-back" type="button" onClick={() => { setChallenge(null); setTotpCode(''); setMessage(''); }}>Back to password sign in</button>}
+          {!challenge && options.data?.emailSignup && <Link className="auth-back" to={`/sign-up?next=${encodeURIComponent(next)}`}>New to kineticRouter? Create an account</Link>}
         </form>
       </section>
       <p className="auth-legal">By continuing, you agree to the <a href={publicSiteHref('/terms-of-service')}>Terms of Service</a> and <a href={publicSiteHref('/privacy')}>Privacy Policy</a>.</p>
@@ -75,8 +82,4 @@ function resolveSignInNext(search: string, state: unknown) {
   if (queryNext) return resolveConsoleReturnPath(queryNext);
   if (state && typeof state === 'object' && 'from' in state) return resolveConsoleReturnPath(state.from);
   return resolveConsoleReturnPath(undefined);
-}
-
-function GoogleMark() {
-  return <span className="google-mark" aria-hidden="true"><i /><i /><i /><i /></span>;
 }

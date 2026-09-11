@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
+import { catalogModel } from '@/data/model-utils';
+import { pageMetadata } from '@/data/seo';
 import { ModelCatalog } from '@/components/model-catalog';
 import { SiteFrame } from '@/components/site-frame';
-import { getPageMeta, models } from '@/data/content';
+import { models } from '@/data/content';
 
-const page = getPageMeta('/models');
-export const metadata: Metadata = { title: page?.title ?? 'Models & pricing', description: page?.description };
+export const metadata = pageMetadata('/models');
 
-export default function ModelsPage() { return <SiteFrame><ModelCatalog models={models} /></SiteFrame>; }
+export default function ModelsPage() { return <SiteFrame seoRoute="/models"><ModelCatalog models={models.map(catalogModel)} /></SiteFrame>; }

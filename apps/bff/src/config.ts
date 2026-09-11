@@ -48,6 +48,8 @@ export const config = {
   enableProfileWrites: readBoolean(process.env.ENABLE_PROFILE_WRITES),
   enableRedeemWrites: readBoolean(process.env.ENABLE_REDEEM_WRITES),
   enableAnnouncementWrites: readBoolean(process.env.ENABLE_ANNOUNCEMENT_WRITES),
+  enableEmailSignup: readBoolean(process.env.ENABLE_EMAIL_SIGNUP),
+  enableGoogleSignin: readBoolean(process.env.ENABLE_GOOGLE_SIGNIN),
   publicSiteOrigins,
   logLevel: process.env.LOG_LEVEL ?? 'info',
   serverTimezone: process.env.SERVER_TIMEZONE ?? 'Asia/Kolkata',

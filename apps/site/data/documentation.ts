@@ -47,6 +47,11 @@ export function correctMirroredDocumentation(route: string, html: string) {
     .replaceAll('No rate limits', 'Account-specific rate limits')
     .replaceAll('No Rate Limits', 'Account-specific rate limits');
 
+  if (route === '/docs/api') {
+    // Match the published index: these platform contracts are still pending.
+    corrected = corrected.replace(/<h3\b[^>]*id="kineticrouter-openapi-platform"[\s\S]*?(?=<h2\b)/, '');
+  }
+
   if (route === '/docs/api/grok/responses') {
     const grok = providerDisplayStatus('grok');
     corrected = corrected.replace(

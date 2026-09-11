@@ -1,4 +1,5 @@
 import rawManifest from './reference-manifest.json';
+import catalogAdditions from './catalog-additions.json';
 import type { Model } from './model-utils';
 import { PENDING_PORTAL_ROUTES, pendingPortalHtml, rebrandValue } from './brand';
 import { correctMirroredDocumentation, documentationStatusFor } from './documentation';
@@ -44,19 +45,20 @@ const upstreamModelFacts: Record<string, Pick<Model, 'upstreamContextWindow' | '
   'grok/grok-4.6': { upstreamContextWindow: 500_000, upstreamMaxOutput: 0, sourceUrl: 'https://docs.x.ai/developers/grok-4-6' },
 };
 
-export const models = manifest.modelFixture.models.map((model) => {
+export const models = [...catalogAdditions.models as Model[], ...manifest.modelFixture.models].map((model) => {
   const upstream = upstreamModelFacts[model.id];
   return {
     ...model,
     gatewayMaxInput: model.contextWindow,
     gatewayMaxOutput: model.maxOutput,
-    sourceVerifiedAt: '2026-08-30',
+    sourceVerifiedAt: model.sourceVerifiedAt ?? manifest.capturedAt,
     availability: providerDisplayStatus(model.provider).modelAccessState,
     ...upstream,
     ...(model.id === 'openai/gpt-5.3-codex' ? { inputModalities: ['text', 'image'], outputModalities: ['text'] } : {}),
   };
 });
 manifest.modelFixture.models = models;
+manifest.mainRoutes = [...new Set([...manifest.mainRoutes, ...catalogAdditions.models.map((model) => `/models/${model.provider}/${model.slug}`)])];
 export const docsRoutes = manifest.docsRoutes;
 export const docsMeta = manifest.docsMeta;
 export const docsContent = manifest.docsContent;

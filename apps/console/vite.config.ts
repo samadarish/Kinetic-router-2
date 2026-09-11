@@ -14,7 +14,8 @@ export default defineConfig({
     },
   ],
   server: {
-    host: 'localhost',
+    // The public site's local worker connects over IPv4; keep browser URLs on localhost.
+    host: '127.0.0.1',
     port: 5174,
     strictPort: true,
     cors: false,

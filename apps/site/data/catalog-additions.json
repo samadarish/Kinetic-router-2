@@ -1,0 +1,507 @@
+{
+  "capturedAt": "2026-09-11",
+  "source": "owner-catalog-reference",
+  "sourceRef": "docs/catalog-updates.md",
+  "models": [
+    {
+      "id": "openai/gpt-6-astra",
+      "slug": "gpt-6-astra",
+      "provider": "openai",
+      "aliases": [
+        "gpt-6-astra"
+      ],
+      "name": "OpenAI: GPT-6 Astra",
+      "category": "chat",
+      "contextWindow": 1000000,
+      "supportsFast": false,
+      "billingMode": "token",
+      "prices": [
+        {
+          "id": 908,
+          "modelId": "openai/gpt-6-astra",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_creation",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 12500000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+        },
+        {
+          "id": 907,
+          "modelId": "openai/gpt-6-astra",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_read",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 1000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+        },
+        {
+          "id": 906,
+          "modelId": "openai/gpt-6-astra",
+          "role": "official",
+          "billingMode": "token",
+          "component": "input",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 10000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+        },
+        {
+          "id": 910,
+          "modelId": "openai/gpt-6-astra",
+          "role": "official",
+          "billingMode": "token",
+          "component": "output",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 50000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://developers.openai.com/api/docs/models/gpt-6-astra"
+        },
+        {
+          "id": 912,
+          "modelId": "openai/gpt-6-astra",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_creation",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 1875000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#gpt-6-astra"
+        },
+        {
+          "id": 911,
+          "modelId": "openai/gpt-6-astra",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_read",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 150000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#gpt-6-astra"
+        },
+        {
+          "id": 909,
+          "modelId": "openai/gpt-6-astra",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "input",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 1500000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#gpt-6-astra"
+        },
+        {
+          "id": 905,
+          "modelId": "openai/gpt-6-astra",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "output",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 7500000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#gpt-6-astra"
+        }
+      ],
+      "tags": [
+        "chat",
+        "vision",
+        "function",
+        "reasoning",
+        "cache",
+        "search"
+      ],
+      "free": false,
+      "enabled": true,
+      "tagline": "GPT-6 Astra handles demanding reasoning, coding, research, computer use, and document workflows. It accepts text and images and produces text, with a 1.05M-token upstream context window and up to 128K output tokens.",
+      "introMd": "GPT-6 Astra handles demanding reasoning, coding, research, computer use, and document workflows. It accepts text and images and produces text, with a 1.05M-token upstream context window and up to 128K output tokens.",
+      "capabilities": [],
+      "faq": [
+        {
+          "q": "How is GPT-6 Astra pricing shown?",
+          "a": "The table preserves standard reference rates captured on September 11, 2026. Long-context requests, service tiers, and tools can incur different charges. Your kineticRouter console remains authoritative for account rates and billed usage.",
+          "kind": "pricing"
+        },
+        {
+          "q": "What are the context and output limits for GPT-6 Astra?",
+          "a": "OpenAI documents a 1,050,000-token context window and up to 128,000 output tokens. The imported gateway catalog records 1,000,000 input tokens and 128,000 output tokens; these limits are shown separately.",
+          "kind": "context"
+        },
+        {
+          "q": "How can I call GPT-6 Astra through kineticRouter?",
+          "a": "Use model ID openai/gpt-6-astra with your kineticRouter API key and the OpenAI-compatible base URL https://api.kineticrouter.com/v1. Confirm that your key can access this model. Hosted tools require the Responses API; Anthropic-native kineticRouter routing remains planned.",
+          "kind": "api_access"
+        },
+        {
+          "q": "Which capabilities does GPT-6 Astra support?",
+          "a": "The reference includes text and image input, text output, reasoning, function calling, structured outputs, prompt caching, web search, and code interpreter. Check protocol and tool support for your kineticRouter account before using a feature in production.",
+          "kind": "capabilities"
+        }
+      ],
+      "codeExamples": [
+        {
+          "language": "curl",
+          "label": "cURL",
+          "code": "curl https://api.kineticrouter.com/v1/chat/completions \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer $KINETICROUTER_API_KEY\" \\\n  -d '{\n    \"model\": \"openai/gpt-6-astra\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]\n  }'",
+          "source": "provider"
+        },
+        {
+          "language": "python",
+          "label": "Python",
+          "code": "import os\nfrom openai import OpenAI\n\nclient = OpenAI(\n    base_url=\"https://api.kineticrouter.com/v1\",\n    api_key=os.environ[\"KINETICROUTER_API_KEY\"],\n)\n\nresponse = client.chat.completions.create(\n    model=\"openai/gpt-6-astra\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello!\"}],\n)\nprint(response.choices[0].message.content)",
+          "source": "provider"
+        },
+        {
+          "language": "typescript",
+          "label": "TypeScript",
+          "code": "import OpenAI from \"openai\";\n\nconst client = new OpenAI({\n  baseURL: \"https://api.kineticrouter.com/v1\",\n  apiKey: process.env.KINETICROUTER_API_KEY,\n});\n\nconst response = await client.chat.completions.create({\n  model: \"openai/gpt-6-astra\",\n  messages: [{ role: \"user\", content: \"Hello!\" }],\n});\nconsole.log(response.choices[0].message.content);",
+          "source": "provider"
+        }
+      ],
+      "maxOutput": 128000,
+      "date": "2026-09-03",
+      "compatIcons": [
+        "OpenAI"
+      ],
+      "toolTags": [
+        "codex"
+      ],
+      "hostedOn": "OpenAI",
+      "hostedOnOptions": [
+        "OpenAI",
+        "Azure"
+      ],
+      "family": "gpt",
+      "capabilityFlags": [
+        "vision",
+        "function",
+        "reasoning",
+        "search",
+        "cache",
+        "structured",
+        "code_interpreter"
+      ],
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "upstreamContextWindow": 1050000,
+      "upstreamMaxOutput": 128000,
+      "sourceUrl": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "sourceVerifiedAt": "2026-09-11",
+      "catalogCapturedAt": "2026-09-11"
+    },
+    {
+      "id": "anthropic/claude-fable-5-1",
+      "slug": "claude-fable-5-1",
+      "provider": "anthropic",
+      "upstreamModelId": "claude-fable-5-1",
+      "aliases": [
+        "fable",
+        "claude-fable",
+        "fable-5.1",
+        "fable-5-1",
+        "claude-fable-5.1",
+        "claude-fable-5-1"
+      ],
+      "name": "Anthropic: Claude Fable 5.1",
+      "category": "chat",
+      "contextWindow": 1000000,
+      "supportsFast": false,
+      "billingMode": "token",
+      "prices": [
+        {
+          "id": 899,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_creation",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 12500000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 898,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_creation_1h",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 20000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 893,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_creation_5m",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 12500000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 897,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "cache_read",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 250000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 896,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "input",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 10000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 901,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "official",
+          "billingMode": "token",
+          "component": "output",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 50000000,
+          "version": 1,
+          "active": true,
+          "source": "official_model_reference",
+          "sourceRef": "https://platform.claude.com/docs/en/models/fable-5-1/overview"
+        },
+        {
+          "id": 904,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_creation",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 3125000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        },
+        {
+          "id": 903,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_creation_1h",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 5000000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        },
+        {
+          "id": 894,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_creation_5m",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 3125000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        },
+        {
+          "id": 902,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "cache_read",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 62500,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        },
+        {
+          "id": 900,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "input",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 2500000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        },
+        {
+          "id": 895,
+          "modelId": "anthropic/claude-fable-5-1",
+          "role": "sell",
+          "billingMode": "token",
+          "component": "output",
+          "unit": "per_1m_tokens",
+          "tierLabel": "",
+          "priceMicroUsd": 12500000,
+          "version": 2,
+          "active": true,
+          "source": "owner_catalog_reference",
+          "sourceRef": "docs/catalog-updates.md#claude-fable-51"
+        }
+      ],
+      "tags": [
+        "chat",
+        "vision",
+        "function",
+        "reasoning",
+        "pdf",
+        "cache"
+      ],
+      "free": false,
+      "enabled": true,
+      "tagline": "Claude Fable 5.1 supports demanding reasoning, coding, multistep research, and document workflows. It accepts text and images and produces text, with a 1M-token context window and up to 128K output tokens.",
+      "introMd": "Claude Fable 5.1 supports demanding reasoning, coding, multistep research, and document workflows. It accepts text and images and produces text, with a 1M-token context window and up to 128K output tokens.",
+      "capabilities": [],
+      "faq": [
+        {
+          "q": "How is Claude Fable 5.1 pricing shown?",
+          "a": "The table preserves standard reference rates captured on September 11, 2026, including exact cache prices. Your kineticRouter console remains authoritative for account rates and billed usage.",
+          "kind": "pricing"
+        },
+        {
+          "q": "What are the context and output limits for Claude Fable 5.1?",
+          "a": "Anthropic documents a 1,000,000-token context window and up to 128,000 output tokens. The captured gateway catalog records the same limits.",
+          "kind": "context"
+        },
+        {
+          "q": "Can I use Claude Fable 5.1 through kineticRouter?",
+          "a": "This model is listed as a reference. Native Anthropic routing on kineticRouter remains planned. Confirm route and model availability for your account before integrating.",
+          "kind": "api_access"
+        },
+        {
+          "q": "Which capabilities does Claude Fable 5.1 support?",
+          "a": "The reference includes text and image input, text output, adaptive reasoning, function calling, structured outputs, prompt caching, web search, and PDF input. These provider capabilities do not confirm availability through your kineticRouter account.",
+          "kind": "capabilities"
+        }
+      ],
+      "codeExamples": [
+        {
+          "language": "curl",
+          "label": "cURL",
+          "code": "curl https://api.kineticrouter.com/anthropic/v1/messages \\\n  -H \"Content-Type: application/json\" \\\n  -H \"x-api-key: $KINETICROUTER_API_KEY\" \\\n  -H \"anthropic-version: 2023-06-01\" \\\n  -d '{\n    \"model\": \"anthropic/claude-fable-5-1\",\n    \"max_tokens\": 1024,\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hello!\"}]\n  }'",
+          "source": "provider"
+        },
+        {
+          "language": "python",
+          "label": "Python",
+          "code": "from anthropic import Anthropic\n\nclient = Anthropic(\n    base_url=\"https://api.kineticrouter.com/anthropic\",\n    api_key=\"<KINETICROUTER_API_KEY>\",\n)\n\nmessage = client.messages.create(\n    model=\"anthropic/claude-fable-5-1\",\n    max_tokens=1024,\n    messages=[{\"role\": \"user\", \"content\": \"Hello!\"}],\n)\nprint(message.content[0].text)",
+          "source": "provider"
+        },
+        {
+          "language": "typescript",
+          "label": "TypeScript",
+          "code": "import Anthropic from \"@anthropic-ai/sdk\";\n\nconst client = new Anthropic({\n  baseURL: \"https://api.kineticrouter.com/anthropic\",\n  apiKey: process.env.KINETICROUTER_API_KEY,\n});\n\nconst message = await client.messages.create({\n  model: \"anthropic/claude-fable-5-1\",\n  max_tokens: 1024,\n  messages: [{ role: \"user\", content: \"Hello!\" }],\n});\nconsole.log(message.content[0].text);",
+          "source": "provider"
+        }
+      ],
+      "maxOutput": 128000,
+      "date": "2026-09-01",
+      "compatIcons": [
+        "OpenAI",
+        "Anthropic"
+      ],
+      "toolTags": [
+        "codex",
+        "claude-code"
+      ],
+      "hostedOn": "Anthropic",
+      "hostedOnOptions": [
+        "Anthropic",
+        "Bedrock",
+        "Azure",
+        "GoogleCloud"
+      ],
+      "family": "claude",
+      "capabilityFlags": [
+        "vision",
+        "function",
+        "reasoning",
+        "search",
+        "cache",
+        "pdf",
+        "structured"
+      ],
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "upstreamContextWindow": 1000000,
+      "upstreamMaxOutput": 128000,
+      "sourceUrl": "https://platform.claude.com/docs/en/models/fable-5-1/overview",
+      "sourceVerifiedAt": "2026-09-11",
+      "catalogCapturedAt": "2026-09-11"
+    }
+  ]
+}

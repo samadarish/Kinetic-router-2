@@ -1,6 +1,7 @@
 import { SiteLink } from './site-link';
 import { Brand } from './brand';
 import { ProviderLogo } from './provider-logo';
+import { FooterSocialLinks } from './footer-social-links';
 import { displayStateLabel, type ProviderId } from '@/data/provider-availability';
 import type { SiteConfig } from '@/data/site-config';
 
@@ -15,6 +16,7 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
           </SiteLink>
           <p className="mt-4 text-xs text-muted-foreground">© 2026 {brand.legalName}. All rights reserved.</p>
           <p className="mt-3 max-w-sm text-xs leading-5 text-muted-foreground">{home.footerDescription || brand.tagline}</p>
+          <FooterSocialLinks />
         </div>
         <div className={`grid min-w-0 grid-cols-2 gap-8 ${navigation.footerColumns.length > 2 ? 'sm:grid-cols-3' : ''}`}>
           {navigation.footerColumns.map((column) => (

@@ -1,9 +1,7 @@
 import type { MetadataRoute } from 'next';
-import { docsRoutes, manifest } from '@/data/content';
-import { documentationStatusFor } from '@/data/documentation';
+import { indexableRoutes, routeSeo } from '@/data/seo';
+import { canonicalUrl } from '@/data/seo-policy.mjs';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const indexableDocs = docsRoutes.filter((route) => documentationStatusFor(route).status !== 'planned');
-  const routes = [...new Set([...manifest.mainRoutes.filter((route) => !route.startsWith('/account/')), ...indexableDocs])];
-  return routes.map((route) => ({ url: `https://kineticrouter.com${route === '/' ? '' : route}`, changeFrequency: 'monthly', priority: route === '/' ? 1 : route === '/models' || route === '/docs' ? .9 : .7 }));
+  return indexableRoutes().map((route) => ({ url: canonicalUrl(route), ...(routeSeo(route)?.modified ? { lastModified: routeSeo(route)!.modified } : {}) }));
 }

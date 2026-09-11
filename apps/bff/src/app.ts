@@ -14,12 +14,15 @@ import {
   updateApiKeySchema,
   usageSummaryQuerySchema,
   analyticsQuerySchema,
+  publicWebsiteSettingsSchema,
+  websiteSettingsSchema,
   type CapabilityMap,
   type PortalUser,
   type RedeemResult,
 } from '@kineticrouter/portal-contract';
 import {
   Sub2ApiClient,
+  Sub2ApiOnboardingClient,
   Sub2ApiError,
   PlaygroundClient,
   PlaygroundGatewayError,
@@ -47,6 +50,8 @@ import {
   type PlaygroundGateway,
 } from '@kineticrouter/sub2api-client';
 import { config } from './config.js';
+import { createAuthFlowStore, type AuthFlowStore } from './auth-flow-store.js';
+import { installOnboardingRoutes, type OnboardingClient, type AuthGates } from './auth-onboarding.js';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
 import { toCreateKeyBody, toUpdateKeyBody } from './api-key-payload.js';
 import { OPENAI_API_BASE_URL } from '@kineticrouter/platform-config/origins';
@@ -67,6 +72,7 @@ import { installPlaygroundRoutes } from './playground.js';
 import { createConversationStore } from './conversations-postgres.js';
 import { ConversationError, type ConversationStore } from './conversations.js';
 import { createPlaygroundSettingsStore, publicPlaygroundEnabled, PlaygroundSettingsError, type PlaygroundSettingsStore } from './playground-settings.js';
+import { createWebsiteSettingsStore, WebsiteSettingsError, type WebsiteSettingsStore } from './website-settings.js';
 
 type Variables = {
   requestId: string;
@@ -98,11 +104,13 @@ const configuredWriteGates: WriteGates = {
 
 export function createApp(
   store: SessionStore = createSessionStore(),
-  options: { client?: AccountServiceClient; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; conversationStore?: ConversationStore; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
+  options: { client?: AccountServiceClient; onboardingClient?: OnboardingClient; authFlowStore?: AuthFlowStore; authGates?: AuthGates; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; websiteSettingsStore?: WebsiteSettingsStore; conversationStore?: ConversationStore; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
 ) {
   const client = options.client ?? defaultUpstream;
+  const authFlows = options.authFlowStore ?? createAuthFlowStore();
   const conversations = options.conversationStore ?? createConversationStore();
   const playgroundSettings = options.playgroundSettingsStore ?? createPlaygroundSettingsStore();
+  const websiteSettings = options.websiteSettingsStore ?? createWebsiteSettingsStore();
   const writeGates = { ...configuredWriteGates, ...options.writeGates };
   const defaultCapabilities = readCapabilities({}, writeGates);
   const settingsCache: SettingsCache = { expiresAt: 0 };
@@ -147,6 +155,12 @@ export function createApp(
   });
 
   app.options('/portal/v1/public-session', (c) => publicCorsPreflight(c));
+  app.get('/portal/v1/website', async c => {
+    // Public links only; no session or credentials are needed by the public website.
+    c.header('Access-Control-Allow-Origin', '*');
+    const { socialLinks } = await websiteSettings.read();
+    return success(c, publicWebsiteSettingsSchema.parse({ socialLinks }));
+  });
   app.get('/portal/v1/public-session', async (c) => {
     const denied = applyCredentialedPublicCors(c);
     if (denied) return denied;
@@ -187,6 +201,18 @@ export function createApp(
   });
 
   const authRateLimit = loginRateLimit(store);
+  installOnboardingRoutes(app, {
+    client: options.onboardingClient ?? new Sub2ApiOnboardingClient(config.sub2apiBaseUrl),
+    flows: authFlows, sessions: store,
+    gates: options.authGates ?? { emailSignup: config.enableEmailSignup, googleSignin: config.enableGoogleSignin },
+    settings: () => getPublicSettings(client, settingsCache),
+    requireOrigin, rateLimit: authRateLimit,
+    finish: async (c, result) => {
+      const response = await establishSession(c, store, client, settingsCache, writeGates, defaultCapabilities, result, await publicPlaygroundEnabled(playgroundSettings));
+      analytics.recordAction(c, result.user, 'sign_in', '/sign-in');
+      return response;
+    },
+  });
 
   app.post('/portal/v1/auth/password/login', requireOrigin, authRateLimit, async (c) => {
     const input = loginInputSchema.parse(await c.req.json());
@@ -265,6 +291,11 @@ export function createApp(
       if (!await entry.value) return failure(c, 403, 'ADMIN_REQUIRED', 'Administrator access is required.');
     } catch { adminProfiles.delete(session.id); return failure(c, 503, 'ADMIN_VERIFICATION_UNAVAILABLE', 'Administrator access could not be verified. Try again shortly.'); }
     await next();
+  });
+  app.get('/portal/v1/admin/website/settings', async c => success(c, await websiteSettings.read()));
+  app.put('/portal/v1/admin/website/settings', async c => {
+    const input = websiteSettingsSchema.parse(await c.req.json());
+    return success(c, await websiteSettings.save(input));
   });
   app.get('/portal/v1/admin/analytics/live', c => {
     if (!analytics.enabled) return failure(c, 503, 'ANALYTICS_DISABLED', 'Analytics collection is disabled or its database is not configured.');
@@ -492,6 +523,7 @@ export function createApp(
     const requestId = c.get('requestId') || randomUUID();
     if (error instanceof ConversationError) return failure(c, error.status, error.code, error.message);
     if (error instanceof PlaygroundSettingsError) return failure(c, error.status, error.code, error.message);
+    if (error instanceof WebsiteSettingsError) return failure(c, error.status, error.code, error.message);
     if (error instanceof PlaygroundGatewayError) {
       if (error.status >= 500) logger.error({ requestId, upstreamStatus: error.upstreamStatus, failure: error.failure, path: c.req.path }, 'Playground model request failed');
       return failure(c, normalizeStatus(error.status), error.code, error.message);
@@ -508,7 +540,7 @@ export function createApp(
     return failure(c, 500, 'INTERNAL_ERROR', 'The portal could not complete the request.');
   });
 
-  return { app, store, analytics, playgroundSettings, conversations };
+  return { app, store, analytics, playgroundSettings, websiteSettings, conversations, authFlows };
 }
 
 function isPublicPortalPath(path: string) {
