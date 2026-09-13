@@ -28,6 +28,26 @@ const settle = () => vi.advanceTimersByTimeAsync(1);
 const events = () => requests.filter(item => item.url.endsWith('/collect')).flatMap(item => item.body.events);
 
 describe('browser analytics lifecycle', () => {
+  it('reuses date formatters without changing dates across timezones, eviction and invalid inputs', async () => {
+    const { dateInTimezone } = await import('../packages/analytics-client/src/index');
+    const at = Date.parse('2026-09-12T20:00:00Z');
+    for (const zone of ['UTC', 'Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Tokyo', 'Pacific/Auckland', 'Australia/Sydney', 'Europe/Paris', 'America/Los_Angeles', 'Asia/Kolkata', 'UTC']) {
+      const parts = new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(at);
+      const expected = ['year', 'month', 'day'].map(key => parts.find(part => part.type === key)!.value).join('-');
+      expect(dateInTimezone(at, zone)).toBe(expected); expect(dateInTimezone(at, zone)).toBe(expected);
+    }
+    expect(() => dateInTimezone(at, 'Invalid/Timezone')).toThrow(RangeError);
+    expect(dateInTimezone(at, 'Asia/Kolkata')).toBe('2026-09-13');
+  });
+  it.each([
+    ['Asia/Kolkata', '2026-09-12T18:29:59Z', '2026-09-12T18:30:01Z', [{ day: '2026-09-12', ms: 1000 }, { day: '2026-09-13', ms: 1000 }]],
+    ['UTC', '2026-09-12T23:59:59Z', '2026-09-13T00:00:01Z', [{ day: '2026-09-12', ms: 1000 }, { day: '2026-09-13', ms: 1000 }]],
+    ['America/New_York', '2026-03-08T05:00:00Z', '2026-03-09T04:00:01Z', [{ day: '2026-03-08', ms: 23 * 3_600_000 }, { day: '2026-03-09', ms: 1000 }]],
+    ['America/New_York', '2026-11-01T04:00:00Z', '2026-11-02T05:00:01Z', [{ day: '2026-11-01', ms: 25 * 3_600_000 }, { day: '2026-11-02', ms: 1000 }]],
+  ] as const)('keeps reporting midnight exact in %s from %s', async (zone, start, end, expected) => {
+    const { splitEngagement } = await import('../packages/analytics-client/src/index');
+    expect(splitEngagement(Date.parse(start), Date.parse(end), zone)).toEqual(expected);
+  });
   it('initializes only once across StrictMode remounts and counts SPA navigations once', async () => {
     const { startAnalytics } = await import('../packages/analytics-client/src/index');
     const options = { consoleOrigin: 'https://console.kineticrouter.com', surface: 'site' as const };

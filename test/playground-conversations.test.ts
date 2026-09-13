@@ -39,6 +39,53 @@ async function fixture() {
 }
 
 describe('account-backed conversation controller', () => {
+  it('shares a deep-link detail request with mount and focus refreshes', async () => {
+    const fx = await fixture(), id = await fx.seed('Saved question'), detail = await fx.db.detail(fx.owner.id, id);
+    const pending = deferred<ConversationDetail>(); vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);
+    const opening = fx.store.open(id); fx.store.refresh(); fx.store.refresh();
+    expect(fx.api.detail).toHaveBeenCalledTimes(1);
+    pending.resolve(detail); await opening;
+    await vi.waitFor(() => expect(fx.store.getSnapshot()).toMatchObject({ chatId: id, loading: false, historyReady: true, error: '' }));
+    expect(fx.store.getSnapshot().messages[0]?.content).toBe('Saved question');
+  });
+  it('retries failed shared reads on a later explicit refresh', async () => {
+    const fx = await fixture(), id = await fx.seed('Saved question'), pending = deferred<ConversationDetail>();
+    vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);
+    const opening = fx.store.open(id); fx.store.refresh(); pending.reject(new Error('Offline')); await opening;
+    await vi.waitFor(() => expect(fx.store.getSnapshot().error).toBe('Offline')); expect(fx.api.detail).toHaveBeenCalledTimes(1);
+    fx.store.refresh(); await vi.waitFor(() => expect(fx.store.getSnapshot()).toMatchObject({ loading: false, historyReady: true, error: '' }));
+    expect(fx.api.detail).toHaveBeenCalledTimes(2);
+  });
+  it('starts a fresh settled read while a pre-send read remains pending', async () => {
+    const fx = await fixture(), id = await fx.seed('Old question'); await fx.store.open(id);
+    const old = await fx.db.detail(fx.owner.id, id), pending = deferred<ConversationDetail>();
+    vi.mocked(fx.api.detail).mockClear(); vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);
+    fx.store.refresh(); fx.prepare('New question'); const sending = fx.store.send(true);
+    await vi.waitFor(() => expect(fx.streams).toHaveLength(1)); fx.streams[0]!.chunk('New reply'); await fx.streams[0]!.finish(); await sending;
+    await vi.waitFor(() => { expect(fx.api.detail).toHaveBeenCalledTimes(2); expect(fx.store.getSnapshot().messages).toHaveLength(4); });
+    pending.resolve(old); await Promise.resolve(); await Promise.resolve();
+    expect(fx.store.getSnapshot().messages.at(-1)?.content).toBe('New reply');
+  });
+  it('shares list refreshes but starts fresh reads across admitted and settled turns', async () => {
+    const fx = await fixture(), pending = deferred<Awaited<ReturnType<HistoryApi['list']>>>();
+    vi.mocked(fx.api.list).mockImplementationOnce(() => pending.promise);
+    const first = fx.store.refreshList(), second = fx.store.refreshList(); expect(fx.api.list).toHaveBeenCalledTimes(1);
+    fx.prepare('New chat'); const id = fx.store.getSnapshot().chatId, sending = fx.store.send(true);
+    await vi.waitFor(() => expect(fx.streams).toHaveLength(1)); expect(fx.api.list).toHaveBeenCalledTimes(2);
+    fx.streams[0]!.chunk('Reply'); await fx.streams[0]!.finish(); await sending;
+    await vi.waitFor(() => expect(fx.api.list).toHaveBeenCalledTimes(3));
+    await vi.waitFor(() => expect(fx.store.getSnapshot().conversations.some(chat => chat.id === id)).toBe(true));
+    pending.resolve({ items: [], nextCursor: null }); await Promise.all([first, second]);
+    expect(fx.store.getSnapshot().conversations.some(chat => chat.id === id)).toBe(true);
+  });
+  it.each(['resolve', 'reject'] as const)('ignores shared detail %s after logout', async outcome => {
+    const fx = await fixture(), id = await fx.seed('Private question'), detail = await fx.db.detail(fx.owner.id, id), pending = deferred<ConversationDetail>();
+    vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);
+    const opening = fx.store.open(id); fx.store.refresh(); fx.store.clear();
+    if (outcome === 'resolve') pending.resolve(detail); else pending.reject(new Error('Old failure'));
+    await opening; await Promise.resolve();
+    expect(fx.store.getSnapshot()).toMatchObject({ messages: [], conversations: [], error: '', legacy: null });
+  });
   it('finishes an admitted reply while disabled and resumes history only after re-enabling', async () => {
     const fx = await fixture(); fx.prepare('Keep this reply');
     const id = fx.store.getSnapshot().chatId, sending = fx.store.send(true);

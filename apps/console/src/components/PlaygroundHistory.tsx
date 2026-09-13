@@ -1,4 +1,5 @@
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useId, useRef, useState, type ReactNode } from 'react';
+import type { Conversation } from '@kineticrouter/portal-contract';
 import { ChevronDown, Plus } from 'lucide-react';
 import { Button } from './Ui';
 import { Modal } from './Modal';
@@ -14,10 +15,11 @@ export function PlaygroundHistory({ onOpen, onNewChat, children }: { onOpen(id: 
   const historyId = useId();
   const newButton = useRef<HTMLDivElement>(null);
   const chatsButton = useRef<HTMLButtonElement>(null);
-  function openChat(id: string) {
+  const openChat = useCallback((id: string) => {
     onOpen(id); setExpanded(false);
     requestAnimationFrame(() => { if (chatsButton.current?.offsetParent) chatsButton.current.focus({ preventScroll: true }); });
-  }
+  }, [onOpen]);
+  const requestRemoval = useCallback((id: string) => { setError(''); setRemoving(id); }, []);
   function newChat() { onNewChat(); setExpanded(false); }
   async function remove() {
     if (!removing || working) return;
@@ -42,10 +44,7 @@ export function PlaygroundHistory({ onOpen, onNewChat, children }: { onOpen(id: 
     <nav className="playground-history" aria-label="Saved chats">
       <div className="playground-history-heading"><h2>Your chats</h2><button className="playground-text-button" type="button" disabled={state.listLoading} onClick={() => void store.refreshList()}>Refresh</button></div>
       <div className="playground-history-list">
-        {state.conversations.map(chat => <div key={chat.id} className={`playground-history-row ${chat.id === state.chatId ? 'is-selected' : ''}`}>
-          <button type="button" className="playground-history-open" aria-current={chat.id === state.chatId ? 'page' : undefined} title={chat.title} onClick={() => openChat(chat.id)}><span>{chat.title}</span><small>{chat.active ? 'Responding' : new Date(chat.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small></button>
-          <RowActionsMenu label={`Actions for ${chat.title}`} items={[{ label: 'Delete', danger: true, onSelect: () => { setError(''); setRemoving(chat.id); } }]} />
-        </div>)}
+        <SavedChatRows conversations={state.conversations} selectedId={state.chatId} onOpen={openChat} onRemove={requestRemoval} />
         {!state.conversations.length && !state.listError && <p className="playground-notice">{state.listLoading ? 'Loading chats…' : 'Your chats will appear here.'}</p>}
       </div>
       {state.listError && <p className="playground-error" role="alert">{state.listError}</p>}
@@ -63,3 +62,12 @@ export function PlaygroundHistory({ onOpen, onNewChat, children }: { onOpen(id: 
     </Modal>
   </>;
 }
+
+const SavedChatRows = memo(function SavedChatRows({ conversations, selectedId, onOpen, onRemove }: {
+  conversations: Conversation[]; selectedId: string; onOpen(id: string): void; onRemove(id: string): void;
+}) {
+  return conversations.map(chat => <div key={chat.id} className={`playground-history-row ${chat.id === selectedId ? 'is-selected' : ''}`}>
+    <button type="button" className="playground-history-open" aria-current={chat.id === selectedId ? 'page' : undefined} title={chat.title} onClick={() => onOpen(chat.id)}><span>{chat.title}</span><small>{chat.active ? 'Responding' : new Date(chat.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small></button>
+    <RowActionsMenu label={`Actions for ${chat.title}`} items={[{ label: 'Delete', danger: true, onSelect: () => onRemove(chat.id) }]} />
+  </div>);
+});

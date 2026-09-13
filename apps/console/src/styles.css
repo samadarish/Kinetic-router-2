@@ -343,7 +343,7 @@ a.console-topnav-link:hover { background:var(--muted); color:var(--foreground); 
   .portal-main,.portal-frame-collapsed .portal-main{width:100%;margin-left:0}.topbar{height:60px;padding:0 14px}.console-topnav{display:none}.menu-button,.mobile-brand{display:grid}
   .content{padding:22px 16px 42px}.overview-page{gap:16px}.overview-welcome{min-height:auto;gap:17px;padding-bottom:17px}.overview-welcome h1{font-size:23px}.overview-actions{width:100%}.overview-actions .button{flex:1}.overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (max-width:470px){.content{padding-inline:12px}.overview-kicker{align-items:flex-start;flex-direction:column;gap:5px}.overview-actions{display:grid;grid-template-columns:1fr 1fr}.overview-actions .button:last-child{grid-column:1/-1}.overview-kpi-grid{grid-template-columns:1fr}.overview-kpi{min-height:120px}}
+@media (max-width:470px){.content{padding-inline:12px}.overview-kicker{align-items:flex-start;flex-direction:column;gap:5px}.overview-actions{display:grid;grid-template-columns:1fr 1fr}.overview-actions .button:last-child:nth-child(odd){grid-column:1/-1}.overview-kpi-grid{grid-template-columns:1fr}.overview-kpi{min-height:120px}}
 
 /* Customer data surfaces */
 .info-banner { display:flex; align-items:flex-start; gap:10px; margin:-7px 0 15px; padding:11px 13px; border:1px solid var(--brand-border); border-radius:9px; background:var(--brand-soft); color:var(--primary); }

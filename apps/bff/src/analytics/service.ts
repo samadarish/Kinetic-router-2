@@ -188,8 +188,11 @@ export class AnalyticsService {
     const groups = new Map<string, Presence[]>(); const paths = new Map<string, Presence[]>();
     for (const item of active) {
       const identityKey = item.userId ? `user:${item.userId}` : `visitor:${item.visitorId}`;
-      groups.set(identityKey, [...groups.get(identityKey) ?? [], item]);
-      const pathKey = `${item.surface}:${item.path}`; paths.set(pathKey, [...paths.get(pathKey) ?? [], item]);
+      const group = groups.get(identityKey);
+      if (group) group.push(item); else groups.set(identityKey, [item]);
+      const pathKey = `${item.surface}:${item.path}`;
+      const path = paths.get(pathKey);
+      if (path) path.push(item); else paths.set(pathKey, [item]);
     }
     const rows = [...groups].map(([id, items]) => {
       const latest = items.sort((a, b) => b.at - a.at)[0]!;

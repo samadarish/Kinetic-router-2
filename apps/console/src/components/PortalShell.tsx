@@ -170,7 +170,7 @@ export function PortalShell() {
   </div>;
 }
 
-class RouteBoundary extends Component<{ children: ReactNode }, { error?: Error }> {
+export class RouteBoundary extends Component<{ children: ReactNode }, { error?: Error }> {
   state: { error?: Error } = {};
 
   static getDerivedStateFromError(error: unknown) {

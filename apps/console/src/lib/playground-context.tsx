@@ -1,32 +1,31 @@
 import { createContext, useContext, useEffect, useState, useSyncExternalStore, type PropsWithChildren } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import type { SessionView } from '@kineticrouter/portal-contract';
-import { jsonBody, portalApi, queryString, streamPlayground } from './api';
-import { refreshPlaygroundBilling } from './playground-state';
-import { browserPlaygroundStorage } from './playground-storage';
-import { createConversationController, type ConversationController, type HistoryApi } from './playground-conversations';
+import { ErrorState, LoadingState } from '../components/Ui';
+import type { ConversationController } from './playground-conversations';
 
-const historyApi: HistoryApi = {
-  list: cursor => portalApi(`/playground/conversations${queryString({ cursor })}`),
-  detail: (id, before) => portalApi(`/playground/conversations/${id}${queryString({ before })}`),
-  create: id => portalApi('/playground/conversations', { method: 'POST', ...jsonBody({ id }) }),
-  remove: id => portalApi(`/playground/conversations/${id}`, { method: 'DELETE' }),
-  import: (id, messages) => portalApi('/playground/conversations/import', { method: 'POST', ...jsonBody({ id, messages }) }),
-};
-const PlaygroundContext = createContext<ConversationController | null>(null);
+const PlaygroundContext = createContext<{ store: ConversationController | null; error: unknown } | null>(null);
 
 export function PlaygroundProvider({ userId, children }: PropsWithChildren<{ userId: string }>) {
   const client = useQueryClient();
-  const [store] = useState(() => createConversationController({
-    userId, storage: browserPlaygroundStorage(),
-    api: historyApi,
-    isEnabled: () => client.getQueryState(['session'])?.status === 'success' && client.getQueryData<SessionView>(['session'])?.playgroundEnabled === true,
-    isOwner: () => { const session = client.getQueryData<SessionView>(['session']); return session?.authenticated === true && session.user?.id === userId; },
-    stream: streamPlayground,
-    settled: () => { void refreshPlaygroundBilling(client, userId); },
-    unavailable: (kind, keyId) => { void client.invalidateQueries({ queryKey: kind === 'models' ? ['playground', 'models', userId, keyId] : ['playground', 'keys', userId] }); },
-  }));
+  const { pathname } = useLocation();
+  const [store, setStore] = useState<ConversationController | null>(null);
+  const [error, setError] = useState<unknown>(null);
   useEffect(() => {
+    if (store || pathname !== '/playground') return;
+    let current = true;
+    setError(null);
+    // Warm the view in parallel with its controller; keep the gate closed until ownership exists.
+    void import('../pages/PlaygroundPage').catch(() => {});
+    void import('./playground-runtime').then(({ createUserPlayground }) => {
+      if (current) { setError(null); setStore(createUserPlayground(client, userId)); }
+    }).catch(reason => { if (current) setError(reason); });
+    return () => { current = false; };
+  }, [client, pathname, store, userId]);
+  // Once initialized, ownership stays above the routes so navigation keeps replies alive.
+  useEffect(() => {
+    if (!store) return;
     const checkOwner = () => {
       const session = client.getQueryData<SessionView>(['session']);
       if (session && (!session.authenticated || session.user?.id !== userId)) store.clear();
@@ -49,11 +48,18 @@ export function PlaygroundProvider({ userId, children }: PropsWithChildren<{ use
       store.detach();
     };
   }, [client, store, userId]);
-  return <PlaygroundContext.Provider value={store}>{children}</PlaygroundContext.Provider>;
+  return <PlaygroundContext.Provider value={{ store, error }}>{children}</PlaygroundContext.Provider>;
+}
+
+export function PlaygroundGate({ children }: PropsWithChildren) {
+  const value = useContext(PlaygroundContext);
+  if (value?.error) return <ErrorState error={value.error} retry={() => window.location.reload()} />;
+  if (!value?.store) return <div className="route-loading"><LoadingState label="Loading page" /></div>;
+  return children;
 }
 
 export function usePlayground() {
-  const store = useContext(PlaygroundContext);
+  const store = useContext(PlaygroundContext)?.store;
   if (!store) throw new Error('Playground requires an authenticated conversation.');
   const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
   return { state, store };

@@ -35,6 +35,24 @@ function collect(instance: ReturnType<typeof createApp>, boot: Awaited<ReturnTyp
 }
 
 describe('website analytics security and collection', () => {
+  it('groups shared paths and identities without changing surface filters, pagination or repeated results', async () => {
+    let now = Date.now(); const instance = fixture({ analyticsNow: () => now });
+    const account = await authenticate(instance), customer = await bootstrap(instance, { cookie: account.cookie });
+    await collect(instance, customer);
+    const otherCustomerTab = await bootstrap(instance, { cookie: customer.cookie, origin: config.portalOrigin });
+    now += 10; await collect(instance, otherCustomerTab, { path: '/dashboard' });
+    const visitor = await bootstrap(instance); await collect(instance, visitor);
+    const otherVisitorTab = await bootstrap(instance, { cookie: visitor.cookie }); await collect(instance, otherVisitorTab);
+    const anotherVisitor = await bootstrap(instance); await collect(instance, anotherVisitor);
+    const live = instance.analytics.live('all', 1, 1);
+    expect(live).toMatchObject({ visitors: 3, customers: 1, activeTabs: 5, total: 3, page: 1, pageSize: 1, items: [{ authenticated: true, tabs: 2, path: '/dashboard', surface: 'console' }] });
+    expect(live.pages).toEqual([{ surface: 'site', path: '/docs', visitors: 3, tabs: 4 }, { surface: 'console', path: '/dashboard', visitors: 1, tabs: 1 }]);
+    expect(instance.analytics.live('all', 1, 1)).toEqual(live);
+    expect(instance.analytics.live('all', 2, 1).items).toMatchObject([{ authenticated: false }]);
+    expect(instance.analytics.live('site', 1, 25)).toMatchObject({ activeTabs: 4, customers: 1, visitors: 3 });
+    expect(instance.analytics.live('console', 1, 25)).toMatchObject({ activeTabs: 1, customers: 1, visitors: 1 });
+    now += 90_001; expect(instance.analytics.live('all', 1, 25)).toMatchObject({ activeTabs: 0, total: 0, items: [], pages: [] });
+  });
   it('allows only the exact collector origins and does not expose admin reports cross-origin', async () => {
     const instance = fixture();
     for (const origin of [config.portalOrigin, ...config.publicSiteOrigins]) {

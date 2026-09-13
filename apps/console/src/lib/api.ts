@@ -1,6 +1,4 @@
 import type { ApiFailure, ApiSuccess } from '@kineticrouter/portal-contract';
-import type { PlaygroundTurnInput, PlaygroundEvent } from '@kineticrouter/portal-contract';
-import { consumePlaygroundStream } from './playground-stream';
 
 let csrfToken = '';
 
@@ -20,6 +18,10 @@ export class PortalApiError extends Error {
 
 export function setCsrfToken(value?: string) {
   csrfToken = value ?? '';
+}
+
+export function getCsrfToken() {
+  return csrfToken;
 }
 
 export async function portalApi<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -66,22 +68,6 @@ export async function portalApi<T>(path: string, init: RequestInit = {}): Promis
 
 export function jsonBody(value: unknown): RequestInit {
   return { body: JSON.stringify(value) };
-}
-
-export async function streamPlayground(input: PlaygroundTurnInput, onEvent: (event: PlaygroundEvent) => void, signal: AbortSignal) {
-  const combined = AbortSignal.any([signal, AbortSignal.timeout(120_000)]);
-  const response = await fetch('/portal/v1/playground/chat', {
-    method: 'POST', credentials: 'include', signal: combined,
-    headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null) as ApiFailure | null;
-    if (response.status === 401) window.dispatchEvent(new CustomEvent('portal:unauthorized'));
-    throw new PortalApiError({ status: response.status, code: payload?.error?.code ?? 'PLAYGROUND_REQUEST_FAILED', message: payload?.error?.message ?? 'The model request could not be completed.', requestId: payload?.requestId });
-  }
-  if (!response.body || !response.headers.get('content-type')?.includes('text/event-stream')) throw new Error('The model response could not be read.');
-  await consumePlaygroundStream(response.body, onEvent, combined);
 }
 
 export function queryString(values: Record<string, string | number | boolean | null | undefined>) {

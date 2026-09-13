@@ -24,6 +24,24 @@ function fixture(storage?: PlaygroundStorage) {
 afterEach(() => { vi.useRealTimers(); });
 
 describe('tab conversation store', () => {
+  it('does not read legacy storage or schedule persistence for authoritative remote state', () => {
+    vi.useFakeTimers();
+    const storage = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() };
+    const store = createPlaygroundStore({ remote: true, initial: emptyPlayground(), userId: '7', storage, isOwner: () => true, stream: vi.fn(), settled: vi.fn(), unavailable: vi.fn() });
+    const changed = vi.fn(); store.subscribe(changed);
+    store.selectKey('2'); store.selectModel('chat'); store.setDraft('Retain this draft');
+    expect(storage.getItem).not.toHaveBeenCalled(); expect(vi.getTimerCount()).toBe(0); expect(changed).toHaveBeenCalledTimes(3);
+    store.flush(); expect(storage.setItem).not.toHaveBeenCalled(); expect(store.getSnapshot().draft).toBe('Retain this draft');
+    store.detach();
+  });
+  it('prepends older messages preserving current objects, input order and duplicate incoming IDs', () => {
+    const current = { id: 4, role: 'user' as const, content: 'Current' };
+    const older = { id: 2, role: 'user' as const, content: 'Older' };
+    const store = createPlaygroundStore({ remote: true, initial: { ...emptyPlayground(), messages: [current] }, userId: '7', isOwner: () => true, stream: vi.fn(), settled: vi.fn(), unavailable: vi.fn() });
+    store.prepend([older, { ...current, content: 'Stale duplicate' }, older]);
+    expect(store.getSnapshot().messages).toEqual([older, older, current]); expect(store.getSnapshot().messages.at(-1)).toBe(current);
+    store.detach();
+  });
   it('finishes one stream with no mounted page and restores exact text, draft, model, usage and timing', async () => {
     const f = fixture(); const notify = vi.fn();
     const unsubscribe = f.store.subscribe(notify);

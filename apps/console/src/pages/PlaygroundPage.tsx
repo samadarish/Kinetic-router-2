@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowDown, ArrowUp, ChevronDown, Square } from 'lucide-react';
@@ -73,7 +73,7 @@ export function PlaygroundPage() {
     follow.current = true; setFollowing(true);
     if (transcript.current) transcript.current.scrollTop = transcript.current.scrollHeight;
   }
-  function openChat(id: string) { void store.open(id); setParams({ chat: id }); }
+  const openChat = useCallback((id: string) => { void store.open(id); setParams({ chat: id }); }, [store, setParams]);
   function newChat() { const id = store.newChat(); if (!id) return; setParams({ chat: id }); jumpToLatest(); textarea.current?.focus(); }
   async function loadOlder() {
     const element = transcript.current, id = state.chatId;

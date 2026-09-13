@@ -1,7 +1,7 @@
 import { CopyPageButton } from './copy-page-button';
 import { DocsArticle } from './docs-article';
 import { DocsHeader } from './docs-header';
-import { rebrandHtml } from '@/data/brand';
+import type { DocsPresentation } from '@/data/docs-presentation';
 import type { DocumentationStatus } from '@/data/documentation';
 import { docsNavigation } from '@/data/docs-navigation';
 import { DocsNavigation } from './docs-navigation';
@@ -9,15 +9,9 @@ import { DocsStatusBanner } from './docs-status-banner';
 import { siteConfig } from '@/data/site-config';
 import { SiteTheme } from './site-theme';
 
-function pageToc(html: string, fallback: string[]) {
-  const matches = [...html.matchAll(/<h[23][^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h[23]>/gi)].map((match) => ({ id: match[1], heading: match[2].replace(/<[^>]+>/g, '').replaceAll('&amp;', '&').replaceAll('&#x27;', "'") }));
-  return matches.length ? matches : fallback.filter(Boolean).slice(1).map((heading) => ({ heading, id: heading.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
-}
-
-export function DocsShell({ route, html, text, headings, status }: { route: string; html: string; text: string; headings: string[]; status: DocumentationStatus }) {
+export function DocsShell({ route, presentation, text, status }: { route: string; presentation: DocsPresentation; text: string; status: DocumentationStatus }) {
   const isDocsHome = route === '/docs';
-  const toc = pageToc(html, headings);
-  const renderedHtml = rebrandHtml(html);
+  const { toc, html: renderedHtml } = presentation;
   const layout = isDocsHome
     ? 'grid-cols-1'
     : 'grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[260px_minmax(0,1fr)_230px]';

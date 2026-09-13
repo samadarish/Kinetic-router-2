@@ -15,7 +15,9 @@ export type PlaygroundSnapshot = SavedPlayground & { error: string; persistenceN
 
 /** Owns one tab's conversation independently of any route or mounted view. */
 export function createPlaygroundStore(options: Options) {
-  const restored = readPlayground(options.storage, options.userId);
+  const restored = options.remote && options.initial
+    ? { saved: options.initial, notice: '', discard: false }
+    : readPlayground(options.storage, options.userId);
   let snapshot: PlaygroundSnapshot = { ...(options.initial ?? restored.saved), error: '', persistenceNotice: options.remote ? '' : restored.notice };
   let discard = restored.discard;
   let nextId = Math.max(0, ...snapshot.messages.map(message => message.id)) + 1;
@@ -41,7 +43,7 @@ export function createPlaygroundStore(options: Options) {
     if (cleared || !options.isOwner()) return;
     snapshot = { ...snapshot, ...patch }; notify();
     if (immediate) flush();
-    else if (pendingSave === undefined) pendingSave = setTimeout(flush, 250);
+    else if (!options.remote && pendingSave === undefined) pendingSave = setTimeout(flush, 250);
   }
   function stop() {
     buffer?.flush();
@@ -128,7 +130,10 @@ export function createPlaygroundStore(options: Options) {
       nextId = Math.max(0, ...saved.messages.map(message => message.id)) + 1;
       update({ ...saved, error }, true);
     },
-    prepend: (messages: SavedPlayground['messages']) => update({ messages: [...messages.filter(message => !snapshot.messages.some(current => current.id === message.id)), ...snapshot.messages] }),
+    prepend: (messages: SavedPlayground['messages']) => {
+      const existingIds = new Set(snapshot.messages.map(message => message.id));
+      update({ messages: [...messages.filter(message => !existingIds.has(message.id)), ...snapshot.messages] });
+    },
     getSnapshot: () => snapshot,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
     setDraft: (draft: string) => update({ draft }),

@@ -38,7 +38,15 @@ export function PlaygroundChatsPage() {
   });
   const chat = detail.data?.conversation;
   const rows = useMemo(() => list.data?.pages.flatMap(page => page.items) ?? [], [list.data]);
-  const messages = useMemo(() => detail.data ? conversationMessages({ ...detail.data, turns: [...earlier, ...detail.data.turns].filter((turn, index, all) => all.findIndex(row => row.id === turn.id) === index).sort((a, b) => a.sequence - b.sequence) }) : [], [detail.data, earlier]);
+  const messages = useMemo(() => {
+    if (!detail.data) return [];
+    const seen = new Set<string>();
+    const turns = [...earlier, ...detail.data.turns].filter(turn => {
+      if (seen.has(turn.id)) return false;
+      seen.add(turn.id); return true;
+    }).sort((a, b) => a.sequence - b.sequence);
+    return conversationMessages({ ...detail.data, turns });
+  }, [detail.data, earlier]);
   function open(id: string) { setSelected(id); setEarlier([]); setBefore(null); setError(''); }
   async function loadOlder() {
     if (!selected || olderBusy) return;

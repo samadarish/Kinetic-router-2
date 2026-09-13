@@ -1,5 +1,7 @@
 import { playgroundKeyIdSchema, playgroundModelSchema, type PlaygroundUsage } from '@kineticrouter/portal-contract';
 import type { ConversationMessage } from './playground-state';
+import { clearPlaygroundStorage, PLAYGROUND_STORAGE_KEY, type PlaygroundStorage } from './playground-browser-storage';
+export { browserPlaygroundStorage, clearPlaygroundStorage, PLAYGROUND_STORAGE_KEY, type PlaygroundStorage } from './playground-browser-storage';
 
 export type PlaygroundActivity = 'Ready' | 'Sending' | 'Receiving' | 'Complete' | 'Stopped' | 'Failed';
 export type PlaygroundTiming = { firstText?: number; elapsed?: number; model?: string };
@@ -7,17 +9,11 @@ export type SavedPlayground = {
   selectedKey: string | null; selectedModel: string | null; messages: ConversationMessage[];
   draft: string; activity: PlaygroundActivity; timing: PlaygroundTiming;
 };
-export type PlaygroundStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
-export const PLAYGROUND_STORAGE_KEY = 'kineticrouter-playground-v1';
 // A storage limit only: an oversized conversation stays intact in memory.
 const MAX_SNAPSHOT_LENGTH = 2 * 1024 * 1024;
 export const persistenceNotice = 'This chat is kept while the console stays open, but could not be saved for a refresh.';
 
 export const emptyPlayground = (): SavedPlayground => ({ selectedKey: null, selectedModel: null, messages: [], draft: '', activity: 'Ready', timing: {} });
-
-export function browserPlaygroundStorage(): PlaygroundStorage | undefined {
-  try { return window.sessionStorage; } catch { return undefined; }
-}
 
 export function readPlayground(storage: PlaygroundStorage | undefined, userId: string): { saved: SavedPlayground; notice: string; discard: boolean } {
   const empty = { saved: emptyPlayground(), notice: '', discard: false };
@@ -83,10 +79,6 @@ export function writePlayground(storage: PlaygroundStorage | undefined, userId: 
     storage.setItem(PLAYGROUND_STORAGE_KEY, raw);
     return true;
   } catch { clearPlaygroundStorage(storage); return false; }
-}
-
-export function clearPlaygroundStorage(storage: PlaygroundStorage | undefined) {
-  try { storage?.removeItem(PLAYGROUND_STORAGE_KEY); } catch { /* Storage may be disabled. */ }
 }
 
 function record(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }

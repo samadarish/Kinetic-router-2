@@ -6,6 +6,7 @@ type Options = { consoleOrigin: string; surface: 'site' | 'console' };
 const MAX_BYTES = 16 * 1024;
 const DAY_MS = 86_400_000;
 let singleton: Tracker | undefined;
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
 export function startAnalytics(options: Options) {
   if (typeof window === 'undefined' || !globalThis.crypto?.randomUUID) return;
@@ -16,7 +17,13 @@ export function analyticsIdentityChanged() { singleton?.identityChanged(); }
 export function trackDocsCopy() { singleton?.action('docs_copy'); }
 
 export function dateInTimezone(at: number, timezone: string) {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(at);
+  let formatter = dateFormatters.get(timezone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
+    if (dateFormatters.size >= 8) dateFormatters.delete(dateFormatters.keys().next().value!);
+    dateFormatters.set(timezone, formatter);
+  }
+  const parts = formatter.formatToParts(at);
   return ['year', 'month', 'day'].map(key => parts.find(part => part.type === key)!.value).join('-');
 }
 /** Split visible intervals at reporting midnight without assuming a fixed UTC offset. */

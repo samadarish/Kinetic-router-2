@@ -62,14 +62,27 @@ manifest.mainRoutes = [...new Set([...manifest.mainRoutes, ...catalogAdditions.m
 export const docsRoutes = manifest.docsRoutes;
 export const docsMeta = manifest.docsMeta;
 export const docsContent = manifest.docsContent;
+const docsMetaByRoute = new Map(docsMeta.map(page => [page.route, page]));
+const docsContentByRoute = new Map(docsContent.map(page => [page.route, page]));
+const knownDocsRoutes = new Set(docsRoutes);
+export type ResolvedDocsPage = ReturnType<typeof resolveDocsPage>;
+const resolvedDocsPages = new Map<string, ResolvedDocsPage>();
 export function getModel(provider: string, slug: string) { return models.find((model) => model.provider === provider && model.slug === slug); }
 function normalizedMeta(meta: PageMeta | undefined) {
   return meta ? { ...meta, title: meta.title.replace(/\s+(?:-|\|)\s+(?:kineticrouter\.com|kineticRouter)$/i, '') } : meta;
 }
 export function getPageMeta(route: string) { return normalizedMeta([...manifest.mainMeta, ...manifest.docsMeta].find((meta) => meta.route === route)); }
-export function getDocsPage(route: string) {
-  const meta = normalizedMeta(manifest.docsMeta.find((item) => item.route === route));
-  const content = manifest.docsContent.find((item) => item.route === route);
+export function getDocsPage(route: string): ResolvedDocsPage {
+  const cached = resolvedDocsPages.get(route);
+  if (cached) return cached;
+  const page = resolveDocsPage(route);
+  // Static content only: unknown URLs cannot grow this cache. Reloading the module resets it.
+  if (knownDocsRoutes.has(route)) resolvedDocsPages.set(route, page);
+  return page;
+}
+function resolveDocsPage(route: string) {
+  const meta = normalizedMeta(docsMetaByRoute.get(route));
+  const content = docsContentByRoute.get(route);
   const status = documentationStatusFor(route);
   if (PENDING_PORTAL_ROUTES.has(route) && content) {
     const subject = route.endsWith('/balance') ? 'Balance API' : 'Provider pricing API';

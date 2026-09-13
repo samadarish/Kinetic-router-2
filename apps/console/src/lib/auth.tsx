@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityMap, PortalUser, SessionView, SignupInput, GoogleRegistrationInput } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
 import { applyLoggedOutQueryState } from './auth-cache';
-import { browserPlaygroundStorage, clearPlaygroundStorage } from './playground-storage';
+import { browserPlaygroundStorage, clearAllPlaygroundStorage } from './playground-browser-storage';
 
 type LoginResult =
   | { requires2fa: true; tempToken: string; maskedEmail?: string }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     setCsrfToken(session.data?.csrfToken);
-    if (session.data && !session.data.authenticated) clearPlaygroundStorage(browserPlaygroundStorage());
+    if (session.data && !session.data.authenticated) clearAllPlaygroundStorage(browserPlaygroundStorage());
   }, [session.data?.csrfToken, session.data?.authenticated]);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     if (!result.requires2fa) {
       await client.cancelQueries();
       client.removeQueries({ predicate: query => query.queryKey[0] !== 'session' });
-      clearPlaygroundStorage(browserPlaygroundStorage());
+      clearAllPlaygroundStorage(browserPlaygroundStorage());
       setCsrfToken(result.csrfToken);
       client.setQueryData<SessionView>(['session'], {
         authenticated: true,

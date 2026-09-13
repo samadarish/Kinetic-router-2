@@ -1,11 +1,11 @@
-import { lazy } from 'react';
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { PortalShell } from './components/PortalShell';
+import { PortalShell, RouteBoundary } from './components/PortalShell';
 import { ErrorState, LoadingState } from './components/Ui';
 import { useAuth } from './lib/auth';
-import { PlaygroundProvider } from './lib/playground-context';
+import { PlaygroundGate, PlaygroundProvider } from './lib/playground-context';
 import { SignInPage } from './pages/SignInPage';
-import { SignUpPage } from './pages/SignUpPage';
+const SignUpPage = lazy(() => import('./pages/SignUpPage').then(module => ({ default: module.SignUpPage })));
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
 const ApiKeysPage = lazy(() => import('./pages/ApiKeysPage').then((module) => ({ default: module.ApiKeysPage })));
@@ -27,12 +27,12 @@ export function App() {
   if (auth.error) return <div className="app-loading"><ErrorState error={auth.error} retry={() => void auth.refresh()} /></div>;
   return <Routes>
     <Route path="/sign-in" element={<SignInPage />} />
-    <Route path="/sign-up" element={<SignUpPage key="email" />} />
-    <Route path="/auth/google/complete" element={<SignUpPage key="google" google />} />
+    <Route path="/sign-up" element={<RouteBoundary key="email"><Suspense fallback={<LoadingState label="Loading page" />}><SignUpPage /></Suspense></RouteBoundary>} />
+    <Route path="/auth/google/complete" element={<RouteBoundary key="google"><Suspense fallback={<LoadingState label="Loading page" />}><SignUpPage google /></Suspense></RouteBoundary>} />
     <Route element={auth.authenticated && auth.user ? <PlaygroundProvider key={auth.user.id} userId={auth.user.id}><PortalShell /></PlaygroundProvider> : <Navigate to="/sign-in" replace state={{ from: location.pathname + location.search }} />}>
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/api-keys" element={<ApiKeysPage />} />
-      <Route path="/playground" element={auth.playgroundEnabled ? <PlaygroundPage /> : <Navigate to="/dashboard" replace />} />
+      <Route path="/playground" element={auth.playgroundEnabled ? <PlaygroundGate><PlaygroundPage /></PlaygroundGate> : <Navigate to="/dashboard" replace />} />
       <Route path="/admin/playground" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <PlaygroundSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/admin/playground/chats" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <PlaygroundChatsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/admin/website" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <WebsiteSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />

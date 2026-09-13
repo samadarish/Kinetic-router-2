@@ -1,7 +1,6 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Activity, Coins, Download, Percent, Search, Timer, Zap } from 'lucide-react';
+import { Activity, Coins, Download, Percent, RefreshCw, Search, Timer, Zap } from 'lucide-react';
 import { usageSummarySchema, type Paginated, type UsageEvent } from '@kineticrouter/portal-contract';
 import type { DistributionItem } from '../components/UsageDistributionCard';
 import { ProviderIcon } from '../components/ProviderIcon';
@@ -9,15 +8,25 @@ import UsageDateRangePicker, { getDefaultUsageRange, type UsageDateRange } from 
 import { Button, Card, EmptyState, ErrorState, LoadingState, PageHeader, StatCard } from '../components/Ui';
 import { PortalApiError, portalApi, queryString } from '../lib/api';
 import { csvCell } from '../lib/csv';
-import { useAuth } from '../lib/auth';
 import { formatDate, formatLatency, formatMoney, formatNumber } from '../lib/format';
+import { publicSiteHref } from '../lib/public-site';
 
-const UsageChart = lazy(() => import('../components/UsageChart'));
-const UsageDistributionCard = lazy(() => import('../components/UsageDistributionCard'));
-const TokenUsageTrend = lazy(() => import('../components/TokenUsageTrend'));
+function loadOnce<T>(load: () => Promise<T>) {
+  let pending: Promise<T> | undefined;
+  return () => pending ??= load();
+}
+const loadUsageChart = loadOnce(() => import('../components/UsageChart'));
+const loadDistribution = loadOnce(() => import('../components/UsageDistributionCard'));
+const loadTokenTrend = loadOnce(() => import('../components/TokenUsageTrend'));
+const UsageChart = lazy(loadUsageChart);
+const UsageDistributionCard = lazy(loadDistribution);
+const TokenUsageTrend = lazy(loadTokenTrend);
 
 export function UsagePage() {
-  const { playgroundEnabled } = useAuth();
+  useEffect(() => {
+    // Download alongside the queries. Lazy rendering retains the existing error boundary.
+    void Promise.all([loadUsageChart(), loadDistribution(), loadTokenTrend()]).catch(() => {});
+  }, []);
   const [range, setRange] = useState<UsageDateRange>(getDefaultUsageRange);
   const [page, setPage] = useState(1);
   const [model, setModel] = useState('');
@@ -82,6 +91,15 @@ export function UsagePage() {
   const analyticsGranularity = summary.data?.range?.granularity ?? 'hour';
   const displayedRange = summary.data?.range ?? range;
   const displayedPeriod = `${displayedRange.startDate} to ${displayedRange.endDate}`;
+  const refreshing = summary.isFetching || events.isFetching;
+
+  function refreshUsage() {
+    if (refreshing) return;
+    void Promise.all([
+      summary.refetch({ cancelRefetch: false }),
+      events.refetch({ cancelRefetch: false }),
+    ]);
+  }
 
   function applyRange(nextRange: UsageDateRange) {
     setRange(nextRange);
@@ -105,7 +123,7 @@ export function UsagePage() {
     <PageHeader
       title="Usage"
       description="Billed costs, tokens, and request history."
-      action={<div className="page-header-actions">{playgroundEnabled && <Link className="button button-secondary" to="/playground">Model rates</Link>}<Button variant="secondary" disabled={!events.data?.items.length || events.isPlaceholderData || events.isFetching || Boolean(events.error)} onClick={exportCsv}><Download size={15} /> Export current page</Button></div>}
+      action={<div className="page-header-actions"><a className="button button-secondary" href={publicSiteHref('/pricing')} target="_blank" rel="noopener noreferrer">Public pricing</a><Button variant="secondary" aria-label="Refresh usage" disabled={refreshing} onClick={refreshUsage}><RefreshCw size={15} className={refreshing ? 'spin' : undefined} />{refreshing ? 'Refreshing…' : 'Refresh'}</Button><Button variant="secondary" disabled={!events.data?.items.length || events.isPlaceholderData || events.isFetching || Boolean(events.error)} onClick={exportCsv}><Download size={15} /> Export current page</Button></div>}
     />
 
     {summary.isFetching && summary.data && <p className="query-updating" role="status">Updating usage…{summary.isPlaceholderData ? ` Showing ${displayedPeriod}.` : ''}</p>}
@@ -153,7 +171,8 @@ export function UsagePage() {
     {events.isFetching && events.data && <p className="query-updating" role="status">Updating requests…{events.isPlaceholderData ? ' Showing the previous results.' : ''}</p>}
     <Card className="table-card usage-table-card" aria-busy={events.isFetching}>
       <div className="table-card-title"><div><h2>Request history</h2><p>Detailed usage events from your account.</p></div><span><Search size={14} /> {events.data?.total ?? 0} results</span></div>
-      {events.isLoading ? <LoadingState label="Loading usage history" /> : events.error ? <ErrorState error={events.error} retry={() => void events.refetch()} /> : !events.data?.items.length ? <EmptyState title="No usage in this period" description="Try a wider date range or make your first API request." /> : <><div className="data-table-wrap"><table className="data-table usage-table"><thead><tr><th>Time</th><th>Model</th><th>API key</th><th>Tokens</th><th>Cache read / create</th><th>Latency</th><th className="align-right">Cost</th></tr></thead><tbody>{events.data.items.map((item) => <tr key={item.id}><td><span className="date-cell">{formatDate(item.createdAt, true)}</span></td><td><div className="usage-model"><strong className="usage-model-name"><ProviderIcon model={item.model} size={14} /><span>{item.model}</span></strong><small>{item.inboundEndpoint || item.requestType || 'API request'}</small></div></td><td>{item.apiKeyName || 'Deleted key'}</td><td><div className="token-split"><span>{formatNumber(item.inputTokens)} in</span><span>{formatNumber(item.outputTokens)} out</span></div></td><td><div className="token-split"><span>{formatNumber(item.cacheReadTokens)} read</span><span>{formatNumber(item.cacheCreationTokens)} create</span></div></td><td><div className="latency-cell"><span>{formatLatency(item.firstTokenMs)} TTFT</span><small>{formatLatency(item.durationMs)} total</small></div></td><td className="align-right mono">{formatMoney(item.actualCost, 6)}</td></tr>)}</tbody></table></div><div className="pagination"><span>{events.data.total} events</span><div><Button variant="secondary" disabled={events.isPlaceholderData || events.data.page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</Button><span>{events.data.page} / {events.data.pages}</span><Button variant="secondary" disabled={events.isPlaceholderData || events.data.page >= events.data.pages} onClick={() => setPage((value) => value + 1)}>Next</Button></div></div></>}
+      {events.error && events.data && <ErrorState error={events.error} retry={() => void events.refetch()} />}
+      {events.isLoading ? <LoadingState label="Loading usage history" /> : events.error && !events.data ? <ErrorState error={events.error} retry={() => void events.refetch()} /> : !events.data?.items.length ? <EmptyState title="No usage in this period" description="Try a wider date range or make your first API request." /> : <><div className="data-table-wrap"><table className="data-table usage-table"><thead><tr><th>Time</th><th>Model</th><th>API key</th><th>Tokens</th><th>Cache read / create</th><th>Latency</th><th className="align-right">Cost</th></tr></thead><tbody>{events.data.items.map((item) => <tr key={item.id}><td><span className="date-cell">{formatDate(item.createdAt, true)}</span></td><td><div className="usage-model"><strong className="usage-model-name"><ProviderIcon model={item.model} size={14} /><span>{item.model}</span></strong><small>{item.inboundEndpoint || item.requestType || 'API request'}</small></div></td><td>{item.apiKeyName || 'Deleted key'}</td><td><div className="token-split"><span>{formatNumber(item.inputTokens)} in</span><span>{formatNumber(item.outputTokens)} out</span></div></td><td><div className="token-split"><span>{formatNumber(item.cacheReadTokens)} read</span><span>{formatNumber(item.cacheCreationTokens)} create</span></div></td><td><div className="latency-cell"><span>{formatLatency(item.firstTokenMs)} TTFT</span><small>{formatLatency(item.durationMs)} total</small></div></td><td className="align-right mono">{formatMoney(item.actualCost, 6)}</td></tr>)}</tbody></table></div><div className="pagination"><span>{events.data.total} events</span><div><Button variant="secondary" disabled={events.isPlaceholderData || events.data.page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</Button><span>{events.data.page} / {events.data.pages}</span><Button variant="secondary" disabled={events.isPlaceholderData || events.data.page >= events.data.pages} onClick={() => setPage((value) => value + 1)}>Next</Button></div></div></>}
     </Card>
   </>;
 }

@@ -2,6 +2,8 @@ import type { Conversation, ConversationDetail, ConversationPage, PlaygroundEven
 import { PortalApiError } from './api';
 import { createPlaygroundStore, type PlaygroundStore, type PlaygroundSnapshot } from './playground-store';
 import { emptyPlayground, readPlayground, clearPlaygroundStorage, type PlaygroundStorage, type SavedPlayground } from './playground-storage';
+import { CHAT_DRAFTS_KEY } from './playground-browser-storage';
+export { CHAT_DRAFTS_KEY } from './playground-browser-storage';
 
 type LocalDraft = { draft: string; selectedKey: string | null; selectedModel: string | null; localOnly: boolean };
 export type HistoryApi = {
@@ -13,7 +15,6 @@ export type HistoryApi = {
 };
 type Options = { userId: string; storage?: PlaygroundStorage; isOwner(): boolean; isEnabled?(): boolean; api: HistoryApi; stream(input: PlaygroundTurnInput, onEvent: (event: PlaygroundEvent) => void, signal: AbortSignal): Promise<void>; settled(): void; unavailable(kind: 'keys' | 'models', keyId: string): void };
 export type HistorySnapshot = PlaygroundSnapshot & { historyReady: boolean; chatId: string; conversations: Conversation[]; listLoading: boolean; listError: string; nextCursor: string | null; loading: boolean; activeChatId: string | null; older: number | null; omittedTurns: number; legacy: SavedPlayground | null; legacyDismissed: boolean };
-export const CHAT_DRAFTS_KEY = 'kineticrouter-playground-drafts-v2';
 export function conversationMessages(detail: ConversationDetail): SavedPlayground['messages'] {
   return detail.turns.flatMap(turn => [
     { id: turn.sequence * 2, role: 'user' as const, content: turn.userText },
@@ -43,6 +44,21 @@ export function createConversationController(options: Options) {
   const ready = new Set<string>();
   const reads = new Map<string, number>();
   const invalidateRead = (id: string) => reads.set(id, (reads.get(id) ?? 0) + 1);
+  const pendingDetails = new Map<string, { read: number; promise: Promise<ConversationDetail> }>();
+  function requestDetail(id: string, previousRead: number, read: number) {
+    const pending = pendingDetails.get(id);
+    if (pending && pending.read === previousRead) {
+      pending.read = read;
+      return pending.promise;
+    }
+    const request = { read, promise: options.api.detail(id) };
+    const finish = () => {
+      if (pendingDetails.get(id) === request) pendingDetails.delete(id);
+    };
+    void request.promise.then(finish, finish);
+    pendingDetails.set(id, request);
+    return request.promise;
+  }
   function remember(chat: Conversation) {
     const previous = summaries.get(chat.id);
     if (previous && previous.revision > chat.revision) return previous;
@@ -51,6 +67,19 @@ export function createConversationController(options: Options) {
   }
   const listeners = new Set<() => void>();
   let alive = true, activeId: string | null = null, requestGeneration = 0, listGeneration = 0;
+  let listMutation = 0;
+  let pendingList: { generation: number; mutation: number; cursor: string | undefined; promise: Promise<ConversationPage> } | undefined;
+  function requestList(cursor: string | undefined, previousGeneration: number, generation: number) {
+    if (pendingList && pendingList.cursor === cursor && pendingList.generation === previousGeneration && pendingList.mutation === listMutation) {
+      pendingList.generation = generation;
+      return pendingList.promise;
+    }
+    const request = { generation, mutation: listMutation, cursor, promise: options.api.list(cursor) };
+    const finish = () => { if (pendingList === request) pendingList = undefined; };
+    void request.promise.then(finish, finish);
+    pendingList = request;
+    return request.promise;
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   const importId = crypto.randomUUID();
   let state: HistorySnapshot = { ...emptyPlayground(), error: '', persistenceNotice: '', historyReady: true, chatId: selected, conversations: [], listLoading: false, listError: '', nextCursor: null, loading: false, activeChatId: null, older: null, omittedTurns: 0, legacy, legacyDismissed: dismissed };
@@ -89,6 +118,7 @@ export function createConversationController(options: Options) {
           if (!summaries.has(id)) {
             const created = await options.api.create(id);
             if (!owns() || removed.has(id)) return;
+            listMutation++;
             signal.throwIfAborted();
             summaries.set(id, created); locals.set(id, { ...locals.get(id)!, localOnly: false });
           }
@@ -98,6 +128,7 @@ export function createConversationController(options: Options) {
           await options.stream(turn, event => {
             if (!owns() || removed.has(id)) return;
             if (event.type === 'turn_started') {
+              listMutation++;
               submitted = true;
               const chat = summaries.get(id)!; summaries.set(id, { ...chat, revision: event.revision, turnCount: event.sequence, active: true });
               omitted.set(id, event.omittedTurns); if (selected === id) emit({ omittedTurns: event.omittedTurns });
@@ -113,6 +144,7 @@ export function createConversationController(options: Options) {
       settled: () => {
         if (activeId === id) activeId = null;
         if (!owns()) return;
+        listMutation++;
         emit({ activeChatId: activeId }); options.settled();
         if (!removed.has(id)) { invalidateRead(id); ready.delete(id); void load(id, false); } void refreshList();
       },
@@ -131,9 +163,10 @@ export function createConversationController(options: Options) {
       emit({ ...driverFor(id).getSnapshot(), persistenceNotice: state.persistenceNotice, chatId: id, loading: !locals.get(id)?.localOnly, older: null, omittedTurns: 0 }); schedule();
     }
     if (locals.get(id)?.localOnly || activeId === id) { if (selected === id) emit({ loading: false }); return; }
-    const read = (reads.get(id) ?? 0) + 1; reads.set(id, read);
+    const previousRead = reads.get(id) ?? 0;
+    const read = previousRead + 1; reads.set(id, read);
     try {
-      const detail = await options.api.detail(id);
+      const detail = await requestDetail(id, previousRead, read);
       if (!owns() || removed.has(id) || reads.get(id) !== read || (select && generation !== requestGeneration)) return;
       const remembered = remember(detail.conversation);
       if (remembered.revision !== detail.conversation.revision || remembered.active !== detail.conversation.active) { if (selected === id) emit({ loading: false }); return; }
@@ -158,13 +191,18 @@ export function createConversationController(options: Options) {
   async function refreshList(more = false) {
     if (!canUse()) return;
     if (!owns() || (more && (!state.nextCursor || state.listLoading))) return;
+    const previousGeneration = listGeneration;
     const generation = ++listGeneration, cursor = more ? state.nextCursor! : undefined;
     emit({ listLoading: true, listError: '' });
     try {
-      const result = await options.api.list(cursor);
+      const result = await requestList(cursor, previousGeneration, generation);
       if (!owns() || generation !== listGeneration) return;
       for (const chat of result.items) if (!removed.has(chat.id)) remember(chat);
-      const items = [...(more ? state.conversations : []), ...result.items.map(chat => summaries.get(chat.id) ?? chat)].filter((chat, index, all) => !removed.has(chat.id) && all.findIndex(row => row.id === chat.id) === index);
+      const seen = new Set<string>();
+      const items = [...(more ? state.conversations : []), ...result.items.map(chat => summaries.get(chat.id) ?? chat)].filter(chat => {
+        if (removed.has(chat.id) || seen.has(chat.id)) return false;
+        seen.add(chat.id); return true;
+      });
       emit({ conversations: items, listLoading: false, nextCursor: result.nextCursor });
     } catch (error) { if (generation === listGeneration) emit({ listLoading: false, listError: error instanceof Error ? error.message : 'History could not be loaded.' }); }
   }
@@ -180,19 +218,20 @@ export function createConversationController(options: Options) {
     send: (modelReady: boolean) => { if (canUse() && !activeId && !state.loading && !summaries.get(selected)?.active && (locals.get(selected)?.localOnly || ready.has(selected))) return driverFor(selected).send(modelReady); },
     stop: () => { if (activeId) drivers.get(activeId)?.stop(); },
     loadOlder: async () => { if (!canUse()) return; const id = selected, before = cursors.get(id); if (!before) return; try { const result = await options.api.detail(id, before); if (!owns() || removed.has(id)) return; cursors.set(id, result.nextBefore); driverFor(id).prepend(conversationMessages(result)); if (selected === id) emit({ older: result.nextBefore }); } catch (error) { if (selected === id) emit({ error: error instanceof Error ? error.message : 'Could not load earlier messages.' }); } },
-    remove: async (id: string) => { if (!canUse()) return false; await options.api.remove(id); if (!owns()) return false; removed.add(id); invalidateRead(id); ready.delete(id); drivers.get(id)?.detach(); drivers.delete(id); locals.delete(id); summaries.delete(id); if (activeId === id) activeId = null; if (selected === id) requestGeneration++; emit({ conversations: state.conversations.filter(chat => chat.id !== id), activeChatId: activeId }); persist(); return true; },
+    remove: async (id: string) => { if (!canUse()) return false; await options.api.remove(id); if (!owns()) return false; listMutation++; removed.add(id); invalidateRead(id); ready.delete(id); drivers.get(id)?.detach(); drivers.delete(id); locals.delete(id); summaries.delete(id); if (activeId === id) activeId = null; if (selected === id) requestGeneration++; emit({ conversations: state.conversations.filter(chat => chat.id !== id), activeChatId: activeId }); persist(); return true; },
     importLegacy: async () => {
       if (!canUse() || !state.legacy) return null;
       const id = importId;
       const chat = await options.api.import(id, state.legacy.messages.map(message => ({ role: message.role, content: message.content, ...(message.model ? { model: message.model } : {}) })));
       if (!owns()) return null;
+      listMutation++;
       summaries.set(id, chat); clearPlaygroundStorage(options.storage); emit({ legacy: null, legacyDismissed: true }); persist(); await refreshList(); await load(id, true); return id;
     },
     dismissLegacy: () => { emit({ legacyDismissed: true }); persist(); },
     showLegacy: () => emit({ legacyDismissed: false }),
     flush: persist,
     detach: () => { for (const driver of drivers.values()) driver.detach(); persist(); },
-    clear: () => { if (!alive) return; alive = false; requestGeneration++; listGeneration++; if (timer) clearTimeout(timer); for (const driver of drivers.values()) driver.clear(); drivers.clear(); locals.clear(); clearPlaygroundStorage(options.storage); try { options.storage?.removeItem(CHAT_DRAFTS_KEY); } catch {} state = { ...state, ...emptyPlayground(), conversations: [], legacy: null, error: '', activeChatId: null }; listeners.forEach(listener => listener()); },
+    clear: () => { if (!alive) return; alive = false; requestGeneration++; listGeneration++; pendingDetails.clear(); pendingList = undefined; if (timer) clearTimeout(timer); for (const driver of drivers.values()) driver.clear(); drivers.clear(); locals.clear(); clearPlaygroundStorage(options.storage); try { options.storage?.removeItem(CHAT_DRAFTS_KEY); } catch {} state = { ...state, ...emptyPlayground(), conversations: [], legacy: null, error: '', activeChatId: null }; listeners.forEach(listener => listener()); },
   };
 }
 function validId(id: unknown): id is string { return typeof id === 'string' && /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id); }
