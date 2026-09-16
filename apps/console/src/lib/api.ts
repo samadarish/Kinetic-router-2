@@ -24,7 +24,7 @@ export function getCsrfToken() {
   return csrfToken;
 }
 
-export async function portalApi<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function portalApi<T>(path: string, init: RequestInit = {}, timeoutMs = 20_000): Promise<T> {
   const method = (init.method ?? 'GET').toUpperCase();
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
@@ -33,7 +33,7 @@ export async function portalApi<T>(path: string, init: RequestInit = {}): Promis
 
   let response: Response;
   try {
-    const timeoutSignal = AbortSignal.timeout(20_000);
+    const timeoutSignal = AbortSignal.timeout(timeoutMs);
     response = await fetch(`/portal/v1${path}`, {
       ...init,
       method,

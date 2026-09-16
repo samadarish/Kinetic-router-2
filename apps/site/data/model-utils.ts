@@ -13,9 +13,10 @@ type PricedModel = Pick<Model, 'prices'>;
 export function priceFor(model: PricedModel, role: 'sell' | 'official', component: string) { return model.prices.find((price) => price.active && price.role === role && price.component === component && !price.tierLabel); }
 export function usdPrice(model: PricedModel, role: 'sell' | 'official', component: string) { const price = priceFor(model, role, component); return price ? price.priceMicroUsd / 1_000_000 : undefined; }
 export function discountRate(model: PricedModel) { const sell = usdPrice(model, 'sell', 'input'); const official = usdPrice(model, 'official', 'input'); if (sell == null || official == null || official === 0) return undefined; return sell / official; }
+const usdFormatter = new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 });
 export function formatUsd(value: number | undefined) {
   if (value == null) return '—';
-  return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 6 })}/M`;
+  return `$${usdFormatter.format(value)}/M`;
 }
 export function formatTokens(value: number) { if (value >= 1_000_000) return `${value / 1_000_000}M`; if (value >= 1_000) return `${Math.round(value / 1_000)}K`; return String(value); }
 export function displayContextWindow(model: Pick<Model, 'upstreamContextWindow' | 'contextWindow'>) { return model.upstreamContextWindow ?? model.contextWindow; }

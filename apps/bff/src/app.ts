@@ -67,6 +67,8 @@ import {
 } from './public-serializers.js';
 import { createSession, createSessionStore, type PortalSession, type SessionStore } from './session-store.js';
 import { AnalyticsService } from './analytics/service.js';
+import { MetricsService, MetricsError } from './metrics/service.js';
+import { MetricsSourceError } from '@kineticrouter/sub2api-client';
 import { analyticsDay, type AnalyticsStore, type ReportKind } from './analytics/model.js';
 import { installPlaygroundRoutes } from './playground.js';
 import { createConversationStore } from './conversations-postgres.js';
@@ -117,6 +119,7 @@ export function createApp(
   const app = new Hono<{ Variables: Variables }>();
   const analytics = new AnalyticsService({ store: options.analyticsStore, enabled: options.analyticsEnabled, now: options.analyticsNow, identify: async cookie => (await store.get(cookie))?.user });
   const adminProfiles = new Map<string, { until: number; value: Promise<boolean> }>();
+  const metrics = new MetricsService(analytics, config.serverTimezone, options.analyticsNow);
 
   app.use('*', secureHeaders({
     contentSecurityPolicy: {
@@ -293,6 +296,20 @@ export function createApp(
     await next();
   });
   app.get('/portal/v1/admin/website/settings', async c => success(c, await websiteSettings.read()));
+  for (const kind of ['overview', 'users', 'activity', 'averages', 'peaks'] as const) {
+    app.get(`/portal/v1/admin/metrics/${kind}`, async c => {
+      try {
+        const data = await metrics.report(kind, c.req.query(), requireSession(c).id, path => authRequest(c, store, client, token => client.request(path, { headers: { 'X-Admin-UI-Request': '1' } }, { ...authOptions(token), userUiRequest: false, maxResponseBytes: 16 * 1024 * 1024 })));
+        return success(c, data);
+      } catch (error) {
+        if (error && typeof error === 'object' && 'issues' in error) return failure(c, 400, 'METRICS_RANGE_INVALID', 'Choose a valid date range of up to thirteen months.');
+        if (error instanceof MetricsError) return failure(c, error.code === 'METRICS_RANGE_INVALID' ? 400 : 503, error.code, error.message);
+        if (error instanceof MetricsSourceError) return failure(c, 502, 'METRICS_VERSION_MISMATCH', error.message);
+        if (error instanceof Sub2ApiError && error.code === 'UPSTREAM_RESPONSE_TOO_LARGE') return failure(c, 503, 'METRICS_CAPACITY', 'The complete report is too large to load. Choose a shorter reporting period.');
+        throw error;
+      }
+    });
+  }
   app.put('/portal/v1/admin/website/settings', async c => {
     const input = websiteSettingsSchema.parse(await c.req.json());
     return success(c, await websiteSettings.save(input));

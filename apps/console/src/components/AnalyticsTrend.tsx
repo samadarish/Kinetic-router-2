@@ -1,8 +1,8 @@
-import { useId } from 'react';
+import { memo, useId } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { AnalyticsOverview } from '@kineticrouter/portal-contract';
 
-export default function AnalyticsTrend({ data }: { data: AnalyticsOverview['trend'] }) {
+function AnalyticsTrend({ data }: { data: AnalyticsOverview['trend'] }) {
   const id = useId().replaceAll(':', '');
   return <div className="analytics-chart" role="img" aria-label="Daily visitors and pageviews for the selected range">
     <ResponsiveContainer width="100%" height="100%">
@@ -18,3 +18,5 @@ export default function AnalyticsTrend({ data }: { data: AnalyticsOverview['tren
     </ResponsiveContainer>
   </div>;
 }
+
+export default memo(AnalyticsTrend);

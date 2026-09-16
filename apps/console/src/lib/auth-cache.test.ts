@@ -1,7 +1,7 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import type { CapabilityMap, SessionView } from '@kineticrouter/portal-contract';
 import { describe, expect, it } from 'vitest';
-import { applyLoggedOutQueryState } from './auth-cache';
+import { applyLoggedOutQueryState, applyMetricsAuthorizationState } from './auth-cache';
 
 const capabilities: CapabilityMap = {
   registration: false,
@@ -25,6 +25,18 @@ const capabilities: CapabilityMap = {
 };
 
 describe('logged-out query state', () => {
+  it('clears protected metrics after a session role downgrade and cancels late report completion', async () => {
+    const client = new QueryClient();
+    client.setQueryData(['metrics', '42', 'overview'], { totalUsers: 5 });
+    client.setQueryData(['dashboard'], { balance: 1 });
+    let finish!: (value: { totalUsers: number }) => void;
+    const pending = client.fetchQuery({ queryKey: ['metrics', '42', 'users'], queryFn: () => new Promise<{ totalUsers: number }>(resolve => { finish = resolve; }) }).catch(() => undefined);
+    await applyMetricsAuthorizationState(client, { authenticated: true, playgroundEnabled: false, capabilities, user: { id: '42', role: 'user', status: 'active', username: 'Customer', email: 'customer@example.test', avatarUrl: null, balance: '0', concurrency: 1 } });
+    finish({ totalUsers: 9 }); await pending;
+    expect(client.getQueryCache().findAll({ queryKey: ['metrics'] })).toHaveLength(0);
+    expect(client.getQueryData(['dashboard'])).toEqual({ balance: 1 });
+    client.clear();
+  });
   it('cancels a pending session read before publishing anonymous state', async () => {
     const client = new QueryClient();
     const session = { authenticated: true, playgroundEnabled: true, capabilities };

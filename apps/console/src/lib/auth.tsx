@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, type PropsWithChildren } from 're
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityMap, PortalUser, SessionView, SignupInput, GoogleRegistrationInput } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
-import { applyLoggedOutQueryState } from './auth-cache';
+import { applyLoggedOutQueryState, applyMetricsAuthorizationState } from './auth-cache';
 import { browserPlaygroundStorage, clearAllPlaygroundStorage } from './playground-browser-storage';
 
 type LoginResult =
@@ -48,6 +48,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setCsrfToken(session.data?.csrfToken);
     if (session.data && !session.data.authenticated) clearAllPlaygroundStorage(browserPlaygroundStorage());
   }, [session.data?.csrfToken, session.data?.authenticated]);
+
+  useEffect(() => {
+    if (session.data) void applyMetricsAuthorizationState(client, session.data);
+  }, [client, session.data]);
 
   useEffect(() => {
     const unauthorized = () => {

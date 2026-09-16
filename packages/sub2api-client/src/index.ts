@@ -19,6 +19,7 @@ import type {
 export type * from './internal-types.js';
 export * from './playground.js';
 export * from './onboarding.js';
+export * from './metrics.js';
 
 type JsonRecord = Record<string, unknown>;
 type RequestOptions = {
@@ -27,6 +28,7 @@ type RequestOptions = {
   timezone?: string;
   language?: string;
   userUiRequest?: boolean;
+  maxResponseBytes?: number;
 };
 
 export type TokenBundle = {
@@ -107,9 +109,10 @@ export class Sub2ApiClient {
     }
 
     const contentType = response.headers.get('content-type') ?? '';
-    const raw = contentType.includes('application/json')
-      ? await response.json().catch(() => null)
-      : await response.text().catch(() => '');
+    const limitedText = options.maxResponseBytes === undefined ? undefined : await readLimitedBody(response, options.maxResponseBytes);
+    const raw = limitedText === undefined
+      ? contentType.includes('application/json') ? await response.json().catch(() => null) : await response.text().catch(() => '')
+      : contentType.includes('application/json') ? parseResponseJson(limitedText) : limitedText;
     const envelope = asRecord(raw);
     const envelopeCode = envelope.code;
 
@@ -616,6 +619,17 @@ export function optionalString(value: unknown): string | undefined {
   const valueString = stringValue(value);
   return valueString || undefined;
 }
+
+async function readLimitedBody(response: Response, maximum: number): Promise<string> {
+  const tooLarge = () => new Sub2ApiError({ status: 502, code: 'UPSTREAM_RESPONSE_TOO_LARGE', message: 'The metrics response is too large. Choose a shorter reporting period.' });
+  if (Number(response.headers.get('content-length')) > maximum) { await response.body?.cancel(); throw tooLarge(); }
+  if (!response.body) return '';
+  const reader = response.body.getReader(), decoder = new TextDecoder(); let size = 0, result = '';
+  try { while (true) { const chunk = await reader.read(); if (chunk.done) break; size += chunk.value.byteLength;
+    if (size > maximum) { await reader.cancel(); throw tooLarge(); } result += decoder.decode(chunk.value, { stream: true });
+  } return result + decoder.decode(); } finally { reader.releaseLock(); }
+}
+function parseResponseJson(value: string): unknown { try { return JSON.parse(value); } catch { return null; } }
 
 export function decimalValue(value: unknown): string {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);

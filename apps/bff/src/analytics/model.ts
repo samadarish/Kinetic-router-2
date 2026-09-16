@@ -14,10 +14,14 @@ export type StoredEvent = Omit<AnalyticsClientEvent, 'name'> & {
   visitorId: string; sessionId: string; surface: AnalyticsSurface; day: string;
 };
 export type PageFact = { pageId: string; day: string; sessionId: string; visitorId: string; surface: AnalyticsSurface; path: string; at: number; views: number; engagementMs: number };
+export type CustomerActivityObservation = { userId: string; at: number };
+export type CustomerHour = { userId: string; period: string; firstSeen: number; lastSeen: number };
+export type CustomerActivityHistory = { availableFrom: string | null; retainedFrom: string; items: CustomerHour[] };
 export interface AnalyticsStore {
   kind: 'memory' | 'postgres';
   session(visitorId: string, acquisition: Acquisition, now: number): Promise<AnalyticsSession>;
-  write(events: StoredEvent[]): Promise<void>;
+  write(events: StoredEvent[], observations?: CustomerActivityObservation[]): Promise<void>;
+  customerActivity(startDate: string, endDate: string, now: number): Promise<CustomerActivityHistory>;
   report(kind: ReportKind, query: AnalyticsQuery, now: number): Promise<unknown>;
   maintain(now: number): Promise<void>;
   ping(): Promise<void>;
@@ -49,7 +53,7 @@ export function previousRange(query: AnalyticsQuery) {
 export function normalizePath(value: string, surface: AnalyticsSurface) {
   let path: string;
   try { path = new URL(value, 'https://analytics.invalid').pathname.replace(/\/+$/, '') || '/'; } catch { return '/other'; }
-  if (surface === 'console') return /^\/(sign-in|dashboard|api-keys|usage|status|subscriptions|redeem|profile)$/.test(path) ? path : '/other';
+  if (surface === 'console') return /^\/(sign-in|dashboard|api-keys|playground|usage|status|subscriptions|redeem|profile)$/.test(path) ? path : '/other';
   if (/^\/(?:|pricing|quickstart|vibe-coding|privacy|terms-of-service|models(?:\/[a-zA-Z0-9._-]{1,100}){0,3}|docs(?:\/[a-zA-Z0-9._-]{1,100}){0,8}|account\/(?:sign-in|sign-up|verify-email))$/.test(path)) return path;
   return '/other';
 }

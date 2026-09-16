@@ -38,4 +38,12 @@ CREATE TABLE IF NOT EXISTS kr_analytics_events (
   day date NOT NULL, id uuid NOT NULL, at bigint NOT NULL, payload jsonb NOT NULL, PRIMARY KEY(day, id)
 ) PARTITION BY RANGE(day);
 INSERT INTO kr_analytics_migrations(version) VALUES(1) ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS kr_analytics_customer_hours (
+  day date NOT NULL, hour smallint NOT NULL CHECK(hour BETWEEN 0 AND 23), user_id text NOT NULL,
+  first_seen bigint NOT NULL, last_seen bigint NOT NULL, PRIMARY KEY(day,hour,user_id)
+);
+CREATE TABLE IF NOT EXISTS kr_analytics_customer_coverage (
+  singleton boolean PRIMARY KEY DEFAULT true CHECK(singleton), started_at bigint NOT NULL
+);
+INSERT INTO kr_analytics_migrations(version) VALUES(2) ON CONFLICT DO NOTHING;
 `;

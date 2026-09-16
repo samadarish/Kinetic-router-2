@@ -35,6 +35,37 @@ function collect(instance: ReturnType<typeof createApp>, boot: Awaited<ReturnTyp
 }
 
 describe('website analytics security and collection', () => {
+  it('records visible customer hours across tabs and Playground without persisting raw empty heartbeats', async () => {
+    let now = Date.parse('2026-09-14T05:29:30Z');
+    const storage = new MemoryAnalyticsStore(), instance = fixture({ analyticsStore: storage, analyticsNow: () => now });
+    const account = await authenticate(instance);
+    const first = await bootstrap(instance, { cookie: account.cookie, origin: config.portalOrigin });
+    const second = await bootstrap(instance, { cookie: account.cookie, origin: config.portalOrigin });
+    const overrides = { path: '/playground', sentAt: now };
+    expect((await collect(instance, first, overrides)).status).toBe(204);
+    expect((await collect(instance, second, overrides)).status).toBe(204);
+    expect(storage.customerHours.size).toBe(1); expect(storage.events.size).toBe(0);
+    now += 60000;
+    expect((await collect(instance, first, { ...overrides, sentAt: now, sequence: 2 })).status).toBe(204);
+    expect([...storage.customerHours.values()].map(row => row.period)).toEqual(['2026-09-14 10:00', '2026-09-14 11:00']);
+    expect((await collect(instance, first, { ...overrides, sentAt: now, visible: false, sequence: 3 })).status).toBe(204);
+    expect(storage.customerHours.size).toBe(2);
+    account.session.user.role = 'admin'; await instance.store.set(account.session);
+    const previous = [...storage.customerHours.values()].map(row => row.lastSeen);
+    expect((await collect(instance, first, { ...overrides, sentAt: now + 1000, sequence: 4 })).status).toBe(204);
+    expect([...storage.customerHours.values()].map(row => row.lastSeen)).toEqual(previous);
+  });
+  it('never attributes queued anonymous observations, site traffic or delayed heartbeats to customer activity', async () => {
+    const storage = new MemoryAnalyticsStore(), instance = fixture({ analyticsStore: storage });
+    const account = await authenticate(instance);
+    const anonymous = await bootstrap(instance, { origin: config.portalOrigin });
+    expect((await collect(instance, anonymous, {}, `${anonymous.cookie}; ${account.cookie}`)).status).toBe(401);
+    const website = await bootstrap(instance, { cookie: account.cookie });
+    expect((await collect(instance, website)).status).toBe(204);
+    const console = await bootstrap(instance, { cookie: account.cookie, origin: config.portalOrigin });
+    expect((await collect(instance, console, { sentAt: Date.now() - 120000 })).status).toBe(204);
+    expect(storage.customerHours.size).toBe(0);
+  });
   it('groups shared paths and identities without changing surface filters, pagination or repeated results', async () => {
     let now = Date.now(); const instance = fixture({ analyticsNow: () => now });
     const account = await authenticate(instance), customer = await bootstrap(instance, { cookie: account.cookie });

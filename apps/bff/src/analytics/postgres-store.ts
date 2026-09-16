@@ -3,6 +3,8 @@ import { Pool, type PoolClient } from 'pg';
 import type { AnalyticsAcquisition, AnalyticsActions, AnalyticsOverview, AnalyticsPages, AnalyticsPerformance, AnalyticsQuery, AnalyticsTotals } from '@kineticrouter/portal-contract';
 import { ACTIONS, DAY_MS, SESSION_MS, analyticsDay, metricRating, previousRange, retentionDay, type Acquisition, type AnalyticsSession, type AnalyticsStore, type ReportKind, type StoredEvent } from './model.js';
 import { ANALYTICS_SCHEMA } from './schema.js';
+import { localHour } from '../metrics/time.js';
+import type { CustomerActivityObservation } from './model.js';
 
 const fields = `id uuid, "pageId" uuid, "sessionId" uuid, "visitorId" uuid, day date, surface text, path text, at bigint, name text, "engagementMs" bigint, metric text, "metricId" text, value double precision`;
 const scope = `day BETWEEN $1::date AND $2::date AND ($3 = 'all' OR surface = $3) AND ($4 = '' OR position(lower($4) in lower(path)) > 0)`;
@@ -65,39 +67,54 @@ export class PostgresAnalyticsStore implements AnalyticsStore {
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
     finally { client.release(); }
   }
-  async write(events: StoredEvent[]) {
-    if (!events.length) return;
+  async write(events: StoredEvent[], observations: CustomerActivityObservation[] = []) {
+    if (!events.length && !observations.length) return;
     await this.initialize();
     await this.ensurePartitions(Date.now());
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      const inserted = await client.query(`INSERT INTO kr_analytics_events(day,id,at,payload) SELECT (e->>'day')::date,(e->>'id')::uuid,(e->>'at')::bigint,e FROM jsonb_array_elements($1::jsonb) e WHERE e->>'name' <> 'engagement' ON CONFLICT DO NOTHING RETURNING id,to_char(day,'YYYY-MM-DD') AS day`, [JSON.stringify(events)]);
-      const accepted = new Set(inserted.rows.map(row => `${row.id}:${row.day}`));
-      const fresh = events.filter(event => event.name === 'engagement' || accepted.delete(`${event.id}:${event.day}`));
-      const payload = JSON.stringify(fresh);
-      await client.query(`INSERT INTO kr_analytics_facts(page_id,day,session_id,visitor_id,surface,path,at,views,engagement_ms)
-        SELECT DISTINCT ON ("pageId",day) "pageId",day,"sessionId","visitorId",surface,path,at,views,ms FROM (
-          SELECT "pageId",day,"sessionId","visitorId",surface,path,min(at) at,max(CASE WHEN name='page_view' THEN 1 ELSE 0 END) views,max(CASE WHEN name='engagement' THEN COALESCE("engagementMs",0) ELSE 0 END) ms
-          FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "pageId",day,"sessionId","visitorId",surface,path
-        ) canonical ORDER BY "pageId",day,at,"sessionId",path
-        ON CONFLICT(page_id,day) DO UPDATE SET views=GREATEST(kr_analytics_facts.views,EXCLUDED.views), engagement_ms=GREATEST(kr_analytics_facts.engagement_ms,EXCLUDED.engagement_ms), at=LEAST(kr_analytics_facts.at,EXCLUDED.at)
-        WHERE kr_analytics_facts.session_id=EXCLUDED.session_id AND kr_analytics_facts.path=EXCLUDED.path AND kr_analytics_facts.surface=EXCLUDED.surface`, [payload]);
-      await client.query(`INSERT INTO kr_analytics_actions(id,day,session_id,visitor_id,surface,path,name,at) SELECT id,day,"sessionId","visitorId",surface,path,name,at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name=ANY($2::text[]) ON CONFLICT DO NOTHING`, [payload, ACTIONS]);
-      await client.query(`INSERT INTO kr_analytics_vitals(page_id,metric_id,metric,day,session_id,visitor_id,surface,path,at,value)
-        SELECT DISTINCT ON ("pageId",metric,"metricId") "pageId","metricId",metric,day,"sessionId","visitorId",surface,path,at,value FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name='web_vital' ORDER BY "pageId",metric,"metricId",at DESC
-        ON CONFLICT(page_id,metric,metric_id) DO UPDATE SET value=EXCLUDED.value,at=EXCLUDED.at WHERE EXCLUDED.at >= kr_analytics_vitals.at AND EXCLUDED.session_id=kr_analytics_vitals.session_id`, [payload]);
-      await client.query(`UPDATE kr_analytics_sessions s SET last_seen=GREATEST(s.last_seen,e.at),started_at=LEAST(s.started_at,e.first_at) FROM (SELECT "sessionId",max(at) at,min(at) first_at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "sessionId") e WHERE s.id=e."sessionId"`, [payload]);
-      await client.query(`UPDATE kr_analytics_visitors v SET first_seen=LEAST(v.first_seen,e.at) FROM (SELECT "visitorId",min(at) at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "visitorId") e WHERE v.id=e."visitorId" AND v.first_seen>e.at`, [payload]);
-      for (const direction of ['entry', 'exit'] as const) {
-        const order = direction === 'entry' ? 'ASC' : 'DESC'; const comparison = direction === 'entry' ? '<' : '>';
-        await client.query(`UPDATE kr_analytics_sessions s SET ${direction}_path=e.path,${direction}_surface=e.surface,${direction}_at=e.at,${direction}_id=e."pageId"
-          FROM (SELECT DISTINCT ON ("sessionId") * FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name='page_view' ORDER BY "sessionId",at ${order},"pageId" ${order}) e
-          WHERE s.id=e."sessionId" AND (s.${direction}_at IS NULL OR (e.at,e."pageId") ${comparison} (s.${direction}_at,s.${direction}_id))`, [payload]);
+      if (observations.length) {
+        const firstAt = observations.reduce((first, row) => Math.min(first, row.at), observations[0]!.at);
+        await client.query('INSERT INTO kr_analytics_customer_coverage(singleton,started_at) VALUES(true,$1) ON CONFLICT(singleton) DO UPDATE SET started_at=LEAST(kr_analytics_customer_coverage.started_at,EXCLUDED.started_at)', [firstAt]);
+        const values = observations.map(row => { const period = localHour(row.at, this.timezone); return { user_id: row.userId, day: period.slice(0, 10), hour: Number(period.slice(11, 13)), at: row.at }; });
+        await client.query(`INSERT INTO kr_analytics_customer_hours(day,hour,user_id,first_seen,last_seen)
+          SELECT day,hour,user_id,min(at),max(at) FROM jsonb_to_recordset($1::jsonb) AS x(day date,hour smallint,user_id text,at bigint) GROUP BY day,hour,user_id
+          ON CONFLICT(day,hour,user_id) DO UPDATE SET first_seen=LEAST(kr_analytics_customer_hours.first_seen,EXCLUDED.first_seen),last_seen=GREATEST(kr_analytics_customer_hours.last_seen,EXCLUDED.last_seen)`, [JSON.stringify(values)]);
       }
+      // Presence-only heartbeats update customer activity without touching event tables.
+      if (events.length) await this.writeEvents(client, events);
       await client.query('COMMIT');
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
     finally { client.release(); }
+  }
+  private async writeEvents(client: PoolClient, events: StoredEvent[]) {
+    const inserted = events.some(event => event.name !== 'engagement')
+      ? await client.query(`INSERT INTO kr_analytics_events(day,id,at,payload) SELECT (e->>'day')::date,(e->>'id')::uuid,(e->>'at')::bigint,e FROM jsonb_array_elements($1::jsonb) e WHERE e->>'name' <> 'engagement' ON CONFLICT DO NOTHING RETURNING id,to_char(day,'YYYY-MM-DD') AS day`, [JSON.stringify(events)])
+      : { rows: [] };
+    const accepted = new Set(inserted.rows.map(row => `${row.id}:${row.day}`));
+    const fresh = events.filter(event => event.name === 'engagement' || accepted.delete(`${event.id}:${event.day}`));
+    if (!fresh.length) return;
+    const payload = JSON.stringify(fresh);
+    await client.query(`INSERT INTO kr_analytics_facts(page_id,day,session_id,visitor_id,surface,path,at,views,engagement_ms)
+      SELECT DISTINCT ON ("pageId",day) "pageId",day,"sessionId","visitorId",surface,path,at,views,ms FROM (
+        SELECT "pageId",day,"sessionId","visitorId",surface,path,min(at) at,max(CASE WHEN name='page_view' THEN 1 ELSE 0 END) views,max(CASE WHEN name='engagement' THEN COALESCE("engagementMs",0) ELSE 0 END) ms
+        FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "pageId",day,"sessionId","visitorId",surface,path
+      ) canonical ORDER BY "pageId",day,at,"sessionId",path
+      ON CONFLICT(page_id,day) DO UPDATE SET views=GREATEST(kr_analytics_facts.views,EXCLUDED.views), engagement_ms=GREATEST(kr_analytics_facts.engagement_ms,EXCLUDED.engagement_ms), at=LEAST(kr_analytics_facts.at,EXCLUDED.at)
+      WHERE kr_analytics_facts.session_id=EXCLUDED.session_id AND kr_analytics_facts.path=EXCLUDED.path AND kr_analytics_facts.surface=EXCLUDED.surface`, [payload]);
+    if (fresh.some(event => ACTIONS.includes(event.name as typeof ACTIONS[number]))) await client.query(`INSERT INTO kr_analytics_actions(id,day,session_id,visitor_id,surface,path,name,at) SELECT id,day,"sessionId","visitorId",surface,path,name,at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name=ANY($2::text[]) ON CONFLICT DO NOTHING`, [payload, ACTIONS]);
+    if (fresh.some(event => event.name === 'web_vital')) await client.query(`INSERT INTO kr_analytics_vitals(page_id,metric_id,metric,day,session_id,visitor_id,surface,path,at,value)
+      SELECT DISTINCT ON ("pageId",metric,"metricId") "pageId","metricId",metric,day,"sessionId","visitorId",surface,path,at,value FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name='web_vital' ORDER BY "pageId",metric,"metricId",at DESC
+      ON CONFLICT(page_id,metric,metric_id) DO UPDATE SET value=EXCLUDED.value,at=EXCLUDED.at WHERE EXCLUDED.at >= kr_analytics_vitals.at AND EXCLUDED.session_id=kr_analytics_vitals.session_id`, [payload]);
+    await client.query(`UPDATE kr_analytics_sessions s SET last_seen=GREATEST(s.last_seen,e.at),started_at=LEAST(s.started_at,e.first_at) FROM (SELECT "sessionId",max(at) at,min(at) first_at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "sessionId") e WHERE s.id=e."sessionId"`, [payload]);
+    await client.query(`UPDATE kr_analytics_visitors v SET first_seen=LEAST(v.first_seen,e.at) FROM (SELECT "visitorId",min(at) at FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) GROUP BY "visitorId") e WHERE v.id=e."visitorId" AND v.first_seen>e.at`, [payload]);
+    if (fresh.some(event => event.name === 'page_view')) for (const direction of ['entry', 'exit'] as const) {
+      const order = direction === 'entry' ? 'ASC' : 'DESC'; const comparison = direction === 'entry' ? '<' : '>';
+      await client.query(`UPDATE kr_analytics_sessions s SET ${direction}_path=e.path,${direction}_surface=e.surface,${direction}_at=e.at,${direction}_id=e."pageId"
+        FROM (SELECT DISTINCT ON ("sessionId") * FROM jsonb_to_recordset($1::jsonb) AS e(${fields}) WHERE name='page_view' ORDER BY "sessionId",at ${order},"pageId" ${order}) e
+        WHERE s.id=e."sessionId" AND (s.${direction}_at IS NULL OR (e.at,e."pageId") ${comparison} (s.${direction}_at,s.${direction}_id))`, [payload]);
+    }
   }
   private async totals(query: AnalyticsQuery): Promise<AnalyticsTotals> {
     const result = await this.pool.query(`WITH f AS (SELECT * FROM kr_analytics_facts WHERE ${scope}),
@@ -152,6 +169,7 @@ export class PostgresAnalyticsStore implements AnalyticsStore {
   }
   async maintain(now: number) {
     await this.initialize(); await this.ensurePartitions(now);
+    await this.pool.query('INSERT INTO kr_analytics_customer_coverage(singleton,started_at) VALUES(true,$1) ON CONFLICT DO NOTHING', [now]);
     const rawCutoff = analyticsDay(now - 90 * DAY_MS, this.timezone).replaceAll('-', '');
     const partitions = await this.pool.query("SELECT tablename FROM pg_tables WHERE schemaname=current_schema() AND tablename LIKE 'kr_analytics_events_%'");
     for (const { tablename } of partitions.rows) if (/^kr_analytics_events_\d{8}$/.test(tablename) && tablename.slice(-8) < rawCutoff) await this.pool.query(`DROP TABLE ${tablename}`);
@@ -159,11 +177,19 @@ export class PostgresAnalyticsStore implements AnalyticsStore {
     const client = await this.pool.connect();
     try {
       await this.prune(client, 'kr_analytics_facts', cutoff); await this.prune(client, 'kr_analytics_actions', cutoff); await this.prune(client, 'kr_analytics_vitals', cutoff);
+      await this.prune(client, 'kr_analytics_customer_hours', cutoff);
       await client.query(`DELETE FROM kr_analytics_sessions s WHERE s.id IN (SELECT id FROM kr_analytics_sessions WHERE last_seen < $1 LIMIT 10000) AND NOT EXISTS(SELECT 1 FROM kr_analytics_facts f WHERE f.session_id=s.id) AND NOT EXISTS(SELECT 1 FROM kr_analytics_actions a WHERE a.session_id=s.id) AND NOT EXISTS(SELECT 1 FROM kr_analytics_vitals v WHERE v.session_id=s.id)`, [Date.parse(cutoff)]);
       await client.query('DELETE FROM kr_analytics_visitors v WHERE first_seen<$1 AND NOT EXISTS(SELECT 1 FROM kr_analytics_sessions s WHERE s.visitor_id=v.id)', [Date.parse(cutoff)]);
     } finally { client.release(); }
   }
   private async prune(client: PoolClient, table: string, cutoff: string) { await client.query(`DELETE FROM ${table} WHERE ctid IN (SELECT ctid FROM ${table} WHERE day<$1::date LIMIT 10000)`, [cutoff]); }
+  async customerActivity(startDate: string, endDate: string, now: number) {
+    await this.initialize();
+    const coverage = await this.pool.query('SELECT started_at FROM kr_analytics_customer_coverage WHERE singleton=true');
+    const data = await this.pool.query(`SELECT user_id, to_char(day,'YYYY-MM-DD') || ' ' || lpad(hour::text,2,'0') || ':00' AS period, first_seen,last_seen FROM kr_analytics_customer_hours WHERE day BETWEEN GREATEST($1::date,$3::date) AND $2::date ORDER BY day,hour,user_id LIMIT 250001`, [startDate, endDate, retentionDay(now, this.timezone)]);
+    if (data.rows.length > 250000) throw new Error('Choose a shorter activity range.');
+    return { availableFrom: coverage.rows[0] ? new Date(Number(coverage.rows[0].started_at)).toISOString() : null, retainedFrom: retentionDay(now, this.timezone), items: data.rows.map(row => ({ userId: String(row.user_id), period: String(row.period), firstSeen: Number(row.first_seen), lastSeen: Number(row.last_seen) })) };
+  }
   async ping() { await this.initialize(); await this.pool.query('SELECT 1'); }
   async close() { await this.pool.end(); }
 }

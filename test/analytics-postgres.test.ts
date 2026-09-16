@@ -39,6 +39,22 @@ describe.skipIf(!connection)('PostgreSQL analytics integration', () => {
     }
     expect((await store.pool.query('SELECT count(*) count FROM kr_analytics_facts')).rows[0].count).toBe('1');
   });
+  it('deduplicates customer-hour batches, retains coverage on restart, and excludes expired rows before cleanup', async () => {
+    const at = Date.parse(`${day}T10:00:00+05:30`);
+    const observations = [{ userId: '42', at }, { userId: '42', at: at + 1000 }, { userId: '42', at: at + 3600000 }, { userId: '43', at }];
+    await store.write([], observations); await memory.write([], observations);
+    await store.write([], observations); await memory.write([], observations);
+    const report = await store.customerActivity(day, day, now), local = await memory.customerActivity(day, day, now);
+    expect(report.items.sort((a, b) => `${a.period}:${a.userId}`.localeCompare(`${b.period}:${b.userId}`))).toEqual(local.items.sort((a, b) => `${a.period}:${a.userId}`.localeCompare(`${b.period}:${b.userId}`)));
+    expect(report.items).toHaveLength(3);
+    expect(report.items.find(row => row.userId === '42' && row.period.endsWith('10:00'))).toMatchObject({ firstSeen: at, lastSeen: at + 1000 });
+    const restarted = new PostgresAnalyticsStore(store.pool.options.connectionString!);
+    try { expect((await restarted.customerActivity(day, day, now)).availableFrom).toBe(report.availableFrom); } finally { await restarted.close(); }
+    const expiredDay = '2020-01-01';
+    await store.pool.query('INSERT INTO kr_analytics_customer_hours(day,hour,user_id,first_seen,last_seen) VALUES($1,0,$2,0,0)', [expiredDay, 'expired']);
+    expect((await store.customerActivity(expiredDay, day, now)).items.some(row => row.userId === 'expired')).toBe(false);
+    expect((await store.pool.query('SELECT version FROM kr_analytics_migrations WHERE version=2')).rows).toHaveLength(1);
+  });
   it('does not mutate reports when a committed event ID is replayed with changed fields', async () => {
     const before = await store.report('overview', query, now) as AnalyticsOverview;
     await store.write([{ ...event, pageId: randomUUID(), path: '/pricing' }]);

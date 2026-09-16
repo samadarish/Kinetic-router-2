@@ -1,6 +1,7 @@
 import { z } from 'zod';
 export * from './onboarding.js';
 export * from './analytics.js';
+export * from './metrics.js';
 export * from './playground.js';
 export * from './conversations.js';
 export const idSchema = z.union([z.string(), z.number()]).transform(String);

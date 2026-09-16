@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity, ArrowDownToLine, ArrowUpRight, Clock3, Eye, Globe2, MousePointer2, RefreshCw, Users, Zap } from 'lucide-react';
 import type { AnalyticsAcquisition, AnalyticsActions, AnalyticsBreakdown, AnalyticsLive, AnalyticsOverview, AnalyticsPages, AnalyticsPerformance, AnalyticsScope, PortalConfig } from '@kineticrouter/portal-contract';
@@ -10,7 +10,8 @@ import { csvCell } from '../lib/csv';
 const AnalyticsTrend = lazy(() => import('../components/AnalyticsTrend'));
 const tabs = [{ id: 'live', label: 'Live', icon: Activity }, { id: 'traffic', label: 'Traffic', icon: Globe2 }, { id: 'acquisition', label: 'Acquisition & actions', icon: MousePointer2 }, { id: 'performance', label: 'Performance', icon: Zap }] as const;
 type Tab = typeof tabs[number]['id'];
-const number = (value: number) => new Intl.NumberFormat('en', { maximumFractionDigits: 0 }).format(value);
+const numberFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 0 });
+const number = (value: number) => numberFormat.format(value);
 const duration = (ms: number) => ms >= 60_000 ? `${Math.floor(ms / 60_000)}m ${Math.round(ms % 60_000 / 1000)}s` : `${Math.round(ms / 1000)}s`;
 const actionLabels: Record<string, string> = { cta_click: 'Console CTA clicks', docs_copy: 'Documentation copies', sign_in: 'Successful sign-ins', api_key_created: 'API keys created', redemption: 'Successful redemptions' };
 const delta = (current: number, previous: number, available: boolean) => !available ? 'Earlier period is outside retained history' : previous === 0 ? current ? 'No traffic in the previous period' : 'No change from previous period' : `${current >= previous ? '+' : ''}${((current - previous) / previous * 100).toFixed(1)}% vs previous period`;
@@ -31,6 +32,7 @@ export function AnalyticsPage() {
   useEffect(() => () => exportController.current?.abort(), []);
   const configuration = useQuery({ queryKey: ['config'], queryFn: () => portalApi<PortalConfig>('/config'), staleTime: 300_000 });
   const timezone = configuration.data?.serverTimezone ?? 'Asia/Kolkata';
+  const timeFormat = useMemo(() => new Intl.DateTimeFormat('en', { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' }), [timezone]);
   useEffect(() => { const changed = () => setVisible(document.visibilityState === 'visible'); document.addEventListener('visibilitychange', changed); return () => document.removeEventListener('visibilitychange', changed); }, []);
   useEffect(() => { const timer = setTimeout(() => { setSearch(searchInput); setPage(1); }, 350); return () => clearTimeout(timer); }, [searchInput]);
   const filters = { startDate: range.startDate, endDate: range.endDate, surface };
@@ -52,7 +54,7 @@ export function AnalyticsPage() {
   const actions = useQuery({ ...base, queryKey: ['analytics', 'actions', filters], queryFn: ({ signal }) => read<AnalyticsActions>('actions', filters, signal), enabled: base.enabled && tab === 'acquisition', refetchInterval: 60_000, staleTime: 55_000 });
   const performance = useQuery({ ...base, queryKey: ['analytics', 'performance', filters], queryFn: ({ signal }) => read<AnalyticsPerformance>('performance', filters, signal), enabled: base.enabled && tab === 'performance', refetchInterval: 60_000, staleTime: 55_000 });
   const selected = tab === 'live' ? live : tab === 'traffic' ? overview : tab === 'acquisition' ? acquisition : performance;
-  const updated = selected.dataUpdatedAt ? new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: timezone }).format(selected.dataUpdatedAt) : 'Waiting for data';
+  const updated = selected.dataUpdatedAt ? timeFormat.format(selected.dataUpdatedAt) : 'Waiting for data';
   function selectTab(next: Tab) { setTab(next); setPage(1); setExportMessage(''); }
   function tabKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let next = index;
@@ -108,7 +110,7 @@ export function AnalyticsPage() {
         {tab === 'live' && live.data && <>
           <div className="stats-grid compact"><StatCard label="Active visitors" value={number(live.data.visitors)} helper="Distinct browsers" icon={<Users size={19} />} /><StatCard label="Signed-in customers" value={number(live.data.customers)} helper="Across tabs and devices" icon={<Activity size={19} />} /><StatCard label="Active tabs" value={number(live.data.activeTabs)} helper="Visible pages" icon={<Eye size={19} />} /><StatCard label="Pages active now" value={number(live.data.pages.length)} helper="Website and console" icon={<Globe2 size={19} />} /></div>
           {!live.data.health.storageAvailable && <p className="analytics-notice" role="status">Historical storage is unavailable. Live activity can still update.</p>}
-          <TableCard title="People online" subtitle="Customers appear once, on their most recently visible page." empty={!live.data.total} emptyText="New visitors will appear here as they browse."><table className="data-table"><thead><tr><th>Visitor</th><th>Current page</th><th>Device</th><th>Tabs</th><th>Last seen</th></tr></thead><tbody>{live.data.items.map(item => <tr key={item.id}><td><span className="analytics-person"><span className={`analytics-avatar ${item.authenticated ? 'identified' : ''}`}>{item.authenticated ? item.label.slice(0, 1).toUpperCase() : <Users size={15} />}</span><span>{item.label}<small>{item.authenticated ? 'Signed-in customer' : 'Anonymous visitor'}</small></span></span></td><td><PageLabel surface={item.surface} path={item.path} /></td><td>{item.device}</td><td>{item.tabs}</td><td>{new Intl.DateTimeFormat('en', { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(item.lastSeen))}</td></tr>)}</tbody></table><Pagination page={page} total={live.data.total} pageSize={25} setPage={setPage} /></TableCard>
+          <TableCard title="People online" subtitle="Customers appear once, on their most recently visible page." empty={!live.data.total} emptyText="New visitors will appear here as they browse."><table className="data-table"><thead><tr><th>Visitor</th><th>Current page</th><th>Device</th><th>Tabs</th><th>Last seen</th></tr></thead><tbody>{live.data.items.map(item => <tr key={item.id}><td><span className="analytics-person"><span className={`analytics-avatar ${item.authenticated ? 'identified' : ''}`}>{item.authenticated ? item.label.slice(0, 1).toUpperCase() : <Users size={15} />}</span><span>{item.label}<small>{item.authenticated ? 'Signed-in customer' : 'Anonymous visitor'}</small></span></span></td><td><PageLabel surface={item.surface} path={item.path} /></td><td>{item.device}</td><td>{item.tabs}</td><td>{timeFormat.format(new Date(item.lastSeen))}</td></tr>)}</tbody></table><Pagination page={page} total={live.data.total} pageSize={25} setPage={setPage} /></TableCard>
           <div className="analytics-grid"><TableCard title="Busiest pages right now" empty={!live.data.pages.length} emptyText="Active pages will appear as visitors arrive."><table className="data-table"><thead><tr><th>Page</th><th>Visitors</th><th>Tabs</th></tr></thead><tbody>{live.data.pages.slice(0, 10).map(item => <tr key={`${item.surface}:${item.path}`}><td><PageLabel surface={item.surface} path={item.path} /></td><td>{item.visitors}</td><td>{item.tabs}</td></tr>)}</tbody></table></TableCard><Card className="analytics-health"><div className="card-heading"><h2>Collection health</h2><Badge tone={live.data.health.storageAvailable ? 'success' : 'warning'}>{live.data.health.storageAvailable ? 'Collection ready' : 'Storage unavailable'}</Badge></div><dl><div><dt>Accepted observations</dt><dd>{number(live.data.health.collected)}</dd></div><div><dt>Rejected requests</dt><dd>{number(live.data.health.rejected)}</dd></div><div><dt>Uncommitted observations</dt><dd>{number(live.data.health.dropped)}</dd></div></dl><p>Administrator visits and known bots are excluded. Browser privacy signals do not disable collection. Counts are since the backend last started.</p></Card></div>
         </>}
         {tab === 'traffic' && overview.data && <>

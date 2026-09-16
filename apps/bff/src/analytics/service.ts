@@ -17,7 +17,8 @@ const visitorCookie = 'kr_analytics_visitor';
 const legacyDisabledCookie = 'kr_analytics_disabled';
 type Identity = { visitorId: string; sessionId: string; tabId: string; origin: string; auth: string; userId?: string; username?: string; device: string; expiresAt: number };
 type Presence = Identity & { surface: AnalyticsSurface; path: string; at: number; eventAt: number; visible: boolean };
-type Pending = { events: StoredEvent[]; resolve(): void; reject(error: unknown): void };
+type Observation = { userId: string; at: number };
+type Pending = { events: StoredEvent[]; observations: Observation[]; resolve(): void; reject(error: unknown): void };
 type ServiceOptions = { store?: AnalyticsStore; enabled?: boolean; now?: () => number; identify(cookie: string): Promise<PortalUser | undefined> };
 
 export class AnalyticsService {
@@ -102,7 +103,12 @@ export class AnalyticsService {
       // A delayed flush must not move the live visitor back to a previous page.
       const eventAt = input.sequence;
       if ((!previous || eventAt > previous.eventAt) && (this.presence.has(key) || this.presence.size < 10_000)) this.presence.set(key, { ...identity, surface, path: normalizePath(input.path, surface), at: Math.min(now, input.sentAt), eventAt, visible: input.visible });
-      if (events.length) await this.enqueue(events);
+      const observations: Observation[] = [];
+      if (surface === 'console' && input.visible && identity.userId && now - input.sentAt <= 90_000 && !/bot|crawler|spider|headless|lighthouse/i.test(c.req.header('user-agent') ?? '')) {
+        const current = await options.identify(getCookie(c, config.sessionCookieName) ?? '');
+        if (current?.id === identity.userId && current.role === 'user' && current.status === 'active') observations.push({ userId: current.id, at: Math.min(now, input.sentAt) });
+      }
+      if (events.length || observations.length) await this.enqueue(events, observations);
       return c.body(null, 204);
     });
     app.onError((error, c) => {
@@ -151,22 +157,23 @@ export class AnalyticsService {
     return { referrer, source: clean(input.source), medium: clean(input.medium), campaign: clean(input.campaign), device: /ipad|tablet/i.test(ua) ? 'Tablet' : /mobile|iphone|android/i.test(ua) ? 'Mobile' : 'Desktop', browser: /edg\//i.test(ua) ? 'Edge' : /firefox|fxios/i.test(ua) ? 'Firefox' : /chrome|crios/i.test(ua) ? 'Chrome' : /safari/i.test(ua) ? 'Safari' : 'Other', os: /iphone|ipad/i.test(ua) ? 'iOS' : /android/i.test(ua) ? 'Android' : /windows/i.test(ua) ? 'Windows' : /mac os|macintosh/i.test(ua) ? 'macOS' : /linux/i.test(ua) ? 'Linux' : 'Other' };
   }
   private failure(c: Context, status: 400 | 401 | 403 | 429 | 503, code: string, message: string) { this.health.rejected++; return c.json({ ok: false, error: { code, message } }, status); }
-  private enqueue(events: StoredEvent[]) {
-    if (this.closed || this.pendingEvents + events.length > 5000) { this.health.dropped += events.length; return Promise.reject(new Error('Analytics queue full.')); }
+  private enqueue(events: StoredEvent[], observations: Observation[] = []) {
+    const weight = events.length + observations.length;
+    if (this.closed || this.pendingEvents + weight > 5000) { this.health.dropped += weight; return Promise.reject(new Error('Analytics queue full.')); }
     return new Promise<void>((resolve, reject) => {
-      this.pending.push({ events, resolve, reject }); this.pendingEvents += events.length;
+      this.pending.push({ events, observations, resolve, reject }); this.pendingEvents += weight;
       if (!this.timer && !this.flushing) this.timer = setTimeout(() => { this.timer = undefined; void this.flush(); }, 75);
     });
   }
   private async flush() {
     if (this.flushing) return this.flushing;
     const batch: Pending[] = []; let count = 0;
-    while (this.pending.length && count < 500) { const item = this.pending.shift()!; batch.push(item); count += item.events.length; }
+    while (this.pending.length && count < 500) { const item = this.pending.shift()!; batch.push(item); count += item.events.length + item.observations.length; }
     if (!batch.length) return;
     this.pendingEvents -= count;
     this.flushing = (async () => {
       try {
-        await this.store.write(batch.flatMap(item => item.events)); this.health.storageAvailable = true;
+        await this.store.write(batch.flatMap(item => item.events), batch.flatMap(item => item.observations)); this.health.storageAvailable = true;
         this.health.collected += count; this.health.lastEventAt = new Date(this.now()).toISOString(); batch.forEach(item => item.resolve());
       } catch (error) { this.health.storageAvailable = false; this.health.dropped += count; batch.forEach(item => item.reject(error)); }
     })();
