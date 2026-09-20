@@ -123,6 +123,8 @@
 .support-message-bubble { min-width:0; max-width:100%; padding:8px 12px; border:0; border-radius:8px; color:var(--foreground); background:var(--muted); white-space:pre-wrap; overflow-wrap:anywhere; text-align:left; font-size:14px; line-height:22px; }
 .support-message-own .support-message-bubble { background:var(--brand-soft); }
 .support-message-text { display:block; }
+.support-message-text a { color:var(--primary); text-decoration:underline; text-underline-offset:3px; }
+.support-message-text a:focus-visible { outline:2px solid var(--primary); outline-offset:3px; border-radius:2px; }
 .support-message-continuation { margin-top:-14px; }
 .support-message-with-image,.support-message-own .support-message-with-image { padding:0; background:transparent; }
 .support-message-with-image .support-message-text { padding:0; margin-top:8px; }

@@ -4,6 +4,7 @@ import { SocialIcon } from '@kineticrouter/brand-ui';
 import { publicWebsiteSettingsSchema, SOCIAL_PLATFORMS, type SocialLinks } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi } from '../lib/api';
 import { startWelcomeViewTracking } from '../lib/support-welcome-view';
+import { SupportMessageText } from './SupportMessageText';
 import './welcome-message.css';
 
 export async function loadWelcomeSocialLinks(signal?: AbortSignal): Promise<SocialLinks | null> {
@@ -30,7 +31,7 @@ export function WelcomeMessageContent({ body }: { body: string }) {
     queryFn: ({ signal }) => loadWelcomeSocialLinks(signal),
     staleTime: 0, retry: false, refetchOnMount: 'always',
   });
-  return <><span className="support-message-text">{body}</span><WelcomeSocialLinks links={settings.data} /></>;
+  return <><SupportMessageText body={body} /><WelcomeSocialLinks links={settings.data} /></>;
 }
 
 /** Intersection alone does not account for an unfocused tab or an overlay covering the bubble. */

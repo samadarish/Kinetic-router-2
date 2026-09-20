@@ -7,6 +7,7 @@ import { Button, ErrorState, LoadingState } from '../components/Ui';
 import { Modal } from '../components/Modal';
 import { SupportAvailability, SupportStatusEditor } from '../components/SupportAvailability';
 import { WelcomeMessageContent, WelcomeSeenTracker } from '../components/WelcomeMessageContent';
+import { SupportMessageText } from '../components/SupportMessageText';
 import { RowActionsMenu, type RowAction } from '../components/RowActionsMenu';
 import { useSupportImageDraft, SupportImagePicker, SupportMessageImage } from '../components/SupportImageAttachment';
 import { jsonBody, portalApi, PortalApiError, queryString } from '../lib/api';
@@ -108,7 +109,7 @@ export function SupportMessageBubble({ message, admin, customerReadSequence = 0,
   const seen = admin && own && message.sequence <= customerReadSequence;
   return <li className={`support-message${own ? ' support-message-own' : ''}${showAuthor ? '' : ' support-message-continuation'}`} data-sequence={message.sequence} data-incoming={!own || undefined}>
     <span className={showAuthor ? 'support-message-author' : 'support-visually-hidden'}>{own ? 'You' : message.sender === 'admin' ? 'kineticRouter Support' : customerLabel}</span>
-    <div ref={bubbleRef} className={`support-message-bubble ${message.image ? 'support-message-with-image' : ''}`}>{message.image && <SupportMessageImage image={message.image} />}{message.kind === 'welcome' ? <WelcomeMessageContent body={message.body} /> : message.body && <span className="support-message-text">{message.body}</span>}</div>
+    <div ref={bubbleRef} className={`support-message-bubble ${message.image ? 'support-message-with-image' : ''}`}>{message.image && <SupportMessageImage image={message.image} />}{message.kind === 'welcome' ? <WelcomeMessageContent body={message.body} /> : message.body && <SupportMessageText body={message.body} />}</div>
     {!admin && message.kind === 'welcome' && <WelcomeSeenTracker bubbleRef={bubbleRef} ticketId={message.ticketId} messageId={message.id} visible={conversationVisible} />}
     <div className="support-message-meta"><time dateTime={message.createdAt} title={stamp(message.createdAt)} aria-label={stamp(message.createdAt)}>{new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(message.createdAt))}</time>{admin && own && <span className={seen ? 'support-seen' : ''}>{seen ? <CheckCheck size={13} /> : <Check size={13} />}{seen ? 'Seen' : 'Sent'}</span>}</div>
   </li>;

@@ -389,6 +389,27 @@ describe('support inbox and conversation', () => {
     expect(html).not.toContain('support-message-text');
     expect(html).not.toContain('Seen');
   });
+  it.each([false, true])('opens bare domains and HTTPS links in new tabs for both senders and image captions (admin=%s)', admin => {
+    const image: NonNullable<SupportMessage['image']> = { url: '/portal/v1/support/tickets/ticket-1/messages/message-1/image', mimeType: 'image/webp', width: 1200, height: 800, byteSize: 94000 };
+    for (const source of messages) for (const attachment of [undefined, image]) {
+      const message: SupportMessage = { ...source, body: 'Docs: google.com and https://google.com.\n**Keep this plain** <b>text</b>', image: attachment };
+      const html = renderToStaticMarkup(<SupportMessageBubble message={message} admin={admin} />);
+      const anchors = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]);
+      expect(anchors).toHaveLength(2);
+      expect(anchors[0]).toContain('>google.com</a>');
+      expect(anchors[1]).toContain('>https://google.com</a>');
+      for (const anchor of anchors) {
+        expect(anchor).toMatch(/href="https:\/\/google\.com\/?"/);
+        expect(anchor).toContain('target="_blank"');
+        expect(anchor).toContain('rel="noopener noreferrer"');
+      }
+      expect(html).toContain('\n**Keep this plain** &lt;b&gt;text&lt;/b&gt;');
+      if (attachment) {
+        expect(html).toContain('aria-label="Enlarge image attachment"');
+        expect(html.indexOf('</button>')).toBeLessThan(html.indexOf(anchors[0]!));
+      }
+    }
+  });
 });
 
 describe('selected ticket visibility', () => {
