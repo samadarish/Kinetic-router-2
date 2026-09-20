@@ -75,6 +75,10 @@ import { createConversationStore } from './conversations-postgres.js';
 import { ConversationError, type ConversationStore } from './conversations.js';
 import { createPlaygroundSettingsStore, publicPlaygroundEnabled, PlaygroundSettingsError, type PlaygroundSettingsStore } from './playground-settings.js';
 import { createWebsiteSettingsStore, WebsiteSettingsError, type WebsiteSettingsStore } from './website-settings.js';
+import { SupportError, type SupportStore } from './support-store.js';
+import { createSupportStore } from './support-postgres.js';
+import { SupportRealtimeService, type SupportRealtime } from './support-realtime.js';
+import { installSupportRoutes } from './support.js';
 
 type Variables = {
   requestId: string;
@@ -106,13 +110,15 @@ const configuredWriteGates: WriteGates = {
 
 export function createApp(
   store: SessionStore = createSessionStore(),
-  options: { client?: AccountServiceClient; onboardingClient?: OnboardingClient; authFlowStore?: AuthFlowStore; authGates?: AuthGates; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; websiteSettingsStore?: WebsiteSettingsStore; conversationStore?: ConversationStore; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
+  options: { client?: AccountServiceClient; onboardingClient?: OnboardingClient; authFlowStore?: AuthFlowStore; authGates?: AuthGates; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; websiteSettingsStore?: WebsiteSettingsStore; conversationStore?: ConversationStore; supportStore?: SupportStore; supportRealtime?: SupportRealtime; supportValidationIntervalMs?: number; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
 ) {
   const client = options.client ?? defaultUpstream;
   const authFlows = options.authFlowStore ?? createAuthFlowStore();
   const conversations = options.conversationStore ?? createConversationStore();
   const playgroundSettings = options.playgroundSettingsStore ?? createPlaygroundSettingsStore();
   const websiteSettings = options.websiteSettingsStore ?? createWebsiteSettingsStore();
+  const supportStore = options.supportStore ?? createSupportStore();
+  const supportRealtime = options.supportRealtime ?? new SupportRealtimeService();
   const writeGates = { ...configuredWriteGates, ...options.writeGates };
   const defaultCapabilities = readCapabilities({}, writeGates);
   const settingsCache: SettingsCache = { expiresAt: 0 };
@@ -136,7 +142,14 @@ export function createApp(
     onError: c => failure(c, 413, 'PAYLOAD_TOO_LARGE', 'The request is too large. Shorten it and try again.'),
   });
   const importBodyLimit = bodyLimit({ maxSize: 2 * 1024 * 1024, onError: c => failure(c, 413, 'IMPORT_TOO_LARGE', 'This chat is too large to import. Your local copy is unchanged.') });
-  app.use('*', (c, next) => c.req.path === '/portal/v1/playground/conversations/import' ? importBodyLimit(c, next) : standardBodyLimit(c, next));
+  const supportImageBodyLimit = bodyLimit({ maxSize: 11 * 1024 * 1024, onError: c => failure(c, 413, 'SUPPORT_IMAGE_TOO_LARGE', 'The image request is too large. Choose an image no larger than 10 MiB.') });
+  app.use('*', (c, next) => {
+    if (c.req.path === '/portal/v1/playground/conversations/import') return importBodyLimit(c, next);
+    const supportImageUpload = c.req.method === 'POST'
+      && /^\/portal\/v1\/support\/tickets(?:\/[a-f0-9-]{36}\/messages)?$/i.test(c.req.path)
+      && c.req.header('content-type')?.split(';')[0]?.trim().toLowerCase() === 'multipart/form-data';
+    return supportImageUpload ? supportImageBodyLimit(c, next) : standardBodyLimit(c, next);
+  });
   app.use('*', async (c, next) => {
     const requestId = c.req.header('x-request-id')?.slice(0, 128) || randomUUID();
     c.set('requestId', requestId);
@@ -191,12 +204,13 @@ export function createApp(
   app.get('/portal/v1/auth/session', async (c) => {
     const loaded = await loadSession(c, store);
     const playgroundEnabled = await publicPlaygroundEnabled(playgroundSettings);
-    if (!loaded) return success(c, { authenticated: false, playgroundEnabled, capabilities: publicCapabilities(cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities) });
+    if (!loaded) return success(c, { authenticated: false, playgroundEnabled, supportAvailable: supportStore.configured, capabilities: publicCapabilities(cachedCapabilities(settingsCache, writeGates) ?? defaultCapabilities) });
     const capabilities = applyWriteGates(cachedCapabilities(settingsCache, writeGates) ?? loaded.capabilities, writeGates);
     if (settingsCache.expiresAt <= Date.now()) refreshSessionCapabilities(store, client, settingsCache, writeGates, loaded.id, capabilities);
     return success(c, {
       authenticated: true,
       playgroundEnabled,
+      supportAvailable: supportStore.configured,
       csrfToken: loaded.csrfToken,
       user: publicUser(loaded.user),
       capabilities: publicCapabilities(capabilities),
@@ -243,6 +257,7 @@ export function createApp(
       try {
         const revoked = await store.revoke(sessionId);
         analytics.revokeSession(sessionId);
+        void supportRealtime.revoke(sessionId);
         adminProfiles.delete(sessionId);
         if (revoked?.tokens.refreshToken) void revokeRefreshToken(client, sessionId, revoked.tokens.refreshToken);
       } catch (error) {
@@ -524,6 +539,33 @@ export function createApp(
     return success(c, { read: true });
   });
 
+  const supportAdminChecks = new Map<string, { until: number; value: Promise<boolean> }>();
+  installSupportRoutes(app, {
+    store: supportStore, realtime: supportRealtime,
+    actor: c => { const user = requireSession(c).user; return { id: user.id, label: user.username || user.email, email: user.email, admin: user.role === 'admin' }; },
+    sessionId: c => requireSession(c).id,
+    rateLimit: c => store.hitRateLimit(`support:write:${requireSession(c).user.id}`, 30, 60),
+    validationIntervalMs: options.supportValidationIntervalMs,
+    validate: async (c, admin) => {
+      const original = requireSession(c);
+      const current = await store.get(original.id);
+      if (!current || current.user.id !== original.user.id || current.user.status !== 'active') return false;
+      if (!admin) return true;
+      if (current.user.role !== 'admin') return false;
+      let entry = supportAdminChecks.get(current.id);
+      if (!entry || entry.until <= Date.now()) {
+        if (supportAdminChecks.size >= 100) supportAdminChecks.delete(supportAdminChecks.keys().next().value!);
+        c.set('session', current);
+        const value = authRequest(c, store, client, token => client.request('user/profile', {}, authOptions(token))).then(raw => {
+          const profile = asRecord(raw);
+          return String(profile.id) === current.user.id && profile.role === 'admin' && profile.status === 'active';
+        }).catch(() => false);
+        entry = { until: Date.now() + 30_000, value }; supportAdminChecks.set(current.id, entry);
+      }
+      return entry.value;
+    },
+  });
+
   installPlaygroundRoutes(app, {
     accountRequest: (c, path) => authRequest(c, store, client, token => client.request(path, {}, authOptions(token))),
     getUserId: c => requireSession(c).user.id,
@@ -538,6 +580,7 @@ export function createApp(
 
   app.onError((error, c) => {
     const requestId = c.get('requestId') || randomUUID();
+    if (error instanceof SupportError) return failure(c, normalizeStatus(error.status), error.code, error.message);
     if (error instanceof ConversationError) return failure(c, error.status, error.code, error.message);
     if (error instanceof PlaygroundSettingsError) return failure(c, error.status, error.code, error.message);
     if (error instanceof WebsiteSettingsError) return failure(c, error.status, error.code, error.message);
@@ -557,7 +600,7 @@ export function createApp(
     return failure(c, 500, 'INTERNAL_ERROR', 'The portal could not complete the request.');
   });
 
-  return { app, store, analytics, playgroundSettings, websiteSettings, conversations, authFlows };
+  return { app, store, analytics, playgroundSettings, websiteSettings, conversations, authFlows, supportStore, supportRealtime };
 }
 
 function isPublicPortalPath(path: string) {

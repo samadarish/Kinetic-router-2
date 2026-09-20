@@ -42,6 +42,7 @@ services:
       PORTAL_ORIGIN: https://console.kineticrouter.com
       SUB2API_BASE_URL: https://api.kineticrouter.com/api/v1
       REDIS_URL: redis://redis:6379/0
+      SUPPORT_DATABASE_URL: ${SUPPORT_DATABASE_URL:-}
       TRUST_PROXY: "true"
       ANALYTICS_ENABLED: ${ANALYTICS_ENABLED:-false}
       ANALYTICS_DATABASE_URL: postgresql://analytics:${ANALYTICS_DB_PASSWORD:?Set ANALYTICS_DB_PASSWORD in deploy/.env}@analytics-db:5432/kineticrouter_analytics

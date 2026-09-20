@@ -117,6 +117,7 @@ export const siteConfig: SiteConfig = {
         title: 'Resources',
         links: [
           { id: 'docs', label: 'Docs', href: '/docs', enabled: true, order: 10 },
+          { id: 'support', label: 'Support', href: '/account/sign-in?next=%2Fsupport', enabled: true, order: 15 },
           { id: 'terms', label: 'Terms of Service', href: '/terms-of-service', enabled: true, order: 20 },
           { id: 'privacy', label: 'Privacy Policy', href: '/privacy', enabled: true, order: 30 },
         ],

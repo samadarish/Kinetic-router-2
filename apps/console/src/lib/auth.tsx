@@ -4,6 +4,7 @@ import type { CapabilityMap, PortalUser, SessionView, SignupInput, GoogleRegistr
 import { jsonBody, portalApi, setCsrfToken } from './api';
 import { applyLoggedOutQueryState, applyMetricsAuthorizationState } from './auth-cache';
 import { browserPlaygroundStorage, clearAllPlaygroundStorage } from './playground-browser-storage';
+import { clearSupportDrafts } from './support-stream';
 
 type LoginResult =
   | { requires2fa: true; tempToken: string; maskedEmail?: string }
@@ -46,7 +47,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     setCsrfToken(session.data?.csrfToken);
-    if (session.data && !session.data.authenticated) clearAllPlaygroundStorage(browserPlaygroundStorage());
+    if (session.data && !session.data.authenticated) {
+      clearAllPlaygroundStorage(browserPlaygroundStorage());
+      try { clearSupportDrafts(window.sessionStorage); } catch { /* Restricted storage. */ }
+    }
   }, [session.data?.csrfToken, session.data?.authenticated]);
 
   useEffect(() => {
@@ -67,6 +71,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       await client.cancelQueries();
       client.removeQueries({ predicate: query => query.queryKey[0] !== 'session' });
       clearAllPlaygroundStorage(browserPlaygroundStorage());
+      try { clearSupportDrafts(window.sessionStorage); } catch { /* Restricted storage. */ }
       setCsrfToken(result.csrfToken);
       client.setQueryData<SessionView>(['session'], {
         authenticated: true,
@@ -101,6 +106,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     logout: async () => {
       window.dispatchEvent(new CustomEvent('portal:signing-out'));
       await portalApi('/auth/logout', { method: 'POST', ...jsonBody({}) });
+      window.dispatchEvent(new CustomEvent('portal:signed-out'));
       setCsrfToken();
       await applyLoggedOutQueryState(client, session.data?.capabilities ?? emptyCapabilities);
     },

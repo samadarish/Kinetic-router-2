@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { PortalShell, RouteBoundary } from './components/PortalShell';
 import { ErrorState, LoadingState } from './components/Ui';
 import { useAuth } from './lib/auth';
+import { SupportProvider } from './lib/support-context';
 import { PlaygroundGate, PlaygroundProvider } from './lib/playground-context';
 import { SignInPage } from './pages/SignInPage';
 const SignUpPage = lazy(() => import('./pages/SignUpPage').then(module => ({ default: module.SignUpPage })));
@@ -20,6 +21,8 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage').then((module) => ({
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 const MetricsPage = lazy(() => import('./pages/MetricsPage').then(module => ({ default: module.MetricsPage })));
 const WebsiteSettingsPage = lazy(() => import('./pages/WebsiteSettingsPage').then(module => ({ default: module.WebsiteSettingsPage })));
+const SupportPage = lazy(() => import('./pages/SupportPage').then(module => ({ default: module.SupportPage })));
+const SupportWelcomePage = lazy(() => import('./pages/SupportWelcomePage').then(module => ({ default: module.SupportWelcomePage })));
 
 export function App() {
   const auth = useAuth();
@@ -30,8 +33,11 @@ export function App() {
     <Route path="/sign-in" element={<SignInPage />} />
     <Route path="/sign-up" element={<RouteBoundary key="email"><Suspense fallback={<LoadingState label="Loading page" />}><SignUpPage /></Suspense></RouteBoundary>} />
     <Route path="/auth/google/complete" element={<RouteBoundary key="google"><Suspense fallback={<LoadingState label="Loading page" />}><SignUpPage google /></Suspense></RouteBoundary>} />
-    <Route element={auth.authenticated && auth.user ? <PlaygroundProvider key={auth.user.id} userId={auth.user.id}><PortalShell /></PlaygroundProvider> : <Navigate to="/sign-in" replace state={{ from: location.pathname + location.search }} />}>
+    <Route element={auth.authenticated && auth.user ? <PlaygroundProvider key={auth.user.id} userId={auth.user.id}><SupportProvider><PortalShell /></SupportProvider></PlaygroundProvider> : <Navigate to="/sign-in" replace state={{ from: location.pathname + location.search }} />}>
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/support" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <Navigate to={`/admin/support${location.search}`} replace /> : <SupportPage />} />
+      <Route path="/admin/support" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <SupportPage admin /> : <ErrorState error={new Error('Administrator access is required.')} />} />
+      <Route path="/admin/support/welcome" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <SupportWelcomePage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/api-keys" element={<ApiKeysPage />} />
       <Route path="/playground" element={auth.playgroundEnabled ? <PlaygroundGate><PlaygroundPage /></PlaygroundGate> : <Navigate to="/dashboard" replace />} />
       <Route path="/admin/playground" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <PlaygroundSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />

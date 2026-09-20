@@ -1,0 +1,5 @@
+.support-welcome-socials { display:flex; flex-wrap:wrap; gap:7px 12px; margin-top:14px; white-space:normal; }
+.support-welcome-socials a { display:inline-flex; align-items:center; gap:6px; min-height:30px; color:var(--primary); font-size:12px; line-height:1.4; text-decoration:none; }
+.support-welcome-socials a:hover { text-decoration:underline; text-underline-offset:3px; }
+.support-welcome-socials a:focus-visible { outline:2px solid var(--primary); outline-offset:3px; border-radius:3px; }
+.support-welcome-socials svg { flex:none; }

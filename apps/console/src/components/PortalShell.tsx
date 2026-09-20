@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import { Brand } from './Brand';
 import { ErrorState, LoadingState } from './Ui';
+import { SupportNavLink } from './SupportNavLink';
 import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
+import { useSupport } from '../lib/support-context';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: CircleGauge },
@@ -37,6 +39,8 @@ export function PortalShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarPreference);
   const { user, capabilities, logout, playgroundEnabled } = useAuth();
   const { theme, toggle } = useTheme();
+  const support = useSupport();
+  const supportHref = user?.role === 'admin' && user.status === 'active' ? '/admin/support' : '/support';
   const navigate = useNavigate();
   const location = useLocation();
   const sidebarRef = useRef<HTMLElement>(null);
@@ -72,6 +76,7 @@ export function PortalShell() {
       await logout();
       navigate('/sign-in', { replace: true });
     } catch (error) {
+      window.dispatchEvent(new CustomEvent('portal:sign-out-failed'));
       setSignOutError(error instanceof Error ? error.message : 'Unable to sign out. Please try again.');
       setSigningOut(false);
     }
@@ -148,6 +153,7 @@ export function PortalShell() {
         </nav>
         <div className="topbar-spacer" />
         <button className="icon-button topbar-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
+        <SupportNavLink to={supportHref} {...support} />
         <div className="account-menu-wrap" ref={accountRef}>
           <button className="account-trigger" onClick={() => setAccountOpen((value) => !value)} aria-haspopup="menu" aria-expanded={accountOpen}>
             <span className="avatar">{initials}</span><span className="account-name">{accountName}</span><ChevronDown size={15} />
@@ -190,6 +196,6 @@ function readSidebarPreference() {
   try { return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true'; } catch { return false; }
 }
 
-const portalRoutes = new Set(['/dashboard', '/api-keys', '/playground', '/usage', '/status', '/subscriptions', '/redeem', '/profile']);
+const portalRoutes = new Set(['/dashboard', '/api-keys', '/playground', '/usage', '/status', '/subscriptions', '/redeem', '/profile', '/support', '/admin/support']);
 function isPortalRoute(href: string) { return portalRoutes.has(href); }
 function siteLinkHref(href: string) { return href.startsWith('/') ? publicSiteHref(href) : href; }

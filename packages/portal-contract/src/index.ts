@@ -4,6 +4,7 @@ export * from './analytics.js';
 export * from './metrics.js';
 export * from './playground.js';
 export * from './conversations.js';
+export * from './support.js';
 export const idSchema = z.union([z.string(), z.number()]).transform(String);
 export const moneySchema = z.union([z.string(), z.number()]).transform(String);
 export const dateSchema = z.string().nullable().optional();
@@ -189,6 +190,7 @@ export type PortalConfig = {
 export type SessionView = {
     authenticated: boolean;
     playgroundEnabled: boolean;
+    supportAvailable?: boolean;
     csrfToken?: string;
     user?: PortalUser;
     capabilities: CapabilityMap;

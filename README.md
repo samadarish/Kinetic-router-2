@@ -32,6 +32,8 @@ Open the public header's **Playground** link to test models. Signed-out visitors
 
 Administrators can edit or hide the public footer's social links in **Website settings** in the console. See [website social links](docs/website-settings.md) for deployment and persistence details.
 
+**Support** in the console header opens customer tickets or the administrator's support inbox. Conversations include live replies, unread counts, administrator availability, and optional message sounds. Only administrators see read receipts. See [support setup and notifications](docs/support.md).
+
 Administrators can inspect consumption in **Metrics → Usage overview**, switching between Today and All time, with recorded usage charts, active-hour and five-active-hour averages that exclude idle hours, separate overall rates including the 7-day estimate, and busiest actual five-hour periods. **Customers** provides classifications, a customer-mix donut, daily active counts, and rankings; **Activity** provides timelines, weekday/hour heatmaps, and expandable week/day/hour details. Each view has independent controls. See [customer metrics](docs/metrics.md) for definitions, historical coverage, and release details.
 
 Saved Playground chats require PostgreSQL. Set `PLAYGROUND_DATABASE_URL` (or reuse `ANALYTICS_DATABASE_URL`) before starting the BFF. The optional `npm run dev:playground-db` helper starts a persistent, loopback-only development database; see [the local setup steps](docs/playground.md#local-development).

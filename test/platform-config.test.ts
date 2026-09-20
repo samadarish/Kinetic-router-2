@@ -16,6 +16,8 @@ describe('shared product configuration', () => {
     expect(resolveConsoleReturnPath('/console/api-keys?tab=active')).toBe('/api-keys?tab=active');
     expect(resolveConsoleReturnPath('/usage?page=2')).toBe('/usage?page=2');
     expect(resolveConsoleReturnPath('/playground')).toBe('/playground');
+    expect(resolveConsoleReturnPath('/support?ticket=abc')).toBe('/support?ticket=abc');
+    expect(resolveConsoleReturnPath('/admin/support?ticket=abc')).toBe('/admin/support?ticket=abc');
     expect(resolveConsoleReturnPath('/console/playground')).toBe('/playground');
     expect(resolveConsoleReturnPath('//malicious.example')).toBe('/dashboard');
     expect(resolveConsoleReturnPath('https://malicious.example')).toBe('/dashboard');

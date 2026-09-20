@@ -1,6 +1,8 @@
 export const CONSOLE_ROUTES = {
   signIn: '/sign-in',
   dashboard: '/dashboard',
+  support: '/support',
+  supportInbox: '/admin/support',
   apiKeys: '/api-keys',
   playground: '/playground',
   playgroundSettings: '/admin/playground',

@@ -3,7 +3,7 @@ import { SOCIAL_PLATFORMS } from '@kineticrouter/portal-contract';
 import { resolvePublicConsoleOrigin } from '@/data/public-console-origin.mjs';
 import { publicRequestOrigin } from '@/data/console';
 import { loadWebsiteSocialLinks } from '@/data/website-settings';
-import { SocialIcon } from './social-icon';
+import { SocialIcon } from '@kineticrouter/brand-ui';
 
 export async function FooterSocialLinks() {
   const origin = resolvePublicConsoleOrigin(

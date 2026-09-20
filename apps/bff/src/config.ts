@@ -56,5 +56,6 @@ export const config = {
   analyticsEnabled: readBoolean(process.env.ANALYTICS_ENABLED, nodeEnv !== 'production'),
   analyticsDatabaseUrl: process.env.ANALYTICS_DATABASE_URL ?? '',
   playgroundDatabaseUrl: process.env.PLAYGROUND_DATABASE_URL ?? '',
+  supportDatabaseUrl: process.env.SUPPORT_DATABASE_URL ?? '',
 } as const;
 import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
