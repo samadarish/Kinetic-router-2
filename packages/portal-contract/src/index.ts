@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { turnstileTokenSchema } from './onboarding.js';
 export * from './onboarding.js';
 export * from './analytics.js';
 export * from './metrics.js';
@@ -11,7 +12,7 @@ export const dateSchema = z.string().nullable().optional();
 export const loginInputSchema = z.object({
     email: z.string().trim().email().max(254),
     password: z.string().min(1).max(512),
-    turnstileToken: z.string().max(4096).optional(),
+    turnstileToken: turnstileTokenSchema.optional(),
 });
 export const totpInputSchema = z.object({
     tempToken: z.string().min(1).max(4096),

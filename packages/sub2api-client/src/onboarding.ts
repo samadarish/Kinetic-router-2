@@ -14,8 +14,10 @@ export class Sub2ApiOnboardingClient {
     this.client = new Sub2ApiClient(baseUrl, fetcher);
   }
 
-  async sendVerificationCode(email: string) {
-    const data = asRecord(await this.client.request('auth/send-verify-code', { method: 'POST', body: JSON.stringify({ email }) }, { userUiRequest: false }));
+  async sendVerificationCode(email: string, turnstileToken?: string) {
+    const data = asRecord(await this.client.request('auth/send-verify-code', {
+      method: 'POST', body: JSON.stringify({ email, ...(turnstileToken ? { turnstile_token: turnstileToken } : {}) }),
+    }, { userUiRequest: false }));
     const countdown = Number(data.countdown);
     return { countdown: Number.isFinite(countdown) ? Math.min(600, Math.max(60, Math.ceil(countdown))) : 60 };
   }

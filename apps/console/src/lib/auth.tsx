@@ -17,7 +17,7 @@ type AuthContextValue = {
   playgroundEnabled: boolean;
   user?: PortalUser;
   capabilities?: CapabilityMap;
-  login(email: string, password: string): Promise<LoginResult>;
+  login(email: string, password: string, turnstileToken?: string): Promise<LoginResult>;
   completeTotp(tempToken: string, code: string): Promise<LoginResult>;
   register(input: SignupInput): Promise<LoginResult>;
   completeGoogle(input: GoogleRegistrationInput): Promise<LoginResult & { next: string }>;
@@ -91,8 +91,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
     playgroundEnabled: !session.isError && session.data?.playgroundEnabled === true,
     user: session.data?.user,
     capabilities: session.data?.capabilities,
-    login: async (email, password) => finishLogin(await portalApi<LoginResult>('/auth/password/login', {
-      method: 'POST', ...jsonBody({ email, password }),
+    login: async (email, password, turnstileToken) => finishLogin(await portalApi<LoginResult>('/auth/password/login', {
+      method: 'POST', ...jsonBody({ email, password, ...(turnstileToken ? { turnstileToken } : {}) }),
     })),
     completeTotp: async (tempToken, code) => finishLogin(await portalApi<LoginResult>('/auth/totp', {
       method: 'POST', ...jsonBody({ tempToken, code }),

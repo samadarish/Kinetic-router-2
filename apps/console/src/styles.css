@@ -524,3 +524,8 @@ a.console-topnav-link:hover { background:var(--muted); color:var(--foreground); 
 .auth-switch { margin:16px 0 0; text-align:center; }
 .google-button-ready .google-mark { margin-left:0; }
 .auth-back:disabled { opacity:.6; cursor:wait; }
+.turnstile-verification,.auth-settings-error,.auth-resend-verification { display:grid; gap:10px; min-width:0; }
+.turnstile-container { display:flex; justify-content:center; min-width:0; width:100%; }
+.turnstile-status { margin:0; color:var(--muted-foreground); font-size:12px; }
+.auth-resend-verification { padding-top:12px; border-top:1px solid var(--border); }
+.auth-resend-verification>p { margin:0; color:var(--muted-foreground); font-size:12px; }

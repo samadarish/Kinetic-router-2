@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Context, Hono, MiddlewareHandler } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
-import { googleRegistrationSchema, googleStartSchema, signupInputSchema, verificationEmailSchema, type AuthOptions } from '@kineticrouter/portal-contract';
+import { googleRegistrationSchema, googleStartSchema, signupInputSchema, verificationCodeInputSchema, verificationEmailSchema, type AuthOptions } from '@kineticrouter/portal-contract';
 import { Sub2ApiError, registrationRecoveryError, type AuthenticatedResult, type Sub2ApiOnboardingClient } from '@kineticrouter/sub2api-client';
 import { resolveConsoleReturnPath } from '@kineticrouter/platform-config/routes';
 import { config } from './config.js';
@@ -19,10 +19,14 @@ const cookieOptions = { path: '/', httpOnly: true, secure: config.production, sa
 
 export function onboardingOptions(settings: Record<string, unknown>, gates: AuthGates): AuthOptions {
   const actionCaptcha = settings.tencent_captcha_enabled === true || settings.aliyun_captcha_enabled === true;
+  const turnstileEnabled = settings.turnstile_enabled === true;
+  const configuredSiteKey = typeof settings.turnstile_site_key === 'string' ? settings.turnstile_site_key.trim() : '';
+  const siteKey = turnstileEnabled && /^[A-Za-z0-9_-]{1,256}$/.test(configuredSiteKey) ? configuredSiteKey : null;
   return {
-    emailSignup: gates.emailSignup && settings.registration_enabled === true && settings.email_verify_enabled === true && !actionCaptcha && settings.turnstile_enabled !== true,
+    emailSignup: gates.emailSignup && settings.registration_enabled === true && settings.email_verify_enabled === true && !actionCaptcha && (!turnstileEnabled || siteKey !== null),
     googleSignin: gates.googleSignin && settings.google_oauth_enabled === true && !actionCaptcha,
     invitationRequired: settings.invitation_code_enabled === true,
+    turnstile: { enabled: turnstileEnabled, siteKey },
   };
 }
 
@@ -56,13 +60,13 @@ export function installOnboardingRoutes(app: Hono<Env>, options: {
   app.get(`${prefix}/options`, async c => ok(c, onboardingOptions(await settings(), gates)));
   app.post(`${prefix}/email/send-code`, options.requireOrigin, options.rateLimit, async c => {
     await ensure('emailSignup');
-    const { email } = verificationEmailSchema.parse(await c.req.json());
+    const { email, turnstileToken } = verificationCodeInputSchema.parse(await c.req.json());
     const emailKey = createHash('sha256').update(email.toLowerCase()).digest('hex');
     if (await sessions.hitRateLimit(`verify-minute:${emailKey}`, 1, 60) || await sessions.hitRateLimit(`verify-hour:${emailKey}`, 5, 3600)) {
       c.header('Retry-After', '60');
       throw new Sub2ApiError({ status: 429, code: 'VERIFY_RATE_LIMIT', message: 'Please wait before requesting another verification code.' });
     }
-    return ok(c, await client.sendVerificationCode(email));
+    return ok(c, await client.sendVerificationCode(email, turnstileToken));
   });
   app.post(`${prefix}/email/register`, options.requireOrigin, options.rateLimit, async c => {
     await ensure('emailSignup');

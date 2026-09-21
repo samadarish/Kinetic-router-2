@@ -1,4 +1,4 @@
-# Email verification and Google sign-in
+# Turnstile, email verification, and Google sign-in
 
 The code supports verified email signup through Brevo SMTP and Google sign-in through the existing Sub2API identity service. Existing users, balances, API keys, and password sign-in stay in that service. No Firebase project, extra user database, browser Google SDK, or Brevo API integration is needed.
 
@@ -66,9 +66,21 @@ Keep the standard Google authorization, token, user-info endpoints and basic sco
 
 Google login must now start from the customer console. The global callback setting means Google login started from the original Sub2API frontend will lack the portal transaction cookie and fail. Keep the original administrator password sign-in available.
 
-## 3. Deploy and activate
+## 3. Configure Turnstile
 
-Build and deploy the code to your server using the existing deployment process. In `deploy/.env`, set these independently after their provider configuration is ready:
+The console uses the existing Sub2API Turnstile configuration. In the Cloudflare dashboard, open the widget whose site key is configured in Sub2API and ensure its allowed hostnames include `console.kineticrouter.com` (or a parent hostname that covers it). Keep the native frontend's allowed hostname as well. No separate widget or BFF secret is needed. [Cloudflare hostname configuration](https://developers.cloudflare.com/turnstile/additional-configuration/hostname-management/)
+
+Sub2API's public settings supply `turnstile_enabled` and `turnstile_site_key`. The BFF exposes only `turnstile: { enabled, siteKey }` from `/portal/v1/auth/options`; the console reads that response instead of embedding a site key in a build variable. The secret key remains in Sub2API's private settings. When Turnstile is enabled but its public key is missing or invalid, protected forms remain unavailable until configuration is corrected.
+
+Password sign-in and each verification-email request send the widget's proof to the BFF as `turnstileToken`; the BFF forwards it to Sub2API as `turnstile_token`. Sub2API performs the one server-side validation. The authenticator-code stage does not ask for another Turnstile proof, and Google sign-in does not add a Turnstile challenge. With native email verification enabled, entering the emailed code completes registration without another Turnstile proof: the native registration check skips CAPTCHA for that flow. [Native registration policy](https://github.com/Wei-Shaw/sub2api/blob/v0.2.4/backend/internal/service/auth_service.go)
+
+Tokens live only in the current form's memory and are cleared when submitted. They cannot be replayed: Cloudflare tokens are single-use and expire after five minutes. A failed or uncertain protected request needs a fresh proof. Resend preserves the existing cooldown and asks for a fresh verification before sending another email; customers can still complete registration using a code already received. [Cloudflare token validation](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/)
+
+The console Caddy snippet allows `https://challenges.cloudflare.com` in `script-src` and `frame-src`; `connect-src` stays restricted to `'self'`. Apply this header before releasing the console widget, and check for overriding CSP headers in any additional proxy/CDN. [Cloudflare CSP requirements](https://developers.cloudflare.com/turnstile/reference/content-security-policy/)
+
+## 4. Deploy and activate
+
+Build and deploy the code to your server using the [existing deployment process](../deploy/README.md). Deploy the updated BFF before the updated console so `/portal/v1/auth/options` exposes Turnstile configuration when the widget is released. Confirm the installed Sub2API version and current public settings before rollout; the live endpoints were unreachable during Turnstile planning, so source compatibility alone does not verify the deployed service. In `deploy/.env`, set these independently after their provider configuration is ready:
 
 ```dotenv
 ENABLE_EMAIL_SIGNUP=true
@@ -77,17 +89,18 @@ ENABLE_GOOGLE_SIGNIN=true
 
 Recreate the BFF container to load changed environment variables. Redis remains required in production and stores encrypted, ten-minute Google transactions alongside the existing encrypted portal sessions. Ensure `PORTAL_ORIGIN` is exactly `https://console.kineticrouter.com` and that `/portal/*` is proxied unchanged to the BFF.
 
-Apply the updated Caddy snippet (Caddy 2.8+) and validate your complete configuration before reload. It excludes the Google callback from access logs so authorization codes are not recorded. Apply equivalent query-string redaction at any additional proxy/CDN and the native API callback. Do not enable request-body or cookie logging for authentication endpoints. [Caddy log exclusion](https://caddyserver.com/docs/caddyfile/directives/log_skip)
+Apply the updated [console Caddy snippet](../deploy/caddy/console.kineticrouter.com.caddy) (Caddy 2.8+) to the active configuration. Validate your complete configuration with `caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile` before reload, adjusting the path if your installation uses another file. Reload only after validation succeeds. It allows the Turnstile script/frame and excludes the Google callback from access logs so authorization codes are not recorded. Apply equivalent query-string redaction at any additional proxy/CDN and the native API callback. Do not enable request-body or cookie logging for authentication endpoints; Turnstile proofs, passwords, email codes, and native tokens must never be logged. [Caddy log exclusion](https://caddyserver.com/docs/caddyfile/directives/log_skip)
 
-Public settings are cached for up to 60 seconds. `/portal/v1/auth/options` reports which flows the portal can offer. Email signup requires both native registration and email verification enabled. Google sign-in for existing accounts does not require open registration; first-time accounts still follow the native registration policy.
+Public settings are cached for up to 60 seconds. `/portal/v1/auth/options` reports which flows the portal can offer; after changing configuration, allow that cache to expire and refocus or reload the console to refresh it. Email signup requires `ENABLE_EMAIL_SIGNUP=true`, native `registration_enabled=true` and `email_verify_enabled=true`, working SMTP settings, and a usable site key when Turnstile is enabled. Google sign-in for existing accounts does not require open registration; first-time accounts still follow the native registration policy. No database migration is required for Turnstile. These are rollout instructions, not a record that deployment or provider settings were changed.
 
-## 4. Verify activation
+## 5. Verify activation
 
-1. Visit `/sign-up` on the console with a fresh email address. Request the code, check the actual inbox, enter the six digits, and confirm account creation and the dashboard.
-2. Verify incorrect/expired codes cannot create an account; confirm resend waits at least 60 seconds. Native codes expire after 15 minutes and permit five failed attempts.
-3. Test Google with an existing account, then a new Google account. New Google users choose a password before their account is created; their verified email cannot be edited. Invitation codes appear when required by native settings.
-4. Cancel Google login and retry. Confirm sign-out and existing password/TOTP login still work.
-5. Check browser storage and redirects contain no native access or refresh tokens. Test only accounts you control and never share a captured callback URL.
+1. Confirm `/portal/v1/auth/options` contains the expected public site key and enabled flag, with no secret key. On desktop and mobile, load `/sign-in`, check the Turnstile widget loads without CSP errors, and sign in with a real account. For an account with TOTP, confirm only the password stage uses Turnstile and the authenticator step succeeds without another widget.
+2. Try an incorrect password, expire a proof before submission, and temporarily block the widget script in the browser. Confirm the form preserves entered values, cannot submit a missing proof, explains the failure, and allows a fresh verification/retry without replaying the old request.
+3. Visit `/sign-up` with a fresh email address you control. Complete Turnstile, request the code, check the actual inbox, enter the six digits, and confirm account creation and the dashboard without a second challenge.
+4. Verify incorrect/expired email codes cannot create an account. Confirm resend waits at least 60 seconds, then requires a fresh Turnstile proof and explicit send confirmation; inspect the actual resent email. Registration with an already received code must remain usable while the resend challenge is open. Native email codes expire after 15 minutes and permit five failed attempts.
+5. Test Google with an existing account, then a new Google account. New Google users choose a password before their account is created; their verified email cannot be edited. Invitation codes appear when required by native settings. Cancel Google login and retry; confirm no added Turnstile challenge. Confirm sign-out works.
+6. Check browser storage and redirects contain no native access/refresh tokens or Turnstile proofs. Confirm authentication request bodies are absent from proxy/BFF/native logs. Test only accounts you control and never share a captured callback URL. In an isolated non-production environment, also verify Turnstile-disabled login and signup; keep Cloudflare test keys/tokens out of production.
 
 If account creation succeeds upstream but session setup fails, sign in normally instead of resubmitting registration. Turning either BFF switch back to `false` disables that portal flow; native registration/Google settings govern the original API independently.
 
@@ -99,6 +112,8 @@ During provider setup on 2026-09-11, the live administrator interface reported v
 
 Native Google login does **not** invoke Sub2API's password-login TOTP challenge. Google accounts follow Google's authentication policy; the portal preserves the native backend behavior. Consider this when enabling Google for accounts with local TOTP. [Pinned Google flow](https://github.com/Wei-Shaw/sub2api/blob/e8cb019fabf8b55199436229044cbf9aa7a82564/backend/internal/handler/auth_email_oauth.go), [native token issuance](https://github.com/Wei-Shaw/sub2api/blob/e8cb019fabf8b55199436229044cbf9aa7a82564/backend/internal/service/auth_email_oauth_auto.go)
 
-CAPTCHA widgets are not implemented in this portal. Email signup fails closed if native Turnstile, Tencent, or Aliyun CAPTCHA is enabled; Google start fails closed for Tencent or Aliyun. Native Google start does not require a Turnstile-only proof. Do not disable an existing CAPTCHA policy to bypass this limitation; integrate its widget before activating the affected flow. [Pinned CAPTCHA checks](https://github.com/Wei-Shaw/sub2api/blob/e8cb019fabf8b55199436229044cbf9aa7a82564/backend/internal/service/auth_service.go)
+Turnstile is supported for password login and email verification-code requests, with server-side validation delegated to Sub2API. The reviewed `v0.2.4` registration policy skips CAPTCHA when email verification is enabled, so final email-code registration does not reuse the send-code proof. Email signup and Google start still fail closed for Tencent or Aliyun CAPTCHA, whose widgets are not integrated. Native Google start does not require a Turnstile-only proof. Do not disable an existing CAPTCHA policy to bypass an unsupported provider. [Pinned CAPTCHA checks](https://github.com/Wei-Shaw/sub2api/blob/e8cb019fabf8b55199436229044cbf9aa7a82564/backend/internal/service/auth_service.go), [v0.2.4 authentication service](https://github.com/Wei-Shaw/sub2api/blob/v0.2.4/backend/internal/service/auth_service.go)
 
-Code validation uses mock native responses: `npm run test:portal` covers signup, rate limits, Origin checks, callback replay, redirect validation, pending registration, and token privacy. These checks cannot validate your future DNS records, SMTP delivery, Google project settings, or server proxy configuration.
+Code validation uses mock native responses: `npm run test:portal` covers Turnstile settings/token forwarding, signup, rate limits, Origin checks, callback replay, redirect validation, pending registration, and token privacy. DOM tests cover widget loading, expiry, retries, duplicate submissions, TOTP, and email resend. The widget loads the official script asynchronously and renders after its load event; do not call `turnstile.ready()` on an async/defer script.
+
+Local browser review on 2026-09-21 used Cloudflare's official test widget with mock authentication endpoints and the console CSP. Login retries, email-code send/resend, token-free final registration, blocked-script recovery, dark/light themes, and 320/375/390-pixel layouts passed. This did not validate production login, SMTP delivery, or the installed Caddy configuration; complete the activation checklist after deployment.
