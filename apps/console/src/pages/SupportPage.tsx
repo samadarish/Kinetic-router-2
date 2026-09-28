@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
+import { Fragment, memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowDown, ArrowLeft, Check, CheckCheck, ChevronLeft, ChevronRight, CircleCheck, MessageCircle, MessagesSquare, Plus, RotateCcw, Search, Send, Volume2 } from 'lucide-react';
@@ -39,11 +39,11 @@ function writeDraft(key: string, value: Draft | null) {
   } catch { /* Keep the in-memory draft if browser storage is unavailable. */ }
 }
 
-function stamp(value: string, short = false) {
-  return new Intl.DateTimeFormat(undefined, short
-    ? { month: 'short', day: 'numeric' }
-    : { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
-}
+const shortDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+const fullDate = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const messageTime = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+const messageDay = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+function stamp(value: string, short = false) { return (short ? shortDate : fullDate).format(new Date(value)); }
 
 function failure(error: unknown) {
   return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
@@ -101,19 +101,20 @@ export function supportVisibleTickets(items: SupportTicket[], selected?: Support
     .filter(ticket => filter === 'all' || ticket.status === filter);
 }
 
-export function SupportMessageBubble({ message, admin, customerReadSequence = 0, showAuthor = true, customerLabel = 'Customer', conversationVisible = false }: {
+export const SupportMessageBubble = memo(function SupportMessageBubble({ message, admin, customerReadSequence = 0, showAuthor = true, customerLabel = 'Customer', conversationVisible = false }: {
   message: SupportMessage; admin: boolean; customerReadSequence?: number; showAuthor?: boolean; customerLabel?: string; conversationVisible?: boolean;
 }) {
   const bubbleRef = useRef<HTMLDivElement>(null);
   const own = message.sender === (admin ? 'admin' : 'customer');
   const seen = admin && own && message.sequence <= customerReadSequence;
+  const timestamp = stamp(message.createdAt);
   return <li className={`support-message${own ? ' support-message-own' : ''}${showAuthor ? '' : ' support-message-continuation'}`} data-sequence={message.sequence} data-incoming={!own || undefined}>
     <span className={showAuthor ? 'support-message-author' : 'support-visually-hidden'}>{own ? 'You' : message.sender === 'admin' ? 'kineticRouter Support' : customerLabel}</span>
     <div ref={bubbleRef} className={`support-message-bubble ${message.image ? 'support-message-with-image' : ''}`}>{message.image && <SupportMessageImage image={message.image} />}{message.kind === 'welcome' ? <WelcomeMessageContent body={message.body} /> : message.body && <SupportMessageText body={message.body} />}</div>
     {!admin && message.kind === 'welcome' && <WelcomeSeenTracker bubbleRef={bubbleRef} ticketId={message.ticketId} messageId={message.id} visible={conversationVisible} />}
-    <div className="support-message-meta"><time dateTime={message.createdAt} title={stamp(message.createdAt)} aria-label={stamp(message.createdAt)}>{new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date(message.createdAt))}</time>{admin && own && <span className={seen ? 'support-seen' : ''}>{seen ? <CheckCheck size={13} /> : <Check size={13} />}{seen ? 'Seen' : 'Sent'}</span>}</div>
+    <div className="support-message-meta"><time dateTime={message.createdAt} title={timestamp} aria-label={timestamp}>{messageTime.format(new Date(message.createdAt))}</time>{admin && own && <span className={seen ? 'support-seen' : ''}>{seen ? <CheckCheck size={13} /> : <Check size={13} />}{seen ? 'Seen' : 'Sent'}</span>}</div>
   </li>;
-}
+});
 
 export function SupportPage({ admin = false }: { admin?: boolean }) {
   const support = useSupport();
@@ -432,7 +433,7 @@ function TicketConversation({ admin, ticketId, draftKey, detail, visible }: { ad
       {nextBefore != null && <div className="support-earlier"><Button variant="ghost" disabled={loadingOlder} onClick={() => void loadEarlier()}>{loadingOlder ? 'Loading…' : 'Load earlier messages'}</Button></div>}
       {olderError && <p className="support-notice support-notice-error" role="alert">{olderError} <button type="button" onClick={() => void loadEarlier()}>Try again</button></p>}
       <ol className="support-messages" aria-label="Messages">{supportThreadEntries(messages).map(({ message, startsDay, startsGroup }) => <Fragment key={message.id}>
-        {startsDay && <li className="support-date-divider"><time dateTime={message.createdAt}>{new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(message.createdAt))}</time></li>}
+        {startsDay && <li className="support-date-divider"><time dateTime={message.createdAt}>{messageDay.format(new Date(message.createdAt))}</time></li>}
         <SupportMessageBubble message={message} admin={admin} customerReadSequence={ticket.customerReadSequence} showAuthor={startsGroup} customerLabel={ticket.ownerLabel || ticket.ownerEmail || 'Customer'} conversationVisible={visible} />
       </Fragment>)}</ol>
     </div>{newMessages && <Button variant="secondary" className="support-jump" onClick={scrollBottom}><ArrowDown size={14} />New messages</Button>}</div>

@@ -45,6 +45,8 @@ import {
   mapUsageRangeStats,
   mapUsageTrend,
   mapUser,
+  mapAuthUser,
+  invalidAuthResponse,
   readCapabilities,
   type LoginResult,
   type PlaygroundGateway,
@@ -351,7 +353,7 @@ export function createApp(
       authRequest(c, store, client, (token) => client.request('user/profile', {}, authOptions(token))),
       authRequest(c, store, client, (token) => client.request('usage/dashboard/stats', {}, authOptions(token))),
     ]);
-    const user = mapUser(asRecord(profileRaw));
+    const user = sessionProfile(profileRaw, session);
     void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
     return success(c, {
       user: publicUser(user),
@@ -362,7 +364,7 @@ export function createApp(
   app.get('/portal/v1/me', async (c) => {
     const session = requireSession(c);
     const raw = await authRequest(c, store, client, (token) => client.request('user/profile', {}, authOptions(token)));
-    const user = mapUser(asRecord(raw));
+    const user = sessionProfile(raw, session);
     void settleSessionUpdate(updateSessionUser(store, session.id, user, session.revision), session.id, 'profile');
     return success(c, publicUser(user));
   });
@@ -379,7 +381,7 @@ export function createApp(
     const raw = await authWrite(c, store, client, (token) => client.request('user', {
       method: 'PUT', body: JSON.stringify(body),
     }, authOptions(token)));
-    const user = mapUser(asRecord(raw));
+    const user = sessionProfile(raw, session);
     await settleSessionUpdate(updateSessionUser(store, session.id, user), session.id, 'profile');
     return success(c, publicUser(user));
   });
@@ -802,11 +804,18 @@ async function refreshSession(
   });
 }
 
+function sessionProfile(raw: unknown, session: PortalSession): PortalUser {
+  const user = mapAuthUser(asRecord(raw));
+  if (user.id !== session.user.id) throw invalidAuthResponse();
+  return user;
+}
+
 async function updateSessionUser(store: SessionStore, id: string, user: PortalUser, expectedRevision?: number): Promise<void> {
   await store.withLock(id, async () => {
     const current = await store.get(id);
     if (!current) return;
     if (expectedRevision !== undefined && current.revision !== expectedRevision) return;
+    if (!user.id || user.id !== current.user.id) throw invalidAuthResponse();
     current.user = user;
     touchSession(current);
     await store.set(current);

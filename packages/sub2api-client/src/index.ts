@@ -109,16 +109,29 @@ export class Sub2ApiClient {
     }
 
     const contentType = response.headers.get('content-type') ?? '';
-    const limitedText = options.maxResponseBytes === undefined ? undefined : await readLimitedBody(response, options.maxResponseBytes);
-    const raw = limitedText === undefined
-      ? contentType.includes('application/json') ? await response.json().catch(() => null) : await response.text().catch(() => '')
-      : contentType.includes('application/json') ? parseResponseJson(limitedText) : limitedText;
+    // Account replies are buffered JSON. Bound even requests without a custom
+    // metrics limit, and never report a truncated/HTML success page as a write.
+    let text: string;
+    try { text = await readLimitedBody(response, options.maxResponseBytes ?? 16 * 1024 * 1024); }
+    catch (error) {
+      if (error instanceof Sub2ApiError) throw error;
+      throw new Sub2ApiError({ status: 502, code: 'UPSTREAM_UNAVAILABLE', message: 'The account service response was interrupted.' });
+    }
+    let raw: unknown = null;
+    if (text) {
+      try {
+        if (!contentType.includes('application/json')) throw new Error('Expected JSON');
+        raw = JSON.parse(text);
+      } catch {
+        if (response.ok) throw new Sub2ApiError({ status: 502, code: 'UPSTREAM_INVALID_RESPONSE', message: 'The account service returned an unreadable response.' });
+      }
+    }
     const envelope = asRecord(raw);
     const envelopeCode = envelope.code;
 
     if (!response.ok || (envelopeCode !== undefined && Number(envelopeCode) !== 0)) {
       throw new Sub2ApiError({
-        status: response.status || 502,
+        status: response.ok ? 400 : response.status || 502,
         code: typeof envelopeCode === 'string' || typeof envelopeCode === 'number' ? envelopeCode : undefined,
         message: stringValue(envelope.message) || stringValue(envelope.detail) || safeHttpMessage(response.status),
         reason: optionalString(envelope.reason),
@@ -144,16 +157,17 @@ export class Sub2ApiClient {
     }, { timeoutMs: 15_000, userUiRequest: false }));
 
     if (booleanValue(data.requires_2fa)) {
+      if (!validAuthToken(data.temp_token, 4096)) throw invalidAuthResponse();
       return {
         requires2fa: true,
-        tempToken: stringValue(data.temp_token),
+        tempToken: data.temp_token,
         maskedEmail: optionalString(data.user_email_masked),
       };
     }
     return {
       requires2fa: false,
-      tokens: mapTokens(data),
-      user: mapUser(asRecord(data.user)),
+      tokens: mapAuthTokens(data),
+      user: mapAuthUser(asRecord(data.user)),
     };
   }
 
@@ -164,8 +178,8 @@ export class Sub2ApiClient {
     }, { timeoutMs: 15_000, userUiRequest: false }));
     return {
       requires2fa: false,
-      tokens: mapTokens(data),
-      user: mapUser(asRecord(data.user)),
+      tokens: mapAuthTokens(data),
+      user: mapAuthUser(asRecord(data.user)),
     };
   }
 
@@ -174,7 +188,7 @@ export class Sub2ApiClient {
       method: 'POST',
       body: JSON.stringify({ refresh_token: refreshToken }),
     }, { timeoutMs: 12_000, userUiRequest: false }));
-    return mapTokens(data);
+    return mapAuthTokens(data);
   }
 
   async logout(refreshToken: string): Promise<void> {
@@ -621,7 +635,7 @@ export function optionalString(value: unknown): string | undefined {
 }
 
 async function readLimitedBody(response: Response, maximum: number): Promise<string> {
-  const tooLarge = () => new Sub2ApiError({ status: 502, code: 'UPSTREAM_RESPONSE_TOO_LARGE', message: 'The metrics response is too large. Choose a shorter reporting period.' });
+  const tooLarge = () => new Sub2ApiError({ status: 502, code: 'UPSTREAM_RESPONSE_TOO_LARGE', message: 'The account service response is too large. Choose a smaller request.' });
   if (Number(response.headers.get('content-length')) > maximum) { await response.body?.cancel(); throw tooLarge(); }
   if (!response.body) return '';
   const reader = response.body.getReader(), decoder = new TextDecoder(); let size = 0, result = '';
@@ -629,8 +643,6 @@ async function readLimitedBody(response: Response, maximum: number): Promise<str
     if (size > maximum) { await reader.cancel(); throw tooLarge(); } result += decoder.decode(chunk.value, { stream: true });
   } return result + decoder.decode(); } finally { reader.releaseLock(); }
 }
-function parseResponseJson(value: string): unknown { try { return JSON.parse(value); } catch { return null; } }
-
 export function decimalValue(value: unknown): string {
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   return stringValue(value) || '0';
@@ -672,13 +684,31 @@ function flag(settings: JsonRecord, key: string): boolean {
   return booleanValue(settings[key]);
 }
 
-function mapTokens(raw: JsonRecord): TokenBundle {
-  const expiresIn = Math.max(30, numberValue(raw.expires_in, 900));
+export function invalidAuthResponse() {
+  return new Sub2ApiError({ status: 502, code: 'INVALID_AUTH_RESPONSE', message: 'The account service returned an invalid sign-in response.' });
+}
+
+function validAuthToken(value: unknown, maximum = 16_384): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= maximum && !/[\s\x00-\x1f\x7f]/.test(value);
+}
+
+export function mapAuthTokens(raw: JsonRecord): TokenBundle {
+  const expiresIn = typeof raw.expires_in === 'number' || typeof raw.expires_in === 'string' ? Number(raw.expires_in) : NaN;
+  if (!validAuthToken(raw.access_token) || !validAuthToken(raw.refresh_token)
+    || !Number.isFinite(expiresIn) || expiresIn <= 0 || expiresIn > 31 * 86_400
+    || (raw.token_type !== undefined && raw.token_type !== 'Bearer')) throw invalidAuthResponse();
   return {
-    accessToken: stringValue(raw.access_token),
-    refreshToken: stringValue(raw.refresh_token),
+    accessToken: raw.access_token,
+    refreshToken: raw.refresh_token,
     expiresAt: Date.now() + expiresIn * 1000,
   };
+}
+
+export function mapAuthUser(raw: JsonRecord): PortalUser {
+  const id = typeof raw.id === 'string' || (typeof raw.id === 'number' && Number.isFinite(raw.id)) ? String(raw.id) : '';
+  if (!id.trim() || id.length > 128 || typeof raw.email !== 'string' || raw.email.length > 254 || !raw.email.includes('@')) throw invalidAuthResponse();
+  if (raw.status !== 'active') throw new Sub2ApiError({ status: 403, code: 'ACCOUNT_UNAVAILABLE', message: 'This account is not available for sign-in.' });
+  return mapUser(raw);
 }
 
 function safeHttpMessage(status: number): string {

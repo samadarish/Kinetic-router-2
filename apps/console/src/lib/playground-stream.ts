@@ -14,9 +14,9 @@ export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, 
       const chunk = await reader.read();
       signal.throwIfAborted();
       buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
-      if (buffer.length > 256 * 1024) throw new Error('The response could not be read.');
       let newline: number;
       while ((newline = buffer.indexOf('\n')) !== -1) {
+        if (newline > 256 * 1024) throw new Error('The response could not be read.');
         const line = buffer.slice(0, newline).replace(/\r$/, '');
         buffer = buffer.slice(newline + 1);
         if (!line) {
@@ -30,11 +30,12 @@ export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, 
           data = []; dataSize = 0;
         } else if (line.startsWith('data:')) {
           const value = line.slice(5).replace(/^ /, '');
-          dataSize += value.length;
+          dataSize += value.length + (data.length ? 1 : 0);
           if (dataSize > 256 * 1024) throw new Error('The response could not be read.');
           data.push(value);
         }
       }
+      if (buffer.length > 256 * 1024) throw new Error('The response could not be read.');
       if (chunk.done) throw new Error('The response was interrupted. Check Usage for any billed cost.');
     }
   } finally {

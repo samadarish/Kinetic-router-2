@@ -15,7 +15,10 @@ console.kineticrouter.com {
 
   @portal_api path /portal/* /readyz
   handle @portal_api {
-    reverse_proxy 127.0.0.1:3101
+    reverse_proxy 127.0.0.1:3101 {
+      # Forward one verified address, including when trusted proxies are configured.
+      header_up X-Forwarded-For {client_ip}
+    }
   }
 
   handle {

@@ -170,12 +170,19 @@ export function createConversationController(options: Options) {
       if (!owns() || removed.has(id) || reads.get(id) !== read || (select && generation !== requestGeneration)) return;
       const remembered = remember(detail.conversation);
       if (remembered.revision !== detail.conversation.revision || remembered.active !== detail.conversation.active) { if (selected === id) emit({ loading: false }); return; }
-      cursors.set(id, detail.nextBefore); ready.add(id);
       const driver = driverFor(id), current = driver.getSnapshot(), last = detail.turns.at(-1);
+      const incoming = conversationMessages(detail), first = incoming[0]?.id;
+      // Keep loaded history only when it joins the latest server page without a
+      // gap. An evicted transcript must restart pagination from that page.
+      const retained = first !== undefined && (current.messages.at(-1)?.id ?? -Infinity) >= first - 1
+        ? current.messages.filter(message => message.id < first) : [];
+      const previousBefore = cursors.get(id);
+      const nextBefore = retained.length && previousBefore !== undefined ? previousBefore : detail.nextBefore;
+      cursors.set(id, nextBefore); ready.add(id);
       const activity = detail.conversation.active ? 'Receiving' : last?.state === 'complete' ? 'Complete' : last?.state === 'failed' ? 'Failed' : last ? 'Stopped' : 'Ready';
-      driver.hydrate({ ...current, selectedKey: current.selectedKey ?? detail.conversation.selectedKey, selectedModel: current.selectedModel ?? detail.conversation.selectedModel, messages: conversationMessages(detail), activity,
+      driver.hydrate({ ...current, selectedKey: current.selectedKey ?? detail.conversation.selectedKey, selectedModel: current.selectedModel ?? detail.conversation.selectedModel, messages: [...retained, ...incoming], activity,
         timing: { firstText: last?.firstTextMs ?? undefined, elapsed: last?.durationMs ?? undefined, model: last?.model ?? undefined } }, clearError ? '' : current.error);
-      if (selected === id) emit({ loading: false, older: detail.nextBefore, omittedTurns: omitted.get(id) ?? 0 });
+      if (selected === id) emit({ loading: false, older: nextBefore, omittedTurns: omitted.get(id) ?? 0 });
     } catch (error) {
       if (!owns() || removed.has(id) || reads.get(id) !== read) return;
       ready.delete(id);
@@ -217,7 +224,18 @@ export function createConversationController(options: Options) {
     setDraft: (value: string) => driverFor(selected).setDraft(value), selectKey: (value: string) => driverFor(selected).selectKey(value), selectModel: (value: string) => driverFor(selected).selectModel(value),
     send: (modelReady: boolean) => { if (canUse() && !activeId && !state.loading && !summaries.get(selected)?.active && (locals.get(selected)?.localOnly || ready.has(selected))) return driverFor(selected).send(modelReady); },
     stop: () => { if (activeId) drivers.get(activeId)?.stop(); },
-    loadOlder: async () => { if (!canUse()) return; const id = selected, before = cursors.get(id); if (!before) return; try { const result = await options.api.detail(id, before); if (!owns() || removed.has(id)) return; cursors.set(id, result.nextBefore); driverFor(id).prepend(conversationMessages(result)); if (selected === id) emit({ older: result.nextBefore }); } catch (error) { if (selected === id) emit({ error: error instanceof Error ? error.message : 'Could not load earlier messages.' }); } },
+    loadOlder: async () => {
+      if (!canUse()) return;
+      const id = selected, before = cursors.get(id), driver = drivers.get(id);
+      if (!before || !driver) return;
+      const currentRead = () => owns() && !removed.has(id) && drivers.get(id) === driver && cursors.get(id) === before;
+      try {
+        const result = await options.api.detail(id, before);
+        if (!currentRead()) return;
+        cursors.set(id, result.nextBefore); driver.prepend(conversationMessages(result));
+        if (selected === id) emit({ older: result.nextBefore });
+      } catch (error) { if (currentRead() && selected === id) emit({ error: error instanceof Error ? error.message : 'Could not load earlier messages.' }); }
+    },
     remove: async (id: string) => { if (!canUse()) return false; await options.api.remove(id); if (!owns()) return false; listMutation++; removed.add(id); invalidateRead(id); ready.delete(id); drivers.get(id)?.detach(); drivers.delete(id); locals.delete(id); summaries.delete(id); if (activeId === id) activeId = null; if (selected === id) requestGeneration++; emit({ conversations: state.conversations.filter(chat => chat.id !== id), activeChatId: activeId }); persist(); return true; },
     importLegacy: async () => {
       if (!canUse() || !state.legacy) return null;

@@ -1,7 +1,7 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query';
 import type { CapabilityMap, SessionView } from '@kineticrouter/portal-contract';
 import { describe, expect, it } from 'vitest';
-import { applyLoggedOutQueryState, applyMetricsAuthorizationState } from './auth-cache';
+import { applyLoggedOutQueryState, applyMetricsAuthorizationState, reconcileSessionQueries } from './auth-cache';
 
 const capabilities: CapabilityMap = {
   registration: false,
@@ -25,6 +25,31 @@ const capabilities: CapabilityMap = {
 };
 
 describe('logged-out query state', () => {
+  it.each(['another-account', 'anonymous'])('clears cached and pending account data before a polled %s session', async destination => {
+    const client = new QueryClient();
+    const previous: SessionView = { authenticated: true, playgroundEnabled: true, capabilities, user: { id: '42', role: 'user', status: 'active', username: 'Owner', email: 'owner@example.test', avatarUrl: null, balance: '1', concurrency: 1 } };
+    client.setQueryData(['session'], previous);
+    client.setQueryData(['dashboard'], { private: 'old account' });
+    client.setQueryData(['support', 'tickets'], { private: 'old conversation' });
+    let finish!: (value: string) => void;
+    const pending = client.fetchQuery({ queryKey: ['api-keys'], queryFn: () => new Promise<string>(resolve => { finish = resolve; }) }).catch(() => undefined);
+    const next = destination === 'anonymous' ? { authenticated: false, playgroundEnabled: true, capabilities }
+      : { ...previous, user: { ...previous.user!, id: '43' } };
+    expect(await reconcileSessionQueries(client, next)).toBe(true);
+    finish('old secret'); await pending;
+    expect(client.getQueryCache().getAll().map(query => query.queryKey)).toEqual([['session']]);
+    expect(client.getQueryData(['session'])).toBe(previous);
+    client.clear();
+  });
+  it('does not treat initial authentication or a same-account refresh as an account switch', async () => {
+    const client = new QueryClient();
+    const session: SessionView = { authenticated: true, playgroundEnabled: true, capabilities, user: { id: '42', role: 'user', status: 'active', username: 'Owner', email: 'owner@example.test', avatarUrl: null, balance: '1', concurrency: 1 } };
+    expect(await reconcileSessionQueries(client, session)).toBe(false);
+    client.setQueryData(['session'], session); client.setQueryData(['dashboard'], { balance: 1 });
+    expect(await reconcileSessionQueries(client, session)).toBe(false);
+    expect(client.getQueryData(['dashboard'])).toEqual({ balance: 1 });
+    client.clear();
+  });
   it('clears protected metrics after a session role downgrade and cancels late report completion', async () => {
     const client = new QueryClient();
     client.setQueryData(['metrics', '42', 'overview'], { totalUsers: 5 });

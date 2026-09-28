@@ -1,4 +1,4 @@
-import { Sub2ApiClient, Sub2ApiError, asRecord, mapUser, type LoginResult } from './index.js';
+import { Sub2ApiClient, Sub2ApiError, asRecord, mapAuthTokens, mapAuthUser, invalidAuthResponse as invalidReply, type LoginResult } from './index.js';
 
 export type OAuthCookieJar = Record<string, string>;
 export type AuthenticatedResult = Extract<LoginResult, { requires2fa: false }>;
@@ -55,16 +55,12 @@ export class Sub2ApiOnboardingClient {
   }
 
   async authenticatedResult(data: Record<string, unknown>): Promise<AuthenticatedResult> {
-    const accessToken = typeof data.access_token === 'string' ? data.access_token : '';
-    const refreshToken = typeof data.refresh_token === 'string' ? data.refresh_token : '';
-    const expiresIn = Number(data.expires_in);
-    if (!accessToken || accessToken.length > 16_384 || !refreshToken || refreshToken.length > 16_384 || !Number.isFinite(expiresIn) || expiresIn <= 0 || expiresIn > 31 * 86_400 || (data.token_type && data.token_type !== 'Bearer')) throw invalidReply();
-    const profile = asRecord(await this.client.request('user/profile', {}, { accessToken }));
-    const id = String(profile.id ?? '');
+    const tokens = mapAuthTokens(data);
+    const profile = asRecord(await this.client.request('user/profile', {}, { accessToken: tokens.accessToken }));
+    const user = mapAuthUser(profile);
     const responseId = asRecord(data.user).id;
-    if (!id || id.length > 128 || (responseId !== undefined && String(responseId) !== id) || typeof profile.email !== 'string' || !profile.email.includes('@')) throw invalidReply();
-    if (profile.status !== 'active') throw new Sub2ApiError({ status: 403, code: 'ACCOUNT_UNAVAILABLE', message: 'This account is not available for sign-in.' });
-    return { requires2fa: false, user: mapUser(profile), tokens: { accessToken, refreshToken, expiresAt: Date.now() + expiresIn * 1000 } };
+    if (responseId !== undefined && String(responseId) !== user.id) throw invalidReply();
+    return { requires2fa: false, user, tokens };
   }
 
   private async oauthRequest(path: string, method: 'GET' | 'POST', body: unknown, cookies: OAuthCookieJar): Promise<OAuthReply> {
@@ -94,10 +90,6 @@ export class Sub2ApiOnboardingClient {
     }
     return { data: asRecord(envelope.data ?? envelope), cookies: updated };
   }
-}
-
-function invalidReply() {
-  return new Sub2ApiError({ status: 502, code: 'INVALID_AUTH_RESPONSE', message: 'The account service returned an invalid sign-in response.' });
 }
 
 export function registrationRecoveryError() {

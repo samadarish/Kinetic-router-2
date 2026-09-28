@@ -3,6 +3,15 @@ import { consumeSupportStream, clearSupportDrafts } from './support-stream';
 import type { SupportEvent } from '@kineticrouter/portal-contract';
 
 describe('support stream', () => {
+  it('accepts a large coalesced chunk of small events while bounding individual event data', async () => {
+    const text = 'data: {"type":"ready"}\n\n'.repeat(6000);
+    const body = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode(text)); controller.close(); } });
+    let count = 0;
+    await consumeSupportStream(body, () => count++, new AbortController().signal);
+    expect(count).toBe(6000);
+    const emptyLines = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode('data:\n'.repeat(128 * 1024 + 2))); controller.close(); } });
+    await expect(consumeSupportStream(emptyLines, () => {}, new AbortController().signal)).rejects.toThrow('too large');
+  });
   it('parses split frames, CRLF, comments and multi-byte text', async () => {
     const data = new TextEncoder().encode(': keepalive\r\n\r\nevent: support\r\ndata: {"type":"ready"}\r\n\r\ndata: {"type":"message","message":{"id":"one","ticketId":"ticket","sender":"admin","body":"Hello 👋"}}\n\n');
     const body = new ReadableStream<Uint8Array>({ start(controller) { for (let i = 0; i < data.length; i += 3) controller.enqueue(data.slice(i, i + 3)); controller.close(); } });

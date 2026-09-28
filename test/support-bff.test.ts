@@ -591,6 +591,7 @@ describe('support HTTP authorization and persistence boundary', () => {
     for (const useLogout of [true, false]) {
       const session = useLogout ? f.customer : f.other;
       const response = await f.request(session, '/support/events');
+      expect(response.headers.get('cache-control')).toBe('private, no-store, no-transform');
       const reader = response.body!.getReader();
       expect(new TextDecoder().decode((await reader.read()).value)).toContain('"type":"ready"');
       if (useLogout) await f.request(session, '/auth/logout', 'POST');
@@ -602,6 +603,7 @@ describe('support HTTP authorization and persistence boundary', () => {
   it('terminates an admin stream when upstream privilege is revoked', async () => {
     const f = await fixture();
     const response = await f.request(f.admin, '/admin/support/events');
+    expect(response.headers.get('cache-control')).toBe('private, no-store, no-transform');
     const reader = response.body!.getReader();
     await reader.read();
     f.profile.role = 'user';
@@ -611,6 +613,27 @@ describe('support HTTP authorization and persistence boundary', () => {
 });
 
 describe('support presence and event privacy', () => {
+  it('reuses its Redis callback after repeated connection interruptions', async () => {
+    const callbacks = new Set<(value: string) => void>();
+    let fail!: (error: Error) => void;
+    const subscriber = { isReady: true, isOpen: false, on: vi.fn(), withCommandOptions() { return this; }, subscribe: vi.fn(async (_channel: string, callback: (value: string) => void) => { callbacks.add(callback); }) };
+    const client = { isReady: true, isOpen: false, on: (_event: string, callback: typeof fail) => { fail = callback; }, duplicate: () => subscriber };
+    vi.spyOn(redis, 'createClient').mockReturnValue(client as unknown as ReturnType<typeof redis.createClient>);
+    const live = new SupportRealtimeService('redis://fixture.invalid', Date.now, false); cleanup.push(() => live.close());
+    const receive = vi.fn(), close = vi.fn();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await live.subscribe({ actorId: 'owner', admin: false, sessionId: 'session', receive, close });
+      if (attempt < 2) fail(new Error('connection interrupted'));
+    }
+    for (const callback of callbacks) callback(JSON.stringify({ event: { type: 'tickets', ticketId: 'ticket' }, audience: { ownerId: 'owner', admins: true } }));
+    expect(callbacks.size).toBe(1); expect(receive).toHaveBeenCalledTimes(1); expect(close).toHaveBeenCalledTimes(2);
+  });
+  it('rejects administrator creation through the customer JSON route before persistence', async () => {
+    const f = await fixture();
+    const create = vi.spyOn(f.supportStore, 'create'), publish = vi.spyOn(f.supportRealtime, 'publish');
+    const response = await f.request(f.admin, '/support/tickets', 'POST', imageFields('Help'));
+    expect(response.status).toBe(403); expect(create).not.toHaveBeenCalled(); expect(publish).not.toHaveBeenCalled();
+  });
   it('reads durable Redis last activity, falls back to legacy activity, and leaves missing or invalid timestamps unknown', async () => {
     const values = new Map<string, string>();
     const commands = {

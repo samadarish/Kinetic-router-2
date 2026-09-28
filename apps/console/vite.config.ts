@@ -1,15 +1,24 @@
 import { defineConfig } from 'vite';
+import { createHash } from 'node:crypto';
 import react from '@vitejs/plugin-react';
 import { THEME_BOOTSTRAP_SCRIPT } from '@kineticrouter/platform-config/theme';
+
+const themeFile = `assets/theme-${createHash('sha256').update(THEME_BOOTSTRAP_SCRIPT).digest('hex').slice(0, 12)}.js`;
 
 export default defineConfig({
   plugins: [
     react(),
     {
       name: 'kineticrouter-theme-bootstrap',
+      generateBundle() {
+        this.emitFile({ type: 'asset', fileName: themeFile, source: THEME_BOOTSTRAP_SCRIPT });
+      },
       transformIndexHtml: {
-        order: 'pre',
-        handler: (html) => html.replace('</head>', `<script>${THEME_BOOTSTRAP_SCRIPT}</script></head>`),
+        order: 'post',
+        handler: (_html, context) => [{
+          tag: 'script', injectTo: 'head-prepend',
+          ...(context.server ? { children: THEME_BOOTSTRAP_SCRIPT } : { attrs: { src: `/${themeFile}` } }),
+        }],
       },
     },
   ],

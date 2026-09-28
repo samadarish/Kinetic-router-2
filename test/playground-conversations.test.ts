@@ -39,6 +39,47 @@ async function fixture() {
 }
 
 describe('account-backed conversation controller', () => {
+  it('preserves loaded older pages and an exhausted cursor across focus refreshes', async () => {
+    const fx = await fixture(), id = await fx.seed('First question');
+    for (let revision = 1; revision < 65; revision++) {
+      const result = await fx.db.begin(fx.owner.id, { conversationId: id, revision, clientTurnId: randomUUID(), apiKeyId: '9', model: 'saved-model', message: `Question ${revision + 1}` });
+      await fx.db.write(result.turn, terminal);
+    }
+    await fx.store.open(id); await fx.store.loadOlder();
+    expect(fx.store.getSnapshot().messages).toHaveLength(120); expect(fx.store.getSnapshot().older).toBe(6);
+    fx.store.refresh();
+    await vi.waitFor(() => expect(fx.api.detail).toHaveBeenCalledTimes(3));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(fx.store.getSnapshot().messages).toHaveLength(120); expect(fx.store.getSnapshot().older).toBe(6);
+    await fx.store.loadOlder(); fx.store.refresh();
+    await vi.waitFor(() => expect(fx.api.detail).toHaveBeenCalledTimes(5));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(fx.store.getSnapshot().messages).toHaveLength(130); expect(fx.store.getSnapshot().older).toBeNull();
+    expect(fx.store.getSnapshot().messages[0]?.content).toBe('First question');
+    // Eviction drops the transcript, so its exhausted cursor must not hide pages.
+    for (let index = 0; index < 9; index++) await fx.store.open(await fx.seed(`Other chat ${index}`));
+    await fx.store.open(id);
+    expect(fx.store.getSnapshot().messages).toHaveLength(60); expect(fx.store.getSnapshot().older).toBe(36);
+  });
+  it('ignores an older page that finishes after refresh has replaced disconnected history', async () => {
+    const fx = await fixture(), id = await fx.seed('Question 1');
+    const seedThrough = async (start: number, end: number) => {
+      for (let revision = start; revision < end; revision++) {
+        const result = await fx.db.begin(fx.owner.id, { conversationId: id, revision, clientTurnId: randomUUID(), apiKeyId: '9', model: 'saved-model', message: `Question ${revision + 1}` });
+        await fx.db.write(result.turn, terminal);
+      }
+    };
+    await seedThrough(1, 60); await fx.store.open(id);
+    const older = await fx.db.detail(fx.owner.id, id, 31), pending = deferred<ConversationDetail>();
+    vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);
+    const loadingOlder = fx.store.loadOlder();
+    await seedThrough(60, 130); fx.store.refresh();
+    await vi.waitFor(() => expect(fx.store.getSnapshot().older).toBe(101));
+    pending.resolve(older); await loadingOlder;
+    expect(fx.store.getSnapshot().messages).toHaveLength(60);
+    expect(fx.store.getSnapshot().messages[0]?.content).toBe('Question 101');
+    expect(fx.store.getSnapshot().older).toBe(101);
+  });
   it('shares a deep-link detail request with mount and focus refreshes', async () => {
     const fx = await fixture(), id = await fx.seed('Saved question'), detail = await fx.db.detail(fx.owner.id, id);
     const pending = deferred<ConversationDetail>(); vi.mocked(fx.api.detail).mockImplementationOnce(() => pending.promise);

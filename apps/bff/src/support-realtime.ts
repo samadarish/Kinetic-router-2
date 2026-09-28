@@ -54,6 +54,10 @@ export class SupportRealtimeService implements SupportRealtime {
   private lastPresence = '';
   private maintenance?: ReturnType<typeof setInterval>;
   private maintaining = false;
+  private readonly receiveEnvelope = (value: string) => {
+    try { this.deliver(JSON.parse(value) as Envelope); }
+    catch { logger.warn('Discarded invalid support event'); }
+  };
 
   constructor(private readonly url = config.redisUrl, private readonly now: () => number = Date.now, private readonly production = config.production) {
     if (url) {
@@ -79,10 +83,9 @@ export class SupportRealtimeService implements SupportRealtime {
     if (!this.subscriber || this.subscribed) return;
     if (!this.subscribing) this.subscribing = (async () => {
       if (!this.subscriber!.isReady) await this.subscriber!.connect();
-      await this.subscriber!.withCommandOptions({ timeout: 1500 }).subscribe(CHANNEL, value => {
-        try { this.deliver(JSON.parse(value) as Envelope); }
-        catch { logger.warn('Discarded invalid support event'); }
-      });
+      // Redis retains channel listeners across reconnects; reuse the callback so
+      // recovery never adds another delivery path for the same event.
+      await this.subscriber!.withCommandOptions({ timeout: 1500 }).subscribe(CHANNEL, this.receiveEnvelope);
       this.subscribed = true;
     })().finally(() => { this.subscribing = undefined; });
     await this.subscribing;

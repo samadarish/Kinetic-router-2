@@ -71,6 +71,7 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
       return success(c, { status: input.status });
     });
     if (!admin) app.post(`${prefix}/tickets`, async c => {
+      if (options.actor(c).admin) throw supportForbidden();
       await writing(c);
       const parsed = await messageInput(c, !options.actor(c).admin);
       const input = supportCreateSchema.parse(parsed.fields);
@@ -118,8 +119,7 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
         }, close });
       } catch { throw unavailable(); }
       c.header('X-Accel-Buffering', 'no');
-      c.header('Cache-Control', 'no-store, no-transform');
-      return streamSSE(c, async stream => {
+      const response = streamSSE(c, async stream => {
         let chain = Promise.resolve();
         let validating = false;
         const validate = async () => {
@@ -152,6 +152,8 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
           await done;
         } finally { clearInterval(timer); c.req.raw.signal.removeEventListener('abort', close); close(); }
       });
+      response.headers.set('Cache-Control', 'private, no-store, no-transform');
+      return response;
     });
   }
   app.post('/portal/v1/support/welcome', async c => {

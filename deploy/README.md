@@ -55,6 +55,31 @@ Point `console.kineticrouter.com` at the VPS, install
 and reload Caddy. Caddy terminates TLS and routes `/portal/*` and `/readyz` to
 the BFF; all other console paths go to the web container.
 
+### When the console is proxied through Cloudflare
+
+Without trusted proxy configuration, Caddy sees Cloudflare edge addresses and
+unrelated visitors can share the BFF's sign-in rate limit. If the console DNS
+record is proxied, merge these settings into the existing global Caddyfile block:
+
+```caddyfile
+{
+  servers {
+    trusted_proxies static <current Cloudflare IPv4 and IPv6 CIDRs>
+    trusted_proxies_strict
+    client_ip_headers CF-Connecting-IP
+  }
+}
+```
+
+Replace the placeholder with the complete current [Cloudflare IP ranges](https://www.cloudflare.com/ips/).
+The console snippet forwards Caddy's verified `{client_ip}` as a single
+`X-Forwarded-For` value. Keep the BFF port bound to loopback. Trust only the actual
+proxy ranges, so direct requests cannot choose their rate-limit identity through
+forged headers. See [Caddy trusted proxies](https://caddyserver.com/docs/caddyfile/options#trusted-proxies)
+and [Cloudflare request headers](https://developers.cloudflare.com/fundamentals/reference/http-headers/#cf-connecting-ip).
+Validate the complete Caddyfile before reloading it. DNS-only deployments do not
+need this global proxy configuration.
+
 ## 4. Verify before enabling writes
 
 ```sh

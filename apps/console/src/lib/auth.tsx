@@ -2,9 +2,10 @@ import { createContext, useContext, useEffect, type PropsWithChildren } from 're
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CapabilityMap, PortalUser, SessionView, SignupInput, GoogleRegistrationInput } from '@kineticrouter/portal-contract';
 import { jsonBody, portalApi, setCsrfToken } from './api';
-import { applyLoggedOutQueryState, applyMetricsAuthorizationState } from './auth-cache';
+import { applyLoggedOutQueryState, applyMetricsAuthorizationState, reconcileSessionQueries } from './auth-cache';
 import { browserPlaygroundStorage, clearAllPlaygroundStorage } from './playground-browser-storage';
 import { clearSupportDrafts } from './support-stream';
+import { clearSupportImageDrafts } from './support-image-drafts';
 
 type LoginResult =
   | { requires2fa: true; tempToken: string; maskedEmail?: string }
@@ -31,7 +32,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const client = useQueryClient();
   const session = useQuery({
     queryKey: ['session'],
-    queryFn: ({ signal }) => portalApi<SessionView>('/auth/session', { signal }),
+    queryFn: async ({ signal }) => {
+      const previous = client.getQueryData<SessionView>(['session']);
+      const next = await portalApi<SessionView>('/auth/session', { signal });
+      signal.throwIfAborted();
+      const changed = await reconcileSessionQueries(client, next, signal);
+      if (changed && previous?.authenticated && (!next.authenticated || previous.user?.id !== next.user?.id)) {
+        clearAllPlaygroundStorage(browserPlaygroundStorage());
+        try { clearSupportDrafts(window.sessionStorage); } catch { /* Restricted storage. */ }
+        if (previous.user?.id) void clearSupportImageDrafts(previous.user.id);
+      }
+      signal.throwIfAborted();
+      setCsrfToken(next.csrfToken);
+      return next;
+    },
     staleTime: 60_000,
     retry: false,
     refetchInterval: 60_000,

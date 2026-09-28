@@ -126,19 +126,20 @@ async function* sseData(body: ReadableStream<Uint8Array>, signal: AbortSignal): 
       const chunk = await reader.read();
       signal.throwIfAborted();
       buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
-      if (buffer.length > 256 * 1024) throw gatewayError(502);
       let newline: number;
       while ((newline = buffer.indexOf('\n')) !== -1) {
+        if (newline > 256 * 1024) throw gatewayError(502);
         const line = buffer.slice(0, newline).replace(/\r$/, '');
         buffer = buffer.slice(newline + 1);
         if (line === '') { if (data.length) yield data.join('\n'); data = []; dataSize = 0; }
         else if (line.startsWith('data:')) {
           const value = line.slice(5).replace(/^ /, '');
-          dataSize += value.length;
+          dataSize += value.length + (data.length ? 1 : 0);
           if (dataSize > 256 * 1024) throw gatewayError(502);
           data.push(value);
         }
       }
+      if (buffer.length > 256 * 1024) throw gatewayError(502);
       if (chunk.done) return; // Unterminated frames are never presented as complete.
     }
   } finally { signal.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }

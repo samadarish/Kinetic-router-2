@@ -15,9 +15,9 @@ export async function consumeSupportStream(body: ReadableStream<Uint8Array>, onE
       ]).finally(() => clearTimeout(idle));
       if (signal.aborted) return;
       buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
-      if (buffer.length > 128 * 1024) throw new Error('Support connection returned an invalid response.');
       let end: number;
       while ((end = buffer.indexOf('\n')) >= 0) {
+        if (end > 128 * 1024) throw new Error('Support connection returned an invalid response.');
         const line = buffer.slice(0, end).replace(/\r$/, ''); buffer = buffer.slice(end + 1);
         if (!line) {
           if (data.length) {
@@ -28,11 +28,12 @@ export async function consumeSupportStream(body: ReadableStream<Uint8Array>, onE
           }
           data = []; size = 0;
         } else if (line.startsWith('data:')) {
-          const value = line.slice(5).replace(/^ /, ''); size += value.length;
+          const value = line.slice(5).replace(/^ /, ''); size += value.length + (data.length ? 1 : 0);
           if (size > 128 * 1024) throw new Error('Support event is too large.');
           data.push(value);
         }
       }
+      if (buffer.length > 128 * 1024) throw new Error('Support connection returned an invalid response.');
       if (chunk.done) return;
     }
   } finally { signal.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }

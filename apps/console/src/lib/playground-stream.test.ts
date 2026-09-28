@@ -7,6 +7,15 @@ function stream(value: string) {
   return new ReadableStream<Uint8Array>({ start(controller) { for (const byte of bytes) controller.enqueue(Uint8Array.of(byte)); controller.close(); } });
 }
 describe('playground browser stream reader', () => {
+  it('accepts coalesced small events without allowing an oversized single event', async () => {
+    const source = (text: string) => new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode(text)); controller.close(); } });
+    let count = 0;
+    await consumePlaygroundStream(source('data: {"type":"text_delta","text":"hello"}\n\n'.repeat(7000) + 'data: {"type":"done","finishReason":"stop"}\n\n'), () => count++, new AbortController().signal);
+    expect(count).toBe(7001);
+    for (const text of ['data:' + 'x'.repeat(256 * 1024) + '\n\n', 'data:\n'.repeat(256 * 1024 + 2)]) {
+      await expect(consumePlaygroundStream(source(text), () => {}, new AbortController().signal)).rejects.toThrow('could not be read');
+    }
+  });
   it('reads final text, exact token counts, and completion across split frames', async () => {
     const events: PlaygroundEvent[] = [];
     const values: PlaygroundEvent[] = [{ type: 'text_delta', text: 'Hello 🌍\nnext line' }, { type: 'usage', usage: { inputTokens: 7, outputTokens: 13, totalTokens: 20 } }, { type: 'done', finishReason: 'stop' }];
