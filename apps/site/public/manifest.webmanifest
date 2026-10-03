@@ -4,7 +4,7 @@
   "description": "OpenAI-compatible API access with a transparent model and pricing reference catalog. Native Anthropic and Grok routes are planned.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#141413",
+  "background_color": "#000000",
   "theme_color": "#38B6E8",
   "categories": ["developer", "productivity", "business"],
   "icons": [

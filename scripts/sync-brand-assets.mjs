@@ -9,9 +9,6 @@ const mappings = [
   ['wordmark-dark.png', 'apps/site/public/brand/kineticrouter/wordmark-dark.png'],
   ['mark-light.png', 'apps/site/public/brand/kineticrouter/mark-light.png'],
   ['mark-dark.png', 'apps/site/public/brand/kineticrouter/mark-dark.png'],
-  ['home-hero-640.webp', 'apps/site/public/brand/kineticrouter/home-hero-640.webp'],
-  ['home-hero-1280.webp', 'apps/site/public/brand/kineticrouter/home-hero-1280.webp'],
-  ['home-hero-2061.webp', 'apps/site/public/brand/kineticrouter/home-hero-2061.webp'],
   ['inter.woff2', 'apps/site/public/fonts/inter.woff2'],
   ['jetbrains-mono.woff2', 'apps/site/public/fonts/jetbrains-mono.woff2'],
   ['social-preview.jpg', 'apps/site/public/og.jpg'],
@@ -34,6 +31,18 @@ const mappings = [
   ['favicon-48.png', 'apps/console/public/favicon-48.png'],
   ['favicon.ico', 'apps/console/public/favicon.ico'],
 ];
+
+for (const name of ['wordmark-light', 'wordmark-dark', 'mark-light', 'mark-dark']) {
+  for (const app of ['site', 'console']) {
+    mappings.push([`${name}.webp`, `apps/${app}/public/brand/kineticrouter/${name}.webp`]);
+  }
+}
+for (const theme of ['dark', 'light']) {
+  for (const app of ['site', 'console']) mappings.push([`header-mark-${theme}.png`, `apps/${app}/public/brand/kineticrouter/header-mark-${theme}.png`]);
+}
+for (const width of [640, 1280, 2062]) {
+  for (const format of ['avif', 'webp']) mappings.push([`home-hero-river-delta-${width}.${format}`, `apps/site/public/brand/kineticrouter/home-hero-river-delta-${width}.${format}`]);
+}
 
 const retiredTargets = [
   'apps/site/public/icon.png',

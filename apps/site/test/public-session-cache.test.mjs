@@ -38,6 +38,17 @@ test('Playground always has the right same-tab destination for anonymous and aut
   assert.equal(playgroundDestination('https://console.kineticrouter.com', { authenticated: true }), 'https://console.kineticrouter.com/playground');
 });
 
+test('support notification credentials are optional, validated, and cleared on logout', async () => {
+  for (const supportNotifications of [undefined, null, {}, { csrfToken: '' }, { csrfToken: 42 }, { csrfToken: 'support-csrf', secret: 'private' }]) {
+    const cache = createPublicSessionCache('http://localhost:5174', { fetchImpl: async () => Response.json({ ok: true, data: {
+      authenticated: true, playgroundEnabled: false, user: { id: '7', username: 'Customer' }, supportNotifications,
+    } }) });
+    await cache.refresh();
+    assert.deepEqual(cache.getSnapshot().session.supportNotifications, supportNotifications?.csrfToken === 'support-csrf' ? { csrfToken: 'support-csrf' } : undefined);
+    cache.signedOut(); assert.equal(cache.getSnapshot().session, null);
+  }
+});
+
 test('anonymous availability is explicit and missing, malformed or failed reads hide Playground', async () => {
   for (const flag of [true, false, undefined, 'true', 1, null]) {
     const cache = createPublicSessionCache('http://localhost:5174', { fetchImpl: async () => Response.json({ ok: true, data: { authenticated: false, playgroundEnabled: flag } }) });

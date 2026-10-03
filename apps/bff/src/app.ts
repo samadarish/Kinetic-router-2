@@ -187,8 +187,9 @@ export function createApp(
     return success(c, loaded ? {
       authenticated: true,
       playgroundEnabled,
+      supportNotifications: supportStore.configured && loaded.user.role === 'user' && loaded.user.status === 'active' ? { csrfToken: loaded.csrfToken } : null,
       user: { id: loaded.user.id, username: loaded.user.username, avatarUrl: loaded.user.avatarUrl },
-    } : { authenticated: false, playgroundEnabled });
+    } : { authenticated: false, playgroundEnabled, supportNotifications: null });
   });
 
   app.get('/portal/v1/config', async (c) => {
@@ -273,6 +274,17 @@ export function createApp(
     return success(c, { loggedOut: true });
   });
 
+  for (const path of ['/portal/v1/support/events', '/portal/v1/support/welcome']) {
+    app.options(path, c => supportNotificationPreflight(c));
+    app.use(path, async (c, next) => {
+      if (isSupportNotificationRequest(c.req.path, c.req.method)) {
+        const denied = applySupportNotificationCors(c);
+        if (denied) return denied;
+      }
+      await next();
+    });
+  }
+
   app.use('/portal/v1/*', async (c, next) => {
     if (isPublicPortalPath(c.req.path)) {
       await next();
@@ -281,7 +293,9 @@ export function createApp(
     const loaded = await loadSession(c, store);
     if (!loaded) return failure(c, 401, 'AUTH_REQUIRED', 'Sign in to continue.');
     if (!SAFE_METHODS.has(c.req.method)) {
-      const originResponse = await requireOrigin(c, async () => {});
+      const originResponse = isSupportNotificationRequest(c.req.path, c.req.method)
+        ? await requireLogoutOrigin(c, async () => {})
+        : await requireOrigin(c, async () => {});
       if (originResponse) return originResponse;
       const supplied = c.req.header('x-csrf-token') ?? '';
       if (!supplied || !constantTimeEqual(supplied, loaded.csrfToken)) {
@@ -614,6 +628,32 @@ function isPublicPortalPath(path: string) {
 
 function isPublicSiteOrigin(origin: string | undefined) {
   return Boolean(origin && config.publicSiteOrigins.includes(origin));
+}
+
+function isSupportNotificationRequest(path: string, method: string) {
+  return (path === '/portal/v1/support/events' && method === 'GET')
+    || (path === '/portal/v1/support/welcome' && method === 'POST');
+}
+
+function applySupportNotificationCors(c: Context<{ Variables: Variables }>): Response | undefined {
+  const origin = c.req.header('origin');
+  if (origin && origin !== config.portalOrigin && !isPublicSiteOrigin(origin)) return failure(c, 403, 'ORIGIN_INVALID', 'The request origin is not allowed.');
+  if (isPublicSiteOrigin(origin)) {
+    c.header('Access-Control-Allow-Origin', origin!);
+    c.header('Access-Control-Allow-Credentials', 'true');
+    c.header('Vary', 'Origin');
+  }
+  return undefined;
+}
+
+function supportNotificationPreflight(c: Context<{ Variables: Variables }>) {
+  const denied = applySupportNotificationCors(c);
+  if (denied) return denied;
+  const welcome = c.req.path === '/portal/v1/support/welcome';
+  c.header('Access-Control-Allow-Methods', welcome ? 'POST, OPTIONS' : 'GET, OPTIONS');
+  c.header('Access-Control-Allow-Headers', welcome ? 'Accept, Content-Type, X-CSRF-Token' : 'Accept');
+  c.header('Access-Control-Max-Age', '600');
+  return c.body(null, 204);
 }
 
 function applyCredentialedPublicCors(c: Context<{ Variables: Variables }>): Response | undefined {

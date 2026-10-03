@@ -24,7 +24,8 @@
     "pretest:portal": "npm run build:shared",
     "test:portal": "vitest run",
     "test:site": "npm run test:public -w @kineticrouter/site",
-    "test": "npm run test:portal && npm run test:site",
+    "test:images": "node --test test/image-optimization.test.mjs",
+    "test": "npm run test:portal && npm run test:site && npm run test:images",
     "test:watch": "vitest",
     "test:analytics": "vitest run test/website-analytics.test.ts test/analytics-client.test.ts",
     "test:analytics:postgres": "node scripts/test-analytics-postgres.mjs",
@@ -35,6 +36,7 @@
     "check:seo": "node scripts/check-site-seo.mjs",
     "check:brand": "node scripts/sync-brand-assets.mjs && npm run check:brand -w @kineticrouter/site && node scripts/check-brand-assets.mjs",
     "optimize:brand": "node scripts/optimize-brand-assets.mjs && node scripts/sync-brand-assets.mjs",
+    "optimize:images": "node scripts/optimize-images.mjs && node scripts/sync-brand-assets.mjs && node scripts/check-brand-assets.mjs",
     "check": "npm run test && npm run typecheck && npm run lint && npm run check:providers && npm run check:content && npm run build && npm run check:brand",
     "start": "npm run start -w @kineticrouter/bff",
     "dev:playground-db": "node scripts/playground-dev-db.mjs start"

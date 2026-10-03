@@ -481,6 +481,7 @@ export type Announcement = {
 export type PublicSessionPresentation = {
     authenticated: boolean;
     playgroundEnabled: boolean;
+    supportNotifications?: { csrfToken: string } | null;
     user?: Pick<PortalUser, 'id' | 'username' | 'avatarUrl'>;
 };
 export * from './website.js';

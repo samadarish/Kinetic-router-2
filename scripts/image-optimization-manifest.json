@@ -1,0 +1,1895 @@
+{
+  "version": 1,
+  "assets": {
+    "apps/site/public/docs-assets/api/openai/images/01-red-apple-generated-by-gpt-image-2.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "43b6599102d1bea53a7396f0f70ff06b1e5b1f2fb320d70dbb7c6aad10da7e29",
+      "outputHash": "1628ae64ae047011c1c9f57ed4d07f1277049f82c23f20040dfce83685c21862",
+      "originalBytes": 68954,
+      "bytes": 40036,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/api/openai/images/03-original-red-apple.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "43b6599102d1bea53a7396f0f70ff06b1e5b1f2fb320d70dbb7c6aad10da7e29",
+      "outputHash": "1628ae64ae047011c1c9f57ed4d07f1277049f82c23f20040dfce83685c21862",
+      "originalBytes": 68954,
+      "bytes": 40036,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/api/openai/images/04-edited-green-apple.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d57ae983cdc25550067cb5bd14ac928701e01a623d4c75c15e20148ef7009338",
+      "outputHash": "c3b225347e883bd3ed201d96b12880e15edb8b0cdd74a231c6ee54d2301756d5",
+      "originalBytes": 69042,
+      "bytes": 41518,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/01-open-botgem-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "af41e080556fe598b75a2aef4cd0522a14bf8b5653111fb2e3d50f822326005e",
+      "outputHash": "de579c9131902d7751c251d214f08aff605b93e13777087c0de85b3da5ab334e",
+      "originalBytes": 42692,
+      "bytes": 40066,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/02-go-to-service-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "640776c9a2c1bbf16852087cbabcdff25de76e03545e7eee76b5dc88e6ce5689",
+      "outputHash": "2687bc6d310a188c6a99b8fc7d15801ffdab213c19e5409620300f9795faeb85",
+      "originalBytes": 58758,
+      "bytes": 48028,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/03-select-openai.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "7692530062f371efa425fc5deee4411ca91185a7b92621fadb491f509eca2948",
+      "outputHash": "3cffdf9ffb72fff6ff8969a0ae0b1f7acef97260cf59b3bf0a49113e8caf47ea",
+      "originalBytes": 52794,
+      "bytes": 48418,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/04-fill-in-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "58de095be299f425963cd434c909407c6b8fa8fd477465cf1b066cb9c60e14ec",
+      "outputHash": "9f00ada33e0cb5a14b61df8fdd22fce1d7424058d74691aae8c0846457142be4",
+      "originalBytes": 72518,
+      "bytes": 59862,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/05-connection-successful.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "99765278f1d9ade7ebc4e430d518f432f56195290bddf933dedc5a0bc3a411d2",
+      "outputHash": "c86a61d1438627771f0ce06bf69772114bb6e9971dc2ce7abfd5f7016382d638",
+      "originalBytes": 66294,
+      "bytes": 55156,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/botgem/06-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "1e079a572123767d371886f5a69941ee8bf0780194eaecde373aac511e39cd47",
+      "outputHash": "7a4d5e7ca998b569f47b2250d55afc7a01a28a1c42e4ddd2c9789a2c83eb4063",
+      "originalBytes": 40742,
+      "bytes": 33262,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cc-switch/01-cc-switch-usage-query-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "c7ea871bbd2745105535c50856a900e44b4e6f44da07655e0b6b688b1f05e369",
+      "outputHash": "d9351955e5dacbfe009ea0007c331e893692d9e7482e3312b1f3f280e39f5215",
+      "originalBytes": 66062,
+      "bytes": 55310,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/01-open-chatbox-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "980eb9fc85fb4d37ae4afe888aeebb21978f92d9ed67d02da960d467e9b930f6",
+      "outputHash": "6b74d7117990c24480ccc7227ae00e70e49e04d774f36738f6cdec98b1cb3f4b",
+      "originalBytes": 126916,
+      "bytes": 107044,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/02-model-provider-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "243d6514617bb5c6fb6a2aa469e642d7b263cb264c60f388c775ff490ea311e0",
+      "outputHash": "cef74e1f4f73625ffcc56371a68240621e651bf56dce8004ae8c45a059e8ae39",
+      "originalBytes": 104074,
+      "bytes": 86144,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/03-select-api-mode.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a511f24c7d715fc3fda043ce0efe31fd2c77fafb39c697d7b6e70cfef186e613",
+      "outputHash": "e88c9e09ca3e613be6b25b1fad5f48ea9760f823a50a7dfb8e333277c001b5cc",
+      "originalBytes": 104258,
+      "bytes": 87698,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/04-fill-in-configuration-details.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "70cbc4968237dda1676d9b38f16dd1b8d633bfeba421c9e7d79a90e9b1431234",
+      "outputHash": "441be58ef11435c30dc9add70bb3c4b35e6e11824817d359c706be47f9df6517",
+      "originalBytes": 95246,
+      "bytes": 78048,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/05-select-models.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "f69f3a859b26bed93953610558f0f71e672403d30664b327029f467374041a61",
+      "outputHash": "edf0863b4edf018d744637b8d154d3df5fb06b690f203ef2dc1ee30a4cb1f768",
+      "originalBytes": 91200,
+      "bytes": 76718,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/06-select-test-model.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9d64da9c4da3f56c12aebe125df770e7ea4d4ede7cf268626919c3c42cf54a48",
+      "outputHash": "7482e6f7e60d56ac0afd9198d07a4e7cb155b10d2bd060cd0558d158de65e118",
+      "originalBytes": 87976,
+      "bytes": 72856,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/07-connection-successful.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "8b923f25487ec42e7036801e0ff622b784cc81ab61731e06c914256ea5180bce",
+      "outputHash": "b725477fb42e8e1148e48344c4c26ee2c3d15f1caee78049621d2e7654ea1753",
+      "originalBytes": 77742,
+      "bytes": 65048,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/08-09-mobile-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "79540b449e9a05a97036b968a212a5a9edfb41c8c11295412fca686ae6b5796a",
+      "outputHash": "2a5053e8df0b6ce6d9a265793500ceecbcabb3f844fe65f0db7f360eb23209d7",
+      "originalBytes": 73496,
+      "bytes": 60832,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/09-10-mobile-model-config.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "58d421e63c036b4d76803f7e8b30eb5d25446b82cc58e2b645ae7c44daf49e23",
+      "outputHash": "33433de9ec9616410d08a6971f8acbdd3df18a56448da62f7ada2b7332313a82",
+      "originalBytes": 65538,
+      "bytes": 54784,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/10-11-mobile-test-success.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "08214270542855706f818d61995a0998a494c1ff06daa1c27725fd858bb97998",
+      "outputHash": "68a839a6eeaadbe75cd8266ba918caec695f2a182b20bddc5c6fe6bb88d68812",
+      "originalBytes": 58450,
+      "bytes": 48336,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/chatbox/11-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a7fdf903a12f1f2546cda3d901fa6bd3f71bb44665b6c6fe7bf03e12c19b11a2",
+      "outputHash": "f319f74e7a1ee3816e5d630756c123adde04bc0ca9f7c41eeb2686c63f1afd80",
+      "originalBytes": 78754,
+      "bytes": 65880,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/01-open-cherry-studio-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "532eb3f583e198561b9111e7f31c2b8d56f5085a99e1a06fcbedd06075569e2e",
+      "outputHash": "32c99c0cc6606de835fd55d3a06af1259518ba8bbaa8ac7f302caa3cdc83729a",
+      "originalBytes": 51180,
+      "bytes": 43822,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/02-add-openai-chat-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "b85f00b6280285f663bbab353083fc0b592c2eade16fff821be08f5e70dd7972",
+      "outputHash": "f6fbb7dc395fd45d5ddf50581209cc184ac36dfa62e5ec424279ae761fdb00c3",
+      "originalBytes": 76752,
+      "bytes": 63256,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/03-add-openai-response-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "2da48cbe642d443926207c7d03e37c8a9a96046b4b67a87620824abb3663579f",
+      "outputHash": "24fb6125a777eb6c45ba138f2f6256e0daeea50989a421f88d840c3ada60b540",
+      "originalBytes": 85326,
+      "bytes": 70434,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/04-add-claude-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d5b52fead5116e60ae7c5e920d901901939f552398ddeb6b97ef0c8fd4ea2bdf",
+      "outputHash": "0cf0c1070e18f9e04734c32dbddd12af4fad8b990859bf2cf784bada13791993",
+      "originalBytes": 81406,
+      "bytes": 66866,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/06-openai-chat-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9179820afcfaa0e62dd114a47d0064015db8cba7dace4249863a67531d50f43c",
+      "outputHash": "dff06a96b085fe657ea188db541fe9174d31f18605e3d6f79d329a2a683155c4",
+      "originalBytes": 104034,
+      "bytes": 86178,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/07-openai-response-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "8ae3f223b595067ef9f6921873e62660576a6c39e43865bda7d56ba7bcd16dfa",
+      "outputHash": "074860ac5a18106468e4c137d7e07565dc65d6c311f11715035db1fb0d77b6c7",
+      "originalBytes": 105068,
+      "bytes": 88258,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/08-claude-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9c4d9f73821d5d9a02ca210929cc48e74ee2e86f0f06490db1c76a02f08cef6a",
+      "outputHash": "3c448d7d3d1ef91d1741b9c501c74ca19e24fdce96053ab1a2b4d780335efb8a",
+      "originalBytes": 108114,
+      "bytes": 90244,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/10-openai-chat-model-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "18dda8e6cb3665a60d16015d0bd9fc2d30908f4b25ec0489c51d7981ed5672ca",
+      "outputHash": "db5937131004f0cda9c80089722caa476b1cf434386436aad3ecb0a88983ea4d",
+      "originalBytes": 91640,
+      "bytes": 77310,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/11-openai-response-model-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a13258788afd27adde9287a486f4aa8311f5b68571af45b9381591d84741405a",
+      "outputHash": "83b4e5d72d816bca22d7992a762a0bb74cf2b8081f2142fcc5b8e9dea9773cbf",
+      "originalBytes": 99800,
+      "bytes": 82742,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/12-claude-model-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d4bda88df16169dff4b501fa1d94b7f0b6ac97b38cfa10872ae328fad8a71339",
+      "outputHash": "26fce3f68f3e97b805533ff16b22e0bb75040da89c8e6178fe5d7bb288dc1378",
+      "originalBytes": 110796,
+      "bytes": 93658,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/14-openai-chat-verification.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "e520b368a97c99659fd6493535852d241e7222f35109c23f608154280dfce499",
+      "outputHash": "47c8dcf8865263558ed292b8c25433de627e49718a866e418bc25425bfe2f9f9",
+      "originalBytes": 89264,
+      "bytes": 73856,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/15-openai-response-verification.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d1e24cca9a892084236bbe1d305d3903ef39c4d6d8b8a6d741cf8bdf2387c747",
+      "outputHash": "61cb22ccb47c26af35acf2e0c8a88947c0e15800b55b2a33d3d9bb688c0714de",
+      "originalBytes": 81440,
+      "bytes": 66262,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/16-claude-verification.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "3d331866bf7f68052208b0cf5478df2c55aa62584a6c5d98e34c7f16e8d05b9a",
+      "outputHash": "de0ca944cc70619bcf632b20f931d25070dd21239af19babdd85a97ff939dbd1",
+      "originalBytes": 98458,
+      "bytes": 79818,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cherry-studio/18-select-model-to-start-chat.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "cd57287a468b38299b28be13ca6f134338c44b39e7307951409c5e25847a3767",
+      "outputHash": "34fe33256647b2677fe103d158178977daab843dde478c0778c964a58f86e447",
+      "originalBytes": 69442,
+      "bytes": 57742,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/01-claude-code-in-terminal.webp": {
+      "profile": {
+        "format": "webp",
+        "lossless": true,
+        "effort": 6,
+        "alphaQuality": 100
+      },
+      "inputHash": "772af2cd93e4470d944d34dfa180e696c8caee3d606c276105c65de2cf03b4a4",
+      "outputHash": "772af2cd93e4470d944d34dfa180e696c8caee3d606c276105c65de2cf03b4a4",
+      "originalBytes": 71752,
+      "bytes": 71752,
+      "retainedOriginal": true
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/contextline/01-ccometixline-preview.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "2f0e878af4d019c0c0e9224593a2638a71c1827e0cd65d51bfd8df7f5b7b8379",
+      "outputHash": "a86ea8f62361567349b8d07124d693c316050355a57f653dacbca757b75c1f25",
+      "originalBytes": 76276,
+      "bytes": 62312,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/01-cc-switch-add-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "bd942212037d879d715bc01b35604eb9031b2daa2fd606bf2efafc47c3a7c33e",
+      "outputHash": "9f06776c8073f916ef871e38d911d3b3f6ddd57173b01dbe8ec3cd2fe36e1734",
+      "originalBytes": 47270,
+      "bytes": 36296,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/02-cc-switch-provider-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d4a4904bbbbe4422ef1a9fa38f7ce97328794afeaeadf9de21fd3f01de0d24e4",
+      "outputHash": "d280307d6636cc081ff5677d04aaff74ce2b0359c89a29b1321110024129de9b",
+      "originalBytes": 81494,
+      "bytes": 66314,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/03-cc-switch-activate-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "53d558b98ef3500949da57b8a3e69dce0ee2371a44d5a9c234f0f773aab446c9",
+      "outputHash": "a997d92ea1bbbd93d508e76d8aa7247f5c0438eb364518fbec86506e162486e8",
+      "originalBytes": 45924,
+      "bytes": 36216,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/04-claude-code-startup-screen.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9940dc443e807cde409aa180fa300ac39b5ee62f8d331b05d98c23d316a75708",
+      "outputHash": "0517188633a07f1af7c1c537286b7cfada394c3ca1ddd51de04a92e8e14ded62",
+      "originalBytes": 43610,
+      "bytes": 37286,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/05-filter-anthropic-protocol-in-model-plaza.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a3397ae36f8926bc372709604ba9b18525382221eb77c2aea68757a83e88d17c",
+      "outputHash": "9ec64030f95f88fb8ae58a45a2992e29681d040ace5874153088b184a42ba6fb",
+      "originalBytes": 110178,
+      "bytes": 91710,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/06-copy-model-name-with-one-click.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "30783fca1d8bcfc0f1457750b2db9d66440e5d25ef605aaa8cb7dbecb5be6732",
+      "outputHash": "89a2dd948906ca90e5d136d70ff9f428cb26df818e98205c5d2b1b730ae9c58c",
+      "originalBytes": 81086,
+      "bytes": 66834,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/model-provider/07-claude-code-status-output.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "8254cbce094ce495785dbaad1f59298ded31e865ec8d77abf3e10d89d5128edd",
+      "outputHash": "90a1e5eb0f33dca042613691af9cd5c861432099dfba4d135d5075394ef5c408",
+      "originalBytes": 115716,
+      "bytes": 94828,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/skills/01-claude-code-plugin-interface.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "f7272e679500349078d4ffd4066ce86eac53740d5a4a26e4740c6c79c4050e4e",
+      "outputHash": "ffe890fd0638c09e5469066ded52bc3ba49e9dbff37c72b91d59fe66abfdde09",
+      "originalBytes": 344248,
+      "bytes": 284658,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/skills/02-skills-sh.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a76c1ed2cff48fd4de0a10912fed2fbb819a9ae67a35aa2326e28c1c7054aded",
+      "outputHash": "a19e5672a66cf16c884e763415a4744ea84ca8f51d6aa3ad43d49772c8970155",
+      "originalBytes": 59974,
+      "bytes": 52044,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-code/skills/03-clawhub.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "f2f6cf3274f0927670c05eb10a715202214cae02018f52cc7be2ae9c6d0a9201",
+      "outputHash": "8f68e41039e28d35b130e34e34ab7309917bf0f9edd4cad62c56a82878e42b25",
+      "originalBytes": 81024,
+      "bytes": 68130,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/01-enable-developer-mode.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "0874446be3ddeeeb3983bd0ef940d4485e052d67049daf265349e07e8ad7cb1e",
+      "outputHash": "a0dec0e4e01b336e413ec2d781f8faf42bdef73372013be41bcc3f838f43bf64",
+      "originalBytes": 161516,
+      "bytes": 131358,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/02-open-configuration-panel.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "1697e835e611e60f9589f900a7ba1a8a5e54d25d40bb7fe8bf6c92a2672376b3",
+      "outputHash": "1416fedfb3b300aacb48af7c305df1384fe33f649aaf1eda74db9db64e7258d2",
+      "originalBytes": 123952,
+      "bytes": 102060,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/03-select-gateway.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "0f92a4778a2cccc97b7fe4e05db8fd38dfb85c657f3579bf108f6a453b821ab7",
+      "outputHash": "1047791f59c5da8567b59cfe12a20ce8af25fc1b3cafe67ab8d7bff7c9b04fd7",
+      "originalBytes": 244116,
+      "bytes": 198018,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/04-enter-credentials-and-apply.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "114c4fc1470adc8c5a58d39ab68c7102926cb45e6e8901291731d89f888fd409",
+      "outputHash": "70845e5f5fbfaa23f0d95a53f5672e5652bdeca7536d0bafd92d790161902469",
+      "originalBytes": 145500,
+      "bytes": 120204,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/05-browse-available-models.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "01fd58d795ebefce06c9a1dcaff2f6c9fb958e8c70d3611143f90d9bfef416bb",
+      "outputHash": "25d653aac2ffef0b156c716fbe4ef30f92ebf64a98af057e5ba4013b0abf4c36",
+      "originalBytes": 244564,
+      "bytes": 201752,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/06-select-your-model.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "040d8d99486de64ec741deced02be68f998773b407b606025e8eef20960b219e",
+      "outputHash": "d5e5b831eaec422d9d0e0626e4face393f34d1c35ada34d3dceaf292157dbfb1",
+      "originalBytes": 141520,
+      "bytes": 108946,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/claude-coworks/07-verification-complete.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "8a64f12ea344340e719412b6a90a1127c4940d6f91f7fe360077500fac0c7832",
+      "outputHash": "e587e204ce71cde717b9a2f3d38d622d5a959bbf29c3d494f6293830503578ca",
+      "originalBytes": 143236,
+      "bytes": 111832,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cline/01-install-cline.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ff80c2360012caaa53b66fbb118699475350ce00c1640d466ac455ba38f3c453",
+      "outputHash": "1b307512037a35f0e99aee7631c2ce45d99d029619ffd0d16e9c26394e67f538",
+      "originalBytes": 166918,
+      "bytes": 142444,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cline/02-open-cline-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "e8adfb1671f5a3868295b4f6a23be6eb890739a96926dbf8ba3b96e9d4680ab4",
+      "outputHash": "2e9409fa2c0a45284d033537d9907aa4e475ec7555832aa9c2b0ece4f3298f48",
+      "originalBytes": 41484,
+      "bytes": 35736,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/cline/03-fill-in-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "729fdd9bc2817e0d4cd035c469d6e48356f62226aaf9b1ee6b5e8e5219ac5fb5",
+      "outputHash": "2942c32e76ace111e13aa6522bd7cea24db810bf5085eb35c7dc7942e1b474aa",
+      "originalBytes": 120340,
+      "bytes": 102322,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/installation/01-install-codex-cli.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "39df85d54ec74336598f9630792b8b115e9f8ee9f862db6137425cfbb04f333a",
+      "outputHash": "011ec6938c008be162d50f9ba58d4e243bb98f488d0f0acdda354936caca1a94",
+      "originalBytes": 7070,
+      "bytes": 6310,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/installation/02-verify-installation.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "7be3d779ff20ad54cd6f22334ff4b23c1bbff9b259d7b09a42a95517aa533199",
+      "outputHash": "07dd0f86b2bc1b29f0102cb7a3337956fe6601f56d7c55605b8f18ae1afc2952",
+      "originalBytes": 41782,
+      "bytes": 32358,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/model-provider/01-cc-switch-add-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "eefd08a7d44964a3374b4172baccb1b76baac7f8ac656ff036b5ee5325ddaabf",
+      "outputHash": "a8a2ab43aa919c7bf5d966f1bf60b5e556d8a97e2b789b5f923b7bd0a4f6f100",
+      "originalBytes": 40670,
+      "bytes": 35164,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/model-provider/02-cc-switch-provider-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "7afa6b8c3de309b5bba4c8728e6e43d1c7353ec6451dc44a0af6a55612a413ea",
+      "outputHash": "13796815ceaf92a09bf14bbf6f3258a02410a17b33c5e727f4cf65c5321078da",
+      "originalBytes": 79708,
+      "bytes": 64784,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/model-provider/03-cc-switch-activate-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a69d6c667f393dc01de1c32c23e93330c1bf19b34d8d128bd639830a599ac671",
+      "outputHash": "c1dbd80ee8d812f4dc83402a35d15a423452aaf8c6e85943f9cc90684f9c18b4",
+      "originalBytes": 82790,
+      "bytes": 66980,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/codex/model-provider/04-codex-cli-running.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "7ac3dc88af4fc5aafcdab60853dfb8303573c5f11c4bbfbbe9e4ed51e17c1e5b",
+      "outputHash": "de1b59edbeb26c7dd0d376ada7bc744606511e34ef6540de3cd3db90e07906e3",
+      "originalBytes": 70570,
+      "bytes": 58526,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/01-install-oai-compatible-provider-for-copilot-extension.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ca16ec7c2b5f126af2469766153151b3f03dcb53af92edb6a684cef85d28a286",
+      "outputHash": "9a7b898170317b7db84231890dd26c18031a6cd7cc68296d4d91e9fa5bbabfd9",
+      "originalBytes": 274988,
+      "bytes": 237446,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/02-open-configuration-ui-via-command-palette.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "2e091ac416e1d59fc1ba19cb7bf37350d7f21a869733ce9152f0c1511e61144f",
+      "outputHash": "e561e2fdc9edb010c4f7d53479ff0c5e19ee728256ac0f683db084d7010d635d",
+      "originalBytes": 170858,
+      "bytes": 145766,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/03-fill-in-global-base-url-and-api-key-then-save.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ef864bb45033bbf03271bb9e4e37e003daa5f32cd9f2c04ab6a938100966d3d0",
+      "outputHash": "cbc7a9cd8ae9c8f29663ecd5c9f60ef4160ed1272db1d14665dd1c255a0de028",
+      "originalBytes": 166604,
+      "bytes": 145142,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/04-add-kineticrouter-provider.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "0fe372abcb53c3c19d2512de0fd7e8c921005bd11b3ed2fb39f984600d4f44c2",
+      "outputHash": "3949e6dc39e2cc559dc1677fbbee40710f79172a4bbaaf1fd70e46f0fce92c94",
+      "originalBytes": 61802,
+      "bytes": 50986,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/05-add-a-custom-model.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "b56b485ab082b1c3dc0651959c867155fbe2eee30aadf8b0a21a3f1a7e8cee60",
+      "outputHash": "86904bf1d436f37f13c61d36ab6ba77d03de269a1bff1f12cd642f96f68a74ea",
+      "originalBytes": 169946,
+      "bytes": 145282,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/06-switch-to-kineticrouter-model-in-the-chat-panel.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ab5dae34b18fdb6aa557d96413a2e6cee48cd6684de6e93b8b0e16a5a4697059",
+      "outputHash": "fbf4db3190eedb5a6263b4eac86d3c55e83ba7400d22259e0f9ebde2797f8650",
+      "originalBytes": 98520,
+      "bytes": 82512,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/copilot/07-confirm-model-appears-under-oai-compatible-group.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ab3b79a605c88a5a4b6ede05d734282616e455cf7747915beba025f5579cdce0",
+      "outputHash": "e00b54de4a14c5e2edcc2d193b8007c1c98be5a30be16265b7fbdc7f5f20008a",
+      "originalBytes": 62376,
+      "bytes": 52090,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/immersive-translate/01-open-translation-service-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "aaff2fb995af52b74243fde14b91a6d58c35cf10be47a516d72af58b80915d49",
+      "outputHash": "274c6cd925b3b73fa33e0799e884033f9a24e2c88c39336174cccd78d60cf615",
+      "originalBytes": 99446,
+      "bytes": 81758,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/immersive-translate/02-translation-service-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "e58378d41258211a05b6e19e16db9511f7cbe188d044179c6664469b48d6d124",
+      "outputHash": "b867711a5291e3b0ed90c9a457abf4f7af79a4c225e21fbf0dec861d12a8a13d",
+      "originalBytes": 127734,
+      "bytes": 105066,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/immersive-translate/03-add-custom-translation-service.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "52a1be85fcb9b414998a7ba9a0b3e9360f1bd59fb51ad0cfd4845471ab102582",
+      "outputHash": "e64aa247fbf85f75a7f96d3bb4d4b694c4c4125265b466e6d96889c74cd6e662",
+      "originalBytes": 158502,
+      "bytes": 134288,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/immersive-translate/04-fill-in-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "e0b8d27e7474478342a149d71c8ae5ae8b1bfbdfc744b9a5556302690ce67c4d",
+      "outputHash": "ed4e5ed109316b16fa830adcc64b4a3e5f76477d543b27489026fd931257543e",
+      "originalBytes": 150826,
+      "bytes": 127064,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/immersive-translate/05-translation-result.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "46a3cde9d042eb7db01a03eea2bf6981f0abb1c9f92a7933cd095a6552afdd28",
+      "outputHash": "10d1d6af2bfe05e32074f489796820e4340f14a3da21f17705f44431afe918ce",
+      "originalBytes": 137898,
+      "bytes": 116672,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/langchain/01-install-langchain.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "b618ee65f02b8f1ad315899e24a1891efd589ca3d2cc497d5ae6d383d56b5165",
+      "outputHash": "4c4b40f2151f7710d543a06f78d6fa92d36f4db27fd8c4608a8a60ec41c189de",
+      "originalBytes": 156420,
+      "bytes": 141174,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/langchain/02-run-result.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "ab5881cdf3fd2b8adff9967e3e1810189b5c611468c84f8e32b8a7dad3a317ac",
+      "outputHash": "411f32b3f81698d0d89cb723c08c1e01e7cccc50c6b5161fbb8454c432c9e5bd",
+      "originalBytes": 57432,
+      "bytes": 47086,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/llamaindex/01-install-llamaindex.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "f90cd772d06b883003d415e459296c812e7e907e0753c9a2750e74d3f7bbf2d2",
+      "outputHash": "18cf6f90a8a19b01ae9cbee2a5f69f753176cb2b63202a2f3d7df254ecae498b",
+      "originalBytes": 179254,
+      "bytes": 161630,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/llamaindex/02-run-result.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "debcecb4919127525f975e91036f1fa666070294b357890b782b8bbbb8692400",
+      "outputHash": "b5b54d173d80b0e381c21791fee9b988a7888ad970f3402730d0092dc0636d6e",
+      "originalBytes": 95182,
+      "bytes": 79848,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/lobehub/01-open-lobehub-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a94af358534e302624f5050bc5a1cc178d8b45d95af04047d8c1b07ec7ca2bd6",
+      "outputHash": "dd2fcb7bc9f6335bec9eeded49ca006920a36aa6ab3a9fcb967a46ec5d9e9145",
+      "originalBytes": 85974,
+      "bytes": 71662,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/lobehub/02-go-to-ai-service-providers.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "e472b83631ec05b04af934471e240aa0cab6c55d386bb80322c3c85308bee994",
+      "outputHash": "c648beff2414e05fe2a5108953bb45e1e926ae159b0c672e9f741544ffffba70",
+      "originalBytes": 127486,
+      "bytes": 111636,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/lobehub/03-fill-in-configuration-and-check-connection.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "53dc8811928b2015cfd3366a5de615a5a62070183b46658353f55b8fe6e94cfb",
+      "outputHash": "1eceb778438fa6354b34fa91598a5d91ed142fe1f71c48e0657402c19c2714a3",
+      "originalBytes": 94962,
+      "bytes": 80548,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/lobehub/04-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "a37372b3d03ac20993538f6504deced4a3c9979655598de9ab076b4096ce2fb8",
+      "outputHash": "60b4395c5a1c0a97bc82af5191cf30d149a26a2528c3508a558ad71cae83d0c5",
+      "originalBytes": 66760,
+      "bytes": 55516,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/nextchat/01-open-nextchat-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "59746bea8e92e7facac4aab56b7bbc750eacd3739e4fe402176ca346676ea8d8",
+      "outputHash": "d99d66b0e9fa80af4a625b2df023c879510c7453d4e3acaf25221e4bcab20af8",
+      "originalBytes": 75868,
+      "bytes": 63082,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/nextchat/02-configure-model-provider-and-api-key.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "35e05860ec3618edc57b301ab706c2a22481c15d7c5e8358420f3c3ef823f588",
+      "outputHash": "662ff79074d9790fa60382da86f263b7edcea9c3047afea0bb1c9c022fed1d3c",
+      "originalBytes": 103576,
+      "bytes": 85912,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/nextchat/03-select-model-after-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9c9a7fb2e1088753f55b576c4efeef49bd1afb1111365f04916947ffe3774490",
+      "outputHash": "0391270697c5125092c677936d73d4cbc84b50d62baf2374589cab193980050f",
+      "originalBytes": 78946,
+      "bytes": 65792,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/nextchat/04-model-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "72a703540e1ad59c9f53ce9d6e9703c8bc3670ce85b6078b10e329c15ff8aa9c",
+      "outputHash": "67413a55dff44f0fff3d25450d5cb69675d76356d2d9bef2bcfc2b9956547ab1",
+      "originalBytes": 75790,
+      "bytes": 63960,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/nextchat/05-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "5f99d2f106c598915154fbd746ffc46bbfcf9bc999937e5dd4889d81cf4a4fb4",
+      "outputHash": "330822a25b4d89849e67ddd68fe8a31dff40ff56894acdb929783bd73bf35a9d",
+      "originalBytes": 57022,
+      "bytes": 46154,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencat/01-open-opencat-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "b7386ca583a93621c252ba429a231b471284fa9319b063706ac52b0d72d9f2d2",
+      "outputHash": "82e141b4d78d92a2a0ebb508ed34aefcc9e3863ffcc956d17c1d2911f670f09b",
+      "originalBytes": 31908,
+      "bytes": 25824,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencat/02-select-openai-compatible.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "8e5aac8f36fd63197c1364f60d2a38fafae873ceb299bc5533769c23903cdacf",
+      "outputHash": "6f720f0341df3186a526ab313bdde423966a237defcb4c7f117b32920b9552a2",
+      "originalBytes": 59372,
+      "bytes": 49208,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencat/03-fill-in-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d0a8c4f57e8423ddfddcc7d235ae4b42a95c9efeec1976b8f1f51fcc30e8821e",
+      "outputHash": "3ba8b638a6e7b5bb6197710156f3cf6188f573a50cded761d2740f3531b16f8e",
+      "originalBytes": 81582,
+      "bytes": 67956,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencat/04-validate-success.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "52a53a19b2fc3e400c70a82e76e563b69f694ad3260017bee16d11691134b6c1",
+      "outputHash": "29fc4f2a34a8a9cc3b84a2cb30b4de743badd16046a1b6641b1be2b225736069",
+      "originalBytes": 68602,
+      "bytes": 57156,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencat/05-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "9743f863952ac80dcfe11df01373898c667d37c24f4124724a1ea64cc25e62fb",
+      "outputHash": "9816b24812cc91520bd63b80c958c3d6273188f94c82643928dfa96991f49a72",
+      "originalBytes": 38692,
+      "bytes": 31214,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencode/01-install-opencode.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "d6226c04de46405dd01af36d4ed4dd40cadc7f89d97a951e6eb60eb0c7fd5234",
+      "outputHash": "851e92165a9ce2ea994948eede2882e1cf1cf5306986a124c8cd257dff770beb",
+      "originalBytes": 36138,
+      "bytes": 31322,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/opencode/02-running-result.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "5dca3e60e91fc73d3fabfd2f92d2f1aa8b049f6b8d8147d050b3ff3161e6794b",
+      "outputHash": "c0b1f9dc5cf4de93446e598154c83425cf44abee1941d62caaeb5a1e66714f56",
+      "originalBytes": 54530,
+      "bytes": 43726,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/workbuddy/01-open-workbuddy-settings.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "bd2fec83f1441a84d61f5d4880bf62e4e7b098da09e67873a26fdd544e22582d",
+      "outputHash": "5ce7087224d3194c2af7d04cba5513f62bbc74f06dd4f19ed3375761ce9f18f6",
+      "originalBytes": 84110,
+      "bytes": 70510,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/workbuddy/02-go-to-model-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "4d68e7d05baaa68a2b9f3e89362ad8a6d73128915158482499f7c1827b2c4fb6",
+      "outputHash": "b1b681988c543b6776dc155640b7d731b6da0962c3fc63ae4433133dc8700803",
+      "originalBytes": 60596,
+      "bytes": 50204,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/workbuddy/03-fill-in-configuration.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "185f2825b26fc2b367952f600ba03d77b6383d03506c35477e20e4aa5b0b0554",
+      "outputHash": "680102e0be45904a775dccf0d796a86ad7cd55367e16e240e175f66f4c32f83f",
+      "originalBytes": 88396,
+      "bytes": 74714,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/workbuddy/04-saved-models-list.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "80b60d91dccae0deccbaf2ebbd8b204d960c3bd5886eaf49a0252d8a36e8a71a",
+      "outputHash": "e756264cac4e498608a168dd8e23ac04036686928787f0235352d7807a1410db",
+      "originalBytes": 61384,
+      "bytes": 50346,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/workbuddy/05-start-chatting.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "b15fb26188b00256e2b4b219f55c774831f11bd25645d2e10e17c78bd0b51357",
+      "outputHash": "32d20dea526968f9c41cb12374808f401a87788da63b3f6777947d9f38d4d1a4",
+      "originalBytes": 59308,
+      "bytes": 48506,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/zed/01-configure-kineticrouter-in-zed-editor.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "0a3ba236ffa5ac0296682fe7df4ad0823ed1ab8fc7bf76847a3a35d5c193b388",
+      "outputHash": "6937c27083d6919c801c4e8f72a9faff36d3d1d3c3dd6d6d30cc548965a642f7",
+      "originalBytes": 65662,
+      "bytes": 55800,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/zed/02-add-kineticrouter-provider-in-zed.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "72434a6c482ac95a7f1c1a73b42cfb82e9c09fbad9555925939bc041ba7b25e6",
+      "outputHash": "ea8fcd9b6c9262e2db5aeda870104fa6db606c22503990dbf064eee8296d8ac1",
+      "originalBytes": 79686,
+      "bytes": 65022,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/zed/03-zed-agent-panel-model-selection.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "12f81974a9dcc0139ee107ef7d0aa2962daaae6463d94150c4817ca6ba43b166",
+      "outputHash": "7395542087ff14b24c28f8c96a09efa3d44924e5e2b7a50e98faf5b1a4bb2023",
+      "originalBytes": 58318,
+      "bytes": 48262,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/zed/04-zed-agent-conversation-demo.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "858b1b4f6054acf5b72fa831bf91b1fa8ee46024d5d93d05273e461ee357a500",
+      "outputHash": "90159cf14228c08a888ad608c38eac26e3e81e42be34b34ded6437ef658b0d32",
+      "originalBytes": 61806,
+      "bytes": 50482,
+      "retainedOriginal": false
+    },
+    "apps/site/public/docs-assets/integrations/zed/05-edit-in-settings-json.webp": {
+      "profile": {
+        "format": "webp",
+        "quality": 88,
+        "effort": 6,
+        "smartSubsample": true,
+        "alphaQuality": 100
+      },
+      "inputHash": "0c9d90a211f560530cf002407b310f43b515d62267a513040ba0d302397311a7",
+      "outputHash": "82baa37eac799938fe7046f4e30c067e3eaa5939092c0d6b23fb338a07e54626",
+      "originalBytes": 46140,
+      "bytes": 40748,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/app-icon-192.png": {
+      "profile": {
+        "format": "png",
+        "size": 192,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "3b336f3dcf955ce4007dfe29c2fc95cf03e61b88f04bd940fcd6ab9dfbd926dd",
+      "originalBytes": 7411,
+      "bytes": 7676,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/app-icon.png": {
+      "profile": {
+        "format": "png",
+        "size": 512,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "349323386ba21d72c328d05e1c86f963ae1d0cde242e7e55654187513efb0ab8",
+      "originalBytes": 53885,
+      "bytes": 49348,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/apple-icon.png": {
+      "profile": {
+        "format": "png",
+        "size": 180,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "f844fb3aa307f4bab2d4b43e2833bb9fb13692e803628c68775fcfbc51f201f9",
+      "originalBytes": 8093,
+      "bytes": 8148,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/favicon-16.png": {
+      "profile": {
+        "format": "png",
+        "size": 16,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "6533eb6ca8702e5e103f8b1e59b12393019c1baa85f47d1f7c3e6cf3505116e6",
+      "originalBytes": 693,
+      "bytes": 687,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/favicon-32.png": {
+      "profile": {
+        "format": "png",
+        "size": 32,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "b6e355cb447f3da3b8dfa832e60dc3c5738eea358013fc8c885bcf8e0b622f7b",
+      "originalBytes": 1425,
+      "bytes": 1455,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/favicon-48.png": {
+      "profile": {
+        "format": "png",
+        "size": 48,
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "smallest-rgba-or-palette-256-q100-v1"
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "2f6ea0c3e98c5e635ae0385e68eef6ffd866bbf127f643e11468dc85047a8de7",
+      "originalBytes": 1840,
+      "bytes": 2005,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/favicon.ico": {
+      "profile": {
+        "format": "ico",
+        "sizes": [
+          16,
+          32,
+          48
+        ],
+        "padding": 0.08,
+        "transparent": true,
+        "encoding": "png-frames-v1",
+        "frameHashes": [
+          "6533eb6ca8702e5e103f8b1e59b12393019c1baa85f47d1f7c3e6cf3505116e6",
+          "b6e355cb447f3da3b8dfa832e60dc3c5738eea358013fc8c885bcf8e0b622f7b",
+          "2f6ea0c3e98c5e635ae0385e68eef6ffd866bbf127f643e11468dc85047a8de7"
+        ]
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "01e46395b583d4ab75febf99d370c4fba71fd548f210962939a83d68ea7975db",
+      "originalBytes": 4012,
+      "bytes": 4201,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/header-mark-dark.png": {
+      "profile": {
+        "format": "png",
+        "width": 144,
+        "height": 144,
+        "lossless": true,
+        "transparent": true
+      },
+      "sourceHash": "b98567f505c3d7bbcfd41d3dd0c26fcf3e2f00f60e0bb786134ec8db1868f338",
+      "outputHash": "8f263ed43efdc4e4cdfc725b09105ad61b80c4dd57eeb613b45b1881e55cbaae",
+      "originalBytes": 524465,
+      "bytes": 15030,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/header-mark-light.png": {
+      "profile": {
+        "format": "png",
+        "width": 144,
+        "height": 144,
+        "lossless": true,
+        "transparent": true
+      },
+      "sourceHash": "d30e9049be7aad6983daffb7a131b2fe042ced2e700ca284521976fce4c8bd07",
+      "outputHash": "c3bd1592bb517b37e04753dabeb39056b1a54f1bf63d1c09d6a8e0017819b180",
+      "originalBytes": 289044,
+      "bytes": 11068,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-1280.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 1280,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "9e6cad624a787b27634bbeb8c8079722d3f6f75a5be4fbe198bf30dd8dbe5d43",
+      "originalBytes": 143224,
+      "bytes": 109084,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-1280.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 1280,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "6e3c69b5cea7ef5be357eea50059c682f4e558159962ab0498d248f2f60e950d",
+      "originalBytes": 143224,
+      "bytes": 130576,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-2061.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 2061,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "2c917d84d6fcb1f2b48239915bc53c31dcac4c3979a2d0861713565453457290",
+      "originalBytes": 282098,
+      "bytes": 211836,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-2061.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 2061,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "1d50023fa93e70adc85229cb8cebb539fbdd34f9b0bbda67ca2d340a273cde80",
+      "originalBytes": 282098,
+      "bytes": 257774,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-640.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 640,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "dee8065034b0e8cf4a95ce45824ee3fe74ea6d7bd15fa2f8b9eda02c97abe8af",
+      "originalBytes": 43474,
+      "bytes": 33117,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-640.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 640,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "e01bb72c671fc32d25447adaa220ce16fdb68d8dabde4f9cffe44af6df07b370",
+      "outputHash": "aa978974ac827ea4fa29b4c267b249dd3de2afd24bec67017cbc27eb2470a7e9",
+      "originalBytes": 43474,
+      "bytes": 40006,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-1280.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 1280,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "3cc9bace07c61e9c27e80eda280464f273541368bc6f3a27845b20780b3179a9",
+      "originalBytes": 2906368,
+      "bytes": 121202,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-1280.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 1280,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "82681c5785391e928993ffb9cb58d65cde99f3ad33fe8447e32ce76681f3140f",
+      "originalBytes": 2906368,
+      "bytes": 141570,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-2062.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 2062,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "1b1139fb5bfb0bef5ba767274601d7465c9cad15de51ac35f6b0f8bd21ef64e3",
+      "originalBytes": 2906368,
+      "bytes": 243956,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-2062.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 2062,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "1a076e15b0a3a8a7220656a43b1184cc0e41a83fe8967b68bd91c80b7882c16b",
+      "originalBytes": 2906368,
+      "bytes": 299090,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-640.avif": {
+      "profile": {
+        "format": "avif",
+        "width": 640,
+        "quality": 60,
+        "effort": 6,
+        "chromaSubsampling": "4:4:4"
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "4471c6db5b5f66194c07134ccb275b4f98a4fad93d6577683f4ab704afce50a5",
+      "originalBytes": 2906368,
+      "bytes": 35492,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/home-hero-river-delta-640.webp": {
+      "profile": {
+        "format": "webp",
+        "width": 640,
+        "quality": 80,
+        "effort": 6,
+        "smartSubsample": true
+      },
+      "sourceHash": "712c2f8824df0d1ead1732d5a827435daebc286afb83943dfc7f2df551dad045",
+      "outputHash": "d0a44bf696e161afd20122e1d3bbd5809b3d36056d0195d1335ac23db8ff6282",
+      "originalBytes": 2906368,
+      "bytes": 41848,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/mark-dark.png": {
+      "profile": {
+        "format": "png",
+        "compressionLevel": 9,
+        "adaptiveFiltering": true,
+        "palette": false
+      },
+      "inputHash": "c972fe13d685d7275f456878bec263ab7477c090792ef0ce081218c589a311b2",
+      "outputHash": "c972fe13d685d7275f456878bec263ab7477c090792ef0ce081218c589a311b2",
+      "originalBytes": 4257,
+      "bytes": 4257,
+      "retainedOriginal": true
+    },
+    "packages/brand-ui/assets/mark-dark.webp": {
+      "profile": {
+        "format": "webp",
+        "lossless": true,
+        "effort": 6,
+        "alphaQuality": 100
+      },
+      "sourceHash": "c972fe13d685d7275f456878bec263ab7477c090792ef0ce081218c589a311b2",
+      "outputHash": "fd497b4992e7a3215e5f0dc9500bd3e645bb8a2c64e9ad2dfa8f2c3245d8666b",
+      "originalBytes": 4257,
+      "bytes": 3424,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/mark-light.png": {
+      "profile": {
+        "format": "png",
+        "compressionLevel": 9,
+        "adaptiveFiltering": true,
+        "palette": false
+      },
+      "inputHash": "f95249e489b60c9dbb088cae7315f952cc975495e63c96028714c809fbcc1639",
+      "outputHash": "f95249e489b60c9dbb088cae7315f952cc975495e63c96028714c809fbcc1639",
+      "originalBytes": 3581,
+      "bytes": 3581,
+      "retainedOriginal": true
+    },
+    "packages/brand-ui/assets/mark-light.webp": {
+      "profile": {
+        "format": "webp",
+        "lossless": true,
+        "effort": 6,
+        "alphaQuality": 100
+      },
+      "sourceHash": "f95249e489b60c9dbb088cae7315f952cc975495e63c96028714c809fbcc1639",
+      "outputHash": "8e6d96cce2e14f6fbb4cb9ab600f8dd5404aa924f8f4452bb2c08d138cd80eb4",
+      "originalBytes": 3581,
+      "bytes": 2678,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/social-preview.jpg": {
+      "profile": {
+        "format": "jpeg",
+        "quality": 85,
+        "progressive": true,
+        "chromaSubsampling": "4:4:4",
+        "mozjpeg": true
+      },
+      "inputHash": "a055b8b6b8555c0aaaa790852a67bc08bdd4b775d5719a853fff15f3f6b5af2f",
+      "outputHash": "0e6b271eddfb3d27645c7e3354a3d2353f2ca0481d01965d34d4a07689510af9",
+      "originalBytes": 61719,
+      "bytes": 56416,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/wordmark-dark.png": {
+      "profile": {
+        "format": "png",
+        "compressionLevel": 9,
+        "adaptiveFiltering": true,
+        "palette": false
+      },
+      "inputHash": "c1873480be005b05c5eefc9a72d335ba4802069d761d41eb6e038dce8de8136a",
+      "outputHash": "c1873480be005b05c5eefc9a72d335ba4802069d761d41eb6e038dce8de8136a",
+      "originalBytes": 10789,
+      "bytes": 10789,
+      "retainedOriginal": true
+    },
+    "packages/brand-ui/assets/wordmark-dark.webp": {
+      "profile": {
+        "format": "webp",
+        "lossless": true,
+        "effort": 6,
+        "alphaQuality": 100
+      },
+      "sourceHash": "c1873480be005b05c5eefc9a72d335ba4802069d761d41eb6e038dce8de8136a",
+      "outputHash": "b63f438ba0d4881ea8c886bfdaf075b9e9a18917defdafff7b937be0dec57fc7",
+      "originalBytes": 10789,
+      "bytes": 9622,
+      "retainedOriginal": false
+    },
+    "packages/brand-ui/assets/wordmark-light.png": {
+      "profile": {
+        "format": "png",
+        "compressionLevel": 9,
+        "adaptiveFiltering": true,
+        "palette": false
+      },
+      "inputHash": "ff726db42884fdc2900caed6aaa6a79b7e7890bbbd3dad4920450aad53c9150a",
+      "outputHash": "ff726db42884fdc2900caed6aaa6a79b7e7890bbbd3dad4920450aad53c9150a",
+      "originalBytes": 8931,
+      "bytes": 8931,
+      "retainedOriginal": true
+    },
+    "packages/brand-ui/assets/wordmark-light.webp": {
+      "profile": {
+        "format": "webp",
+        "lossless": true,
+        "effort": 6,
+        "alphaQuality": 100
+      },
+      "sourceHash": "ff726db42884fdc2900caed6aaa6a79b7e7890bbbd3dad4920450aad53c9150a",
+      "outputHash": "7e5f050049b7c95ea2b2227e91098b7e629352a0cf48b6255c1dfbec96cfcc95",
+      "originalBytes": 8931,
+      "bytes": 7646,
+      "retainedOriginal": false
+    }
+  }
+}

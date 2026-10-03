@@ -54,12 +54,15 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
     setSignOutError(null);
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 5_000);
+    window.dispatchEvent(new Event('portal:signing-out'));
     try {
       await requestPublicLogout(consoleOrigin, { signal: controller.signal });
       window.dispatchEvent(new Event('portal:analytics-identity'));
       signedOut();
+      window.dispatchEvent(new Event('portal:signed-out'));
       setOpen(false);
     } catch {
+      window.dispatchEvent(new Event('portal:sign-out-failed'));
       setSignOutError('Couldn\u2019t sign out. Please try again.');
     } finally {
       window.clearTimeout(timeout);

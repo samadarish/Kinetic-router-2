@@ -9,14 +9,15 @@ import { PublicAccountMenu } from './public-account-menu';
 import { usePublicSession } from './use-public-session';
 import { playgroundDestination } from '@/data/public-session-cache.mjs';
 import type { SiteConfig } from '@/data/site-config';
-import { applyTheme, writeStoredTheme } from '@kineticrouter/platform-config/theme';
+import { useThemePreference } from '@kineticrouter/brand-ui';
 
 function isActive(pathname: string, href: string) { return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`); }
 
-export function PublicHeader({ content, compact = false }: { content: SiteConfig; compact?: boolean }) {
+export function PublicHeader({ content }: { content: SiteConfig; compact?: boolean }) {
   const pathname = usePathname();
   const [menu, setMenu] = useState(false);
-  const [dark, setDark] = useState(true);
+  const { theme, toggle: toggleTheme } = useThemePreference();
+  const dark = theme === 'dark';
   const header = useRef<HTMLElement>(null);
   const { session, consoleOrigin, playgroundEnabled } = usePublicSession();
 
@@ -28,21 +29,6 @@ export function PublicHeader({ content, compact = false }: { content: SiteConfig
     return () => { document.removeEventListener('keydown', escape); document.removeEventListener('pointerdown', outside); };
   }, [menu]);
 
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setDark(document.documentElement.classList.contains('dark'));
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [compact]);
-
-  function toggleTheme() {
-    const next = !dark;
-    setDark(next);
-    const theme = next ? 'dark' : 'light';
-    applyTheme(document.documentElement, theme);
-    try { writeStoredTheme(window.localStorage, theme); } catch { /* Storage can be unavailable. */ }
-  }
-
   const links = content.navigation.publicHeader.filter(link => link.id !== 'playground' || playgroundEnabled).map(link => link.id === 'playground' ? { ...link, href: playgroundDestination(consoleOrigin, session) } : link);
   const brand = content.brand;
 
@@ -50,7 +36,7 @@ export function PublicHeader({ content, compact = false }: { content: SiteConfig
     <>
       <nav ref={header} aria-label="Main navigation" className="public-header fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="public-header-inner page-container flex min-w-0 items-center lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-          <SiteLink href="/" aria-label={`${brand.displayName} home`} className="mr-4 shrink-0 lg:mr-0 lg:justify-self-start"><Brand className="w-[112px] sm:w-[142px]" label={brand.displayName} /></SiteLink>
+          <SiteLink href="/" aria-label={`${brand.displayName} home`} className="mr-4 shrink-0 lg:mr-0 lg:justify-self-start"><Brand variant="header" decorative /></SiteLink>
           <div className="public-header-rail hidden min-w-0 lg:block lg:justify-self-center">
             <div className="public-header-links">
               {links.map((link) => {

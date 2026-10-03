@@ -6,15 +6,13 @@ import { App } from './App';
 import { AnalyticsTracker } from './components/AnalyticsTracker';
 import { AuthProvider } from './lib/auth';
 import { ThemeProvider } from './lib/theme';
-import { applyTheme, readStoredTheme } from '@kineticrouter/platform-config/theme';
+import { applyTheme, readBrowserTheme } from '@kineticrouter/platform-config/theme';
 import { shouldRetryQuery } from './lib/query-policy';
 import '@kineticrouter/brand-ui/brand.css';
 import './styles.css';
 
 // Select the correct high-contrast logo before React's first paint.
-let themeStorage: Storage | undefined;
-try { themeStorage = window.localStorage; } catch { /* Dark remains the safe default. */ }
-applyTheme(document.documentElement, readStoredTheme(themeStorage));
+applyTheme(document.documentElement, readBrowserTheme());
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -1,7 +1,7 @@
 import type { CSSProperties, HTMLAttributes } from 'react';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
 
-export type BrandVariant = 'wordmark' | 'mark';
+export type BrandVariant = 'wordmark' | 'mark' | 'header';
 export type BrandProps = Omit<HTMLAttributes<HTMLSpanElement>, 'children'> & {
   variant?: BrandVariant;
   mark?: boolean;
@@ -33,7 +33,7 @@ export function Brand({
     role={decorative ? undefined : 'img'}
     aria-label={decorative ? undefined : label}
     aria-hidden={decorative || undefined}
-    className={`${resolvedVariant === 'mark' ? 'brand-mark' : 'brand-wordmark'}${sizeClass ? ` ${sizeClass}` : ''}`}
+    className={`brand-${resolvedVariant === 'header' ? 'header-mark' : resolvedVariant}${sizeClass ? ` ${sizeClass}` : ''}`}
     style={imageStyle}
   />;
 }

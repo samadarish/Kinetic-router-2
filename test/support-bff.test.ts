@@ -105,6 +105,76 @@ async function fixture(options: { unconfigured?: boolean; now?: () => number } =
   return { ...instance, supportStore, supportRealtime, customer, other, admin, profile, request, upload, create };
 }
 
+describe('public support notifications', () => {
+  it('offers notification credentials only to active customers with configured support', async () => {
+    const f = await fixture();
+    const presentation = async (session?: PortalSession) => (await (await f.app.request('/portal/v1/public-session', { headers: { origin: config.publicSiteOrigins[0]!, ...(session ? { cookie: `${config.sessionCookieName}=${session.id}` } : {}) } })).json()).data;
+    expect((await presentation(f.customer)).supportNotifications).toEqual({ csrfToken: f.customer.csrfToken });
+    expect((await presentation(f.admin)).supportNotifications).toBeNull();
+    expect((await presentation()).supportNotifications).toBeNull();
+    await f.store.set({ ...f.customer, user: { ...f.customer.user, status: 'disabled' } });
+    expect((await presentation(f.customer)).supportNotifications).toBeNull();
+    const unavailable = await fixture({ unconfigured: true });
+    const response = await unavailable.request(unavailable.customer, '/public-session');
+    // This fixture sends the console Origin, which is deliberately not a public-session origin.
+    expect(response.status).toBe(403);
+    const publicResponse = await unavailable.app.request('/portal/v1/public-session', { headers: { origin: config.publicSiteOrigins[0]!, cookie: `${config.sessionCookieName}=${unavailable.customer.id}` } });
+    expect((await publicResponse.json()).data.supportNotifications).toBeNull();
+  });
+
+  it('allows public-origin welcome requests with CSRF while keeping all other writes restricted', async () => {
+    const f = await fixture(), origin = config.publicSiteOrigins[0]!;
+    const publicHeaders = { ...headers(f.customer), origin };
+    const preflight = await f.app.request('/portal/v1/support/welcome', { method: 'OPTIONS', headers: { origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'content-type,x-csrf-token' } });
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get('access-control-allow-origin')).toBe(origin);
+    expect(preflight.headers.get('access-control-allow-credentials')).toBe('true');
+    expect(preflight.headers.get('access-control-allow-methods')).toBe('POST, OPTIONS');
+    expect(preflight.headers.get('access-control-allow-headers')).toContain('X-CSRF-Token');
+    for (const token of ['', 'forged']) {
+      const response = await f.app.request('/portal/v1/support/welcome', { method: 'POST', headers: { ...publicHeaders, 'x-csrf-token': token }, body: '{}' });
+      expect(response.status).toBe(403); expect((await response.json()).error.code).toBe('CSRF_INVALID');
+      expect(response.headers.get('access-control-allow-origin')).toBe(origin);
+    }
+    const first = await f.app.request('/portal/v1/support/welcome', { method: 'POST', headers: publicHeaders, body: '{}' });
+    expect(first.status).toBe(200); expect((await first.json()).data.created).toBe(true);
+    const second = await f.app.request('/portal/v1/support/welcome', { method: 'POST', headers: publicHeaders, body: '{}' });
+    expect((await second.json()).data.created).toBe(false);
+    for (const path of ['/support/welcome/viewed', '/support/tickets', '/auth/password/login']) {
+      const response = await f.app.request(`/portal/v1${path}`, { method: 'POST', headers: publicHeaders, body: '{}' });
+      expect(response.status).toBe(403); expect((await response.json()).error.code).toBe('ORIGIN_INVALID');
+      expect(response.headers.get('access-control-allow-origin')).toBeNull();
+    }
+    for (const path of ['/support/tickets', '/support/welcome/viewed', '/admin/support/events']) {
+      const response = await f.app.request(`/portal/v1${path}`, { method: 'OPTIONS', headers: { origin } });
+      expect(response.headers.get('access-control-allow-origin')).toBeNull();
+    }
+  });
+
+  it('restricts credentialed streams to allowed origins and preserves revocation', async () => {
+    const f = await fixture(), origin = config.publicSiteOrigins[0]!;
+    for (const path of ['/support/events', '/support/welcome']) {
+      for (const method of [path.endsWith('events') ? 'GET' : 'POST', 'OPTIONS']) {
+        const response = await f.app.request(`/portal/v1${path}`, { method, headers: { ...headers(f.customer), origin: 'https://untrusted.example' } });
+        expect(response.status).toBe(403); expect(response.headers.get('access-control-allow-origin')).toBeNull();
+      }
+    }
+    const preflight = await f.app.request('/portal/v1/support/events', { method: 'OPTIONS', headers: { origin } });
+    expect(preflight.headers.get('access-control-allow-methods')).toBe('GET, OPTIONS');
+    const response = await f.app.request('/portal/v1/support/events', { headers: { ...headers(f.customer), origin } });
+    expect(response.headers.get('access-control-allow-origin')).toBe(origin);
+    expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+    const reader = response.body!.getReader();
+    expect(new TextDecoder().decode((await reader.read()).value)).toContain('"type":"ready"');
+    await f.store.revoke(f.customer.id);
+    expect(await reader.read()).toMatchObject({ done: true });
+    expect((await f.app.request('/portal/v1/support/events', { headers: { ...headers(f.customer), origin } })).status).toBe(401);
+    await f.store.set({ ...f.other, user: { ...f.other.user, status: 'disabled' } });
+    expect((await f.request(f.other, '/support/events')).status).toBe(403);
+    expect((await f.request(f.other, '/support/welcome', 'POST')).status).toBe(403);
+  });
+});
+
 describe('support image attachments', () => {
   it('normalizes customer images, serves only the owner or verified admin, and keeps bytes out of events', async () => {
     const f = await fixture();

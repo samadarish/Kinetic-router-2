@@ -50,6 +50,8 @@ export function createPublicSessionCache(consoleOrigin, { fetchImpl = globalThis
             const user = payload.data.user;
             if (payload.data.authenticated && typeof user?.id === 'string' && typeof user.username === 'string') {
               session = { authenticated: true, playgroundEnabled, user: { id: user.id, username: user.username, ...(typeof user.avatarUrl === 'string' ? { avatarUrl: user.avatarUrl } : {}) } };
+              const notifications = payload.data.supportNotifications;
+              if (typeof notifications?.csrfToken === 'string' && notifications.csrfToken.length > 0) session.supportNotifications = { csrfToken: notifications.csrfToken };
             }
           }
         } catch { /* Keep navigation usable through the login-return route. */ }

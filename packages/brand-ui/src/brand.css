@@ -8,11 +8,14 @@
   --brand-blue: #379dec;
   --brand-deep: #3789ef;
   --brand-gradient: linear-gradient(135deg, #53e1d2 0%, #38cce4 28%, #38b6e8 52%, #379dec 74%, #3789ef 100%);
+  --brand-on-gradient: #08111f;
 }
 
 .brand-wordmark,.brand-mark { display:inline-block; flex-shrink:0; background-position:center; background-repeat:no-repeat; background-size:contain; }
-.brand-wordmark,.light .brand-wordmark { aspect-ratio:360/136; background-image:url('/brand/kineticrouter/wordmark-light.png'); }
-.brand-mark,.light .brand-mark { aspect-ratio:1; background-image:url('/brand/kineticrouter/mark-light.png'); }
-.dark .brand-wordmark { background-image:url('/brand/kineticrouter/wordmark-dark.png'); }
-.dark .brand-mark { background-image:url('/brand/kineticrouter/mark-dark.png'); }
+.brand-wordmark,.light .brand-wordmark { aspect-ratio:360/136; background-image:url('/brand/kineticrouter/wordmark-light.png'); background-image:image-set(url('/brand/kineticrouter/wordmark-light.webp') type('image/webp'),url('/brand/kineticrouter/wordmark-light.png') type('image/png')); }
+.brand-mark,.light .brand-mark { aspect-ratio:1; background-image:url('/brand/kineticrouter/mark-light.png'); background-image:image-set(url('/brand/kineticrouter/mark-light.webp') type('image/webp'),url('/brand/kineticrouter/mark-light.png') type('image/png')); }
+.dark .brand-wordmark { background-image:url('/brand/kineticrouter/wordmark-dark.png'); background-image:image-set(url('/brand/kineticrouter/wordmark-dark.webp') type('image/webp'),url('/brand/kineticrouter/wordmark-dark.png') type('image/png')); }
+.dark .brand-mark { background-image:url('/brand/kineticrouter/mark-dark.png'); background-image:image-set(url('/brand/kineticrouter/mark-dark.webp') type('image/webp'),url('/brand/kineticrouter/mark-dark.png') type('image/png')); }
+.brand-header-mark { display:inline-block; flex-shrink:0; width:36px; height:36px; vertical-align:middle; background:center/contain no-repeat url('/brand/kineticrouter/header-mark-light.png'); }
+.dark .brand-header-mark { background-image:url('/brand/kineticrouter/header-mark-dark.png'); }
 .provider-icon-anthropic,.provider-icon-claude { color:#d97757; }

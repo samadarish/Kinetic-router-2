@@ -9,7 +9,7 @@ import { CloseIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
 import type { DocsNavigationGroup } from '@/data/docs-navigation';
 import type { SiteConfig, SiteNavigationItem } from '@/data/site-config';
-import { applyTheme, writeStoredTheme } from '@kineticrouter/platform-config/theme';
+import { useThemePreference } from '@kineticrouter/brand-ui';
 
 function routeActive(route: string, href: string) {
   return href === '/docs' ? route === href : route === href || route.startsWith(`${href}/`);
@@ -23,14 +23,10 @@ type DocsHeaderProps = {
 };
 
 export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeaderProps) {
-  const [dark, setDark] = useState(true);
+  const { theme, toggle: toggleTheme } = useThemePreference();
+  const dark = theme === 'dark';
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setDark(document.documentElement.classList.contains('dark')));
-    return () => cancelAnimationFrame(frame);
-  }, []);
 
   useEffect(() => {
     function closeOverlays(event: KeyboardEvent) {
@@ -43,18 +39,10 @@ export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeader
     return () => window.removeEventListener('keydown', closeOverlays);
   }, []);
 
-  function toggleTheme() {
-    const next = !dark;
-    setDark(next);
-    const theme = next ? 'dark' : 'light';
-    applyTheme(document.documentElement, theme);
-    try { writeStoredTheme(window.localStorage, theme); } catch { /* Storage can be unavailable. */ }
-  }
-
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-16 border-b border-border bg-background/95 backdrop-blur-xl">
       <div className="mx-auto flex h-full min-w-0 max-w-[1440px] items-center px-3 sm:px-4 lg:px-6">
-        <SiteLink href="/" aria-label={`${brand.displayName} home`} className="shrink-0"><Brand className="w-[105px] sm:w-[132px]" label={brand.displayName} /></SiteLink>
+        <SiteLink href="/" aria-label={`${brand.displayName} home`} className="shrink-0"><Brand variant="header" decorative /></SiteLink>
         <span className="mx-2 h-5 shrink-0 border-l border-border sm:mx-3" />
 
         <div className="docs-header-rail hidden min-w-0 flex-1 md:block">

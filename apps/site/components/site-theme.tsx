@@ -1,14 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
-import { applyTheme, readStoredTheme } from '@kineticrouter/platform-config/theme';
+import { useThemePreference } from '@kineticrouter/brand-ui';
 
 export function SiteTheme() {
-  useEffect(() => {
-    let storage: Storage | undefined;
-    try { storage = window.localStorage; } catch { /* Dark remains the safe default. */ }
-    applyTheme(document.documentElement, readStoredTheme(storage));
-  }, []);
-
+  useThemePreference();
   return null;
 }

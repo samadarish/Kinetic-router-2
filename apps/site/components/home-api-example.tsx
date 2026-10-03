@@ -151,7 +151,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
         </div>
 
         <div className="mx-auto mt-8 grid w-full max-w-sm grid-cols-2 gap-3 sm:gap-4">
-          <SiteLink href={home.primaryCta.href} className="inline-flex h-14 min-w-0 items-center justify-center rounded-lg bg-primary px-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[var(--primary-hover)] sm:h-[60px] sm:px-8 sm:text-base">{home.primaryCta.label} <ArrowRightIcon className="ml-2 h-5 w-5" /></SiteLink>
+          <SiteLink href={home.primaryCta.href} className="brand-cta inline-flex h-14 min-w-0 items-center justify-center rounded-lg px-3 text-sm font-semibold shadow-lg transition sm:h-[60px] sm:px-8 sm:text-base">{home.primaryCta.label} <ArrowRightIcon className="ml-2 h-5 w-5" /></SiteLink>
           <SiteLink href={home.secondaryCta.href} className="inline-flex h-14 min-w-0 items-center justify-center rounded-lg border border-primary px-3 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white sm:h-[60px] sm:px-8 sm:text-base">{home.secondaryCta.label}</SiteLink>
         </div>
 
@@ -173,7 +173,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
 
           <div id="home-provider-panel" role="tabpanel" aria-labelledby={selectedTabId} tabIndex={0}>
             {available
-              ? <pre className="h-[278px] overflow-auto p-4 font-mono text-[12px] leading-[1.75] text-[#34332f] dark:text-[#e8e6e3] sm:h-[292px] sm:text-[13px]"><code><SyntaxColoredCode source={code} /></code></pre>
+              ? <pre className="h-[278px] overflow-auto p-4 font-mono text-[12px] leading-[1.75] text-foreground sm:h-[292px] sm:text-[13px]"><code><SyntaxColoredCode source={code} /></code></pre>
               : <div className="grid h-[278px] place-items-center p-8 text-center sm:h-[292px]"><div><ProviderLogo provider={provider} className="mx-auto h-9 w-9" /><strong className="mt-4 block text-sm">{selectedStatus.protocolLabel} route is {selectedStatus.badgeLabel.toLowerCase()}</strong><p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-muted-foreground">{selectedStatus.summary} {selectedStatus.evidenceNote}</p></div></div>}
           </div>
         </div>

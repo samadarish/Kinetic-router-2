@@ -3,6 +3,7 @@ import { THEME_BOOTSTRAP_SCRIPT } from '@kineticrouter/platform-config/theme';
 import './globals.css';
 import { SITE_ORIGIN } from '@/data/seo-policy.mjs';
 import { AnalyticsTracker } from '@/components/analytics-tracker';
+import { SupportNotifications } from '@/components/support-notifications';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
@@ -34,13 +35,13 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', title: 'kineticRouter — OpenAI-compatible API and model reference', description: 'OpenAI-compatible access with a transparent reference catalog.', images: ['/og.jpg'] },
 };
 
-export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#141413' };
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#000000' };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head><link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /><script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
-      <body>{children}<AnalyticsTracker /></body>
+      <body>{children}<AnalyticsTracker /><SupportNotifications /></body>
     </html>
   );
 }

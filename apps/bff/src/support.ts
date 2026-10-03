@@ -103,6 +103,9 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
       try { return success(c, await realtime.presence(admin)); } catch { throw unavailable(); }
     });
     app.get(`${prefix}/events`, async c => {
+      // Administrator status is verified by the HTTP middleware; the stream
+      // keeps its independent periodic privilege check.
+      if (!admin && !await options.validate(c, false)) throw supportForbidden();
       const person = actor(c, admin);
       let unsubscribe: (() => void) | undefined;
       let stopped = false;
@@ -159,6 +162,7 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
   app.post('/portal/v1/support/welcome', async c => {
     const person = options.actor(c);
     if (person.admin) throw supportForbidden();
+    if (!await options.validate(c, false)) throw supportForbidden();
     const result = await store.ensureWelcome(person);
     // Only the winning request shows the dedicated notice; other tabs just refresh saved state.
     if (result.created) await publish({ type: 'tickets', ticketId: result.ticket.id }, result.ownerId);

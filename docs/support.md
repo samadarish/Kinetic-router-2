@@ -48,6 +48,24 @@ Sound is on by default for both participants; an explicit mute is saved per acco
 
 A persistent connection covers all console pages and stays active in background tabs and minimized windows. Test on desktop Chrome and Edge with the site unmuted and the device awake. Browsers may suspend or discard tabs; closed browsers, sleeping devices, operating-system restrictions, and suspended tabs cannot guarantee playback. On resume, messages are restored without replaying old notification sounds. Closed-browser push notifications are outside this version.
 
+## Public-site notifications
+
+The public site, including documentation, also shows in-page welcome and reply
+notices for signed-in active customers when support is configured. One listener
+is mounted in the site root. It shares the console's stream parser and five-second
+foreground welcome scheduler; account-level welcome uniqueness remains server
+controlled. Reply notices disappear after 6.5 seconds, and both notices link to
+the matching console conversation. Displaying a notice does not mark it read.
+Logout and session expiry abort connections and clear notices. Console sound and
+desktop-notification preferences continue to apply only in the console.
+
+The optional public-session `supportNotifications.csrfToken` authorizes welcome
+requests. Credentialed public-origin CORS is restricted to the customer event
+stream (`GET /portal/v1/support/events`) and welcome endpoint
+(`POST /portal/v1/support/welcome`). Welcome requests still validate Origin and
+CSRF; streams retain periodic session-revocation checks. Other support endpoints
+and account writes keep their console-only Origin requirements.
+
 ## Customer images
 
 Customers can attach or paste one JPG, PNG, or WebP image per message, with optional text. A new ticket still requires a subject. Additional images can be sent in later messages. The composer previews the original image, displays its file size, and retains the same bytes for retries. Original draft blobs are stored in IndexedDB per account, tab, and ticket; sending, removal, and logout clear them. Abandoned local image drafts expire after seven days. When browser storage is unavailable, the image remains in memory and the interface explains that it cannot survive a reload. Legacy image drafts from the browser-compression version require reattachment; message text remains saved.

@@ -144,7 +144,7 @@ export function PortalShell() {
       <header className="topbar">
         <button className="icon-button menu-button" aria-label="Open menu" aria-controls="portal-navigation" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}><Menu size={20} /></button>
         <a className="mobile-brand" href={publicSiteHref('/')} aria-label="Go to kineticRouter homepage">
-          <Brand decorative className="mobile-wordmark" />
+          <Brand variant="header" decorative />
         </a>
         <nav className="console-topnav" aria-label="Console links">
           {consoleLinks.map((item) => isPortalRoute(item.href)
