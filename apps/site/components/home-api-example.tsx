@@ -6,10 +6,28 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import type { ProviderId } from '@/data/provider-availability';
 import type { SiteConfig, SiteProviderMap } from '@/data/site-config';
 import { ArrowRightIcon, ClipboardIcon } from './icons';
-import { ProviderLogo } from './provider-logo';
+import { HomeProviderLogo } from './home-provider-logo';
 
 type SyntaxKind = 'keyword' | 'string' | 'property' | 'number';
-const allProviders: ProviderId[] = ['openai', 'anthropic', 'grok'];
+const homepageOnlyProviders = {
+  deepseek: { label: 'DeepSeek', model: 'deepseek/deepseek-flash' },
+  zhipu: { label: 'Zhipu', model: 'zhipu/glm-5.3-flash' },
+  moonshot: { label: 'Moonshot', model: 'moonshot/kimi-k3' },
+} as const;
+type HomeProviderId = ProviderId | keyof typeof homepageOnlyProviders;
+const allProviders: HomeProviderId[] = ['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot'];
+const homepageOnlyStatus = {
+  enabled: true,
+  badgeLabel: 'Available',
+  interactionMode: 'live',
+  protocolLabel: 'OpenAI-compatible',
+  summary: '',
+  evidenceNote: '',
+} as const;
+
+function isHomepageOnlyProvider(id: HomeProviderId): id is keyof typeof homepageOnlyProviders {
+  return id in homepageOnlyProviders;
+}
 const pythonTokenPattern = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(from|import|as|return|await|async|def|class|if|else|for|in|True|False|None)\b|([A-Za-z_]\w*)(?=\s*=)|(\b\d+(?:\.\d+)?\b)/g;
 
 function syntaxKind(match: RegExpExecArray): SyntaxKind {
@@ -41,11 +59,12 @@ function SyntaxColoredCode({ source }: { source: string }) {
   });
 }
 
-function endpoint(providers: SiteProviderMap, id: ProviderId) {
-  return providers[id].baseUrl ?? providers[id].previewBaseUrl ?? 'https://api.kineticrouter.com/v1';
+function endpoint(providers: SiteProviderMap, id: HomeProviderId) {
+  const route = providers[isHomepageOnlyProvider(id) ? 'openai' : id];
+  return route.baseUrl ?? route.previewBaseUrl ?? 'https://api.kineticrouter.com/v1';
 }
 
-function providerExample(providers: SiteProviderMap, id: ProviderId) {
+function providerExample(providers: SiteProviderMap, id: HomeProviderId) {
   if (id === 'anthropic') return `from anthropic import Anthropic
 
 client = Anthropic(
@@ -58,7 +77,7 @@ message = client.messages.create(
     max_tokens=1024,
     messages=[{"role": "user", "content": "Hello!"}]
 )`;
-  const model = id === 'grok' ? 'grok/grok-4.6' : 'openai/gpt-5.4';
+  const model = isHomepageOnlyProvider(id) ? homepageOnlyProviders[id].model : id === 'grok' ? 'grok/grok-4.6' : 'openai/gpt-5.4';
   return `from openai import OpenAI
 
 client = OpenAI(
@@ -73,20 +92,26 @@ response = client.chat.completions.create(
 }
 
 export function HomeApiExample({ home, providers, modelCount }: { home: SiteConfig['home']; providers: SiteProviderMap; modelCount: number }) {
-  const enabledProviders = allProviders.filter((id) => providers[id].enabled);
+  const homepageProviders = {
+    ...providers,
+    deepseek: { ...homepageOnlyStatus, ...homepageOnlyProviders.deepseek },
+    zhipu: { ...homepageOnlyStatus, ...homepageOnlyProviders.zhipu },
+    moonshot: { ...homepageOnlyStatus, ...homepageOnlyProviders.moonshot },
+  };
+  const enabledProviders = allProviders.filter((id) => homepageProviders[id].enabled);
   const providerOrder = enabledProviders.length ? enabledProviders : allProviders;
-  const [provider, setProvider] = useState<ProviderId>(providerOrder[0]);
+  const [provider, setProvider] = useState<HomeProviderId>(providerOrder[0]);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState('');
   const copyAttempt = useRef(0);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const selectedStatus = providers[provider];
+  const selectedStatus = homepageProviders[provider];
   const code = providerExample(providers, provider);
   const available = selectedStatus.enabled && selectedStatus.interactionMode !== 'reference-only';
   const selectedTabId = `home-provider-tab-${provider}`;
   useEffect(() => () => { copyAttempt.current += 1; clearTimeout(copyTimer.current); }, []);
 
-  function selectProvider(next: ProviderId) {
+  function selectProvider(next: HomeProviderId) {
     copyAttempt.current += 1;
     clearTimeout(copyTimer.current);
     setProvider(next);
@@ -94,7 +119,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
     setCopyError('');
   }
 
-  function handleTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, item: ProviderId) {
+  function handleTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, item: HomeProviderId) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const currentIndex = providerOrder.indexOf(item);
@@ -138,11 +163,11 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
 
         <div aria-label="Choose a model provider" className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
           {providerOrder.map((id) => {
-            const status = providers[id];
+            const status = homepageProviders[id];
             const active = provider === id;
             return (
               <button key={id} type="button" aria-pressed={active} onClick={() => selectProvider(id)} className="provider-pill inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold shadow-lg">
-                <ProviderLogo provider={id} className="h-4 w-4" />
+                <HomeProviderLogo provider={id} className="h-4 w-4" />
                 {status.label}
                 <span className="text-[8px] tracking-wider opacity-65">{status.badgeLabel.toUpperCase()}</span>
               </button>
@@ -158,11 +183,11 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
         <div className="mx-auto mt-8 max-w-xl overflow-hidden rounded-lg border border-border bg-[var(--code)] text-left shadow-2xl">
           <div className="flex min-h-11 items-end overflow-x-auto border-b border-border/70 px-2" role="tablist" aria-label="API provider examples">
             {providerOrder.map((id) => {
-              const status = providers[id];
+              const status = homepageProviders[id];
               const active = provider === id;
               return (
                 <button key={id} id={`home-provider-tab-${id}`} type="button" role="tab" aria-selected={active} aria-controls="home-provider-panel" tabIndex={active ? 0 : -1} onClick={() => selectProvider(id)} onKeyDown={(event) => handleTabKeyDown(event, id)} className="provider-code-tab inline-flex h-11 shrink-0 items-center gap-1.5 border-b-2 px-3 text-xs font-medium">
-                  <ProviderLogo provider={id} className="h-3.5 w-3.5" />
+                  <HomeProviderLogo provider={id} className="h-3.5 w-3.5" />
                   {status.label}
                   <span className="text-[7px] opacity-60">{status.badgeLabel.toUpperCase()}</span>
                 </button>
@@ -174,7 +199,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
           <div id="home-provider-panel" role="tabpanel" aria-labelledby={selectedTabId} tabIndex={0}>
             {available
               ? <pre className="h-[278px] overflow-auto p-4 font-mono text-[12px] leading-[1.75] text-foreground sm:h-[292px] sm:text-[13px]"><code><SyntaxColoredCode source={code} /></code></pre>
-              : <div className="grid h-[278px] place-items-center p-8 text-center sm:h-[292px]"><div><ProviderLogo provider={provider} className="mx-auto h-9 w-9" /><strong className="mt-4 block text-sm">{selectedStatus.protocolLabel} route is {selectedStatus.badgeLabel.toLowerCase()}</strong><p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-muted-foreground">{selectedStatus.summary} {selectedStatus.evidenceNote}</p></div></div>}
+              : <div className="grid h-[278px] place-items-center p-8 text-center sm:h-[292px]"><div><HomeProviderLogo provider={provider} className="mx-auto h-9 w-9" /><strong className="mt-4 block text-sm">{selectedStatus.protocolLabel} route is {selectedStatus.badgeLabel.toLowerCase()}</strong><p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-muted-foreground">{selectedStatus.summary} {selectedStatus.evidenceNote}</p></div></div>}
           </div>
         </div>
 
