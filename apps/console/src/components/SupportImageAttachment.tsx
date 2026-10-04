@@ -88,7 +88,7 @@ function EnlargedImage({ image, close }: { image: MessageImage; close(): void })
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => { const node = dialog.current; node?.showModal(); return () => node?.close(); }, []);
   return createPortal(<dialog ref={dialog} className="support-image-dialog" aria-label="Image attachment" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === event.currentTarget) close(); }}>
-    <div className="support-image-viewer"><div className="support-image-viewer-bar"><span>Image attachment</span><a href={image.url} target="_blank" rel="noreferrer">Open full size</a><button type="button" className="icon-button" onClick={close} aria-label="Close image"><X size={20} /></button></div><img src={image.url} alt="Customer image attachment, enlarged" width={image.width} height={image.height} /></div>
+    <div className="support-image-viewer"><div className="support-image-viewer-bar"><span>Image attachment</span><a href={image.url} target="_blank" rel="noreferrer">Open full size</a><button type="button" className="icon-button" onClick={close} aria-label="Close image"><X size={20} /></button></div><img src={image.url} alt="Image attachment, enlarged" width={image.width} height={image.height} /></div>
   </dialog>, document.body);
 }
 
@@ -97,7 +97,7 @@ export function SupportMessageImage({ image }: { image: MessageImage }) {
   if (failed) return <div className="support-image-unavailable"><span>Image could not be loaded.</span><button type="button" onClick={() => { setRetry(value => value + 1); setFailed(false); }}>Try again</button></div>;
   return <>
     <button type="button" className="support-message-image" aria-label="Enlarge image attachment" onClick={() => setOpen(true)} style={{ aspectRatio: `${image.width} / ${image.height}`, width: Math.min(image.width, 360) }}>
-      <img key={retry} src={image.url} alt="Customer image attachment" width={image.width} height={image.height} loading="lazy" decoding="async" onError={() => setFailed(true)} /><span aria-hidden="true"><Maximize2 size={15} /></span>
+      <img key={retry} src={image.url} alt="Image attachment" width={image.width} height={image.height} loading="lazy" decoding="async" onError={() => setFailed(true)} /><span aria-hidden="true"><Maximize2 size={15} /></span>
     </button>
     {open && <EnlargedImage image={image} close={() => setOpen(false)} />}
   </>;

@@ -133,7 +133,7 @@ export class PostgresSupportStore implements SupportStore {
   }
   async reply(actor: SupportActor, id: string, raw: SupportReplyInput, image?: SupportImageRecord) {
     checkTicketId(id);
-    const input = checkedReply(actor, raw, image);
+    const input = checkedReply(raw, image);
     return this.transaction(async client => {
       const ticket = await this.locked(client, actor, id);
       const prior = await client.query('SELECT data FROM kr_support_messages WHERE ticket_id=$1 AND client_message_id=$2', [id, input.clientMessageId]);

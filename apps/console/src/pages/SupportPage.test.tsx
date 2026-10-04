@@ -212,7 +212,8 @@ describe('support inbox and conversation', () => {
     expect(html).toContain('Attach image');
     expect(html).not.toContain('multiple=""');
     expect(renderPage()).toContain('Attach image');
-    expect(renderPage({ admin: true })).not.toContain('type="file"');
+    expect(renderPage({ admin: true })).toContain('type="file"');
+    expect(renderPage({ admin: true })).toContain('Attach image');
     expect(html).not.toContain('Priority');
     expect(html).not.toContain('Category');
   });

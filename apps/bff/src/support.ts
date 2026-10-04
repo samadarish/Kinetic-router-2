@@ -83,7 +83,7 @@ export function installSupportRoutes(app: Hono<any>, options: SupportRoutesOptio
     app.post(`${prefix}/tickets/:id/messages`, async c => {
       await writing(c);
       const id = ticketId(c);
-      const parsed = await messageInput(c, !admin && !options.actor(c).admin);
+      const parsed = await messageInput(c, admin || !options.actor(c).admin);
       const input = supportReplySchema.parse(parsed.fields);
       // Reject inaccessible tickets before any native image decoding takes place.
       if (parsed.image) await store.detail(actor(c, admin), id);

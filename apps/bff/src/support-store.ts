@@ -50,8 +50,7 @@ export function checkedCreate(actor: SupportActor, input: SupportCreateInput, im
   if (!parsed.success || (!parsed.data.message && !image)) throw supportInvalid();
   return parsed.data;
 }
-export function checkedReply(actor: SupportActor, input: SupportReplyInput, image?: SupportImageRecord): SupportReplyInput {
-  if (actor.admin && image) throw supportForbidden();
+export function checkedReply(input: SupportReplyInput, image?: SupportImageRecord): SupportReplyInput {
   const parsed = supportReplySchema.safeParse(input);
   if (!parsed.success || (!parsed.data.message && !image)) throw supportInvalid();
   return parsed.data;
@@ -225,7 +224,7 @@ export class MemorySupportStore implements SupportStore {
     return { items: matching.slice((query.page - 1) * 30, query.page * 30).map(supportWelcomeRecipient), total: matching.length };
   }
   async reply(actor: SupportActor, id: string, raw: SupportReplyInput, image?: SupportImageRecord) {
-    const input = checkedReply(actor, raw, image), ticket = this.get(actor, id), messages = this.messages.get(id)!;
+    const input = checkedReply(raw, image), ticket = this.get(actor, id), messages = this.messages.get(id)!;
     const existing = messages.find(message => message.clientMessageId === input.clientMessageId);
     if (existing) {
       checkSupportReplay(actor, existing, input, image);

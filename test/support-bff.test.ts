@@ -176,16 +176,20 @@ describe('public support notifications', () => {
 });
 
 describe('support image attachments', () => {
-  it('normalizes customer images, serves only the owner or verified admin, and keeps bytes out of events', async () => {
+  it.each(['customer', 'admin'] as const)('normalizes %s images, serves only the owner or verified admin, and keeps bytes out of events', async role => {
     const f = await fixture();
+    const existing = role === 'admin' ? (await f.create()).data.ticket : undefined;
+    const sender = role === 'admin' ? f.admin : f.customer;
+    const prefix = role === 'admin' ? '/admin/support' : '/support';
     const publish = vi.spyOn(f.supportRealtime, 'publish');
     const source = await sharp(await screenshot('#ff0000')).composite([{ input: await screenshot('#0000ff', 20, 20), left: 20, top: 0 }])
       .withMetadata({ orientation: 6 }).jpeg({ quality: 95 }).toBuffer();
-    const response = await f.upload(f.customer, '/support/tickets', imageForm(imageFields(), source, 'image/jpeg'));
+    const response = await f.upload(sender, existing ? `${prefix}/tickets/${existing.id}/messages` : '/support/tickets', imageForm(imageFields(), source, 'image/jpeg'));
     expect(response.status).toBe(200);
     const { ticket, message } = (await response.json()).data;
     expect(ticket.lastMessage).toBe('Image');
     expect(message.body).toBe('');
+    expect(message.sender).toBe(role);
     expect(message.image).toMatchObject({ mimeType: 'image/webp', width: 20, height: 40 });
     expect(Object.keys(message.image).sort()).toEqual(['url', 'mimeType', 'width', 'height', 'byteSize'].sort());
     expect(message).not.toHaveProperty('imageHash');
@@ -212,13 +216,16 @@ describe('support image attachments', () => {
       expect(meta.orientation).toBeUndefined();
       await expectImagePixels(bytes, [{ x: 10, y: 8, rgba: [255, 0, 0, 255] }, { x: 10, y: 32, rgba: [0, 0, 255, 255] }]);
     }
-    const reply = await f.upload(f.customer, `/support/tickets/${ticket.id}/messages`, imageForm({ clientMessageId: randomUUID(), message: 'A second view' }, await screenshot('#abcdef')));
+    const reply = await f.upload(sender, `${prefix}/tickets/${ticket.id}/messages`, imageForm({ clientMessageId: randomUUID(), message: 'A second view' }, await screenshot('#abcdef')));
     expect(reply.status).toBe(200);
     expect((await reply.json()).data.message).toMatchObject({ body: 'A second view', image: { mimeType: 'image/webp' } });
   });
 
-  it('accepts an original screenshot above 512 KiB and 1600 pixels and preserves its content after resizing', async () => {
+  it.each(['customer', 'admin'] as const)('accepts an original %s screenshot above 512 KiB and 1600 pixels and preserves its content after resizing', async role => {
     const f = await fixture();
+    const existing = role === 'admin' ? (await f.create()).data.ticket : undefined;
+    const sender = role === 'admin' ? f.admin : f.customer;
+    const prefix = role === 'admin' ? '/admin/support' : '/support';
     const width = 2400, height = 1200, pixels = Buffer.alloc(width * height * 3);
     const colors = [[240, 32, 32], [32, 210, 32], [32, 32, 240], [240, 240, 240]];
     for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
@@ -229,7 +236,7 @@ describe('support image attachments', () => {
     const source = await sharp(pixels, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 0 }).toBuffer();
     expect(source.length).toBeGreaterThan(512 * 1024);
     expect(source.length).toBeLessThanOrEqual(10 * 1024 * 1024);
-    const response = await f.upload(f.customer, '/support/tickets', imageForm(imageFields(), source));
+    const response = await f.upload(sender, existing ? `${prefix}/tickets/${existing.id}/messages` : '/support/tickets', imageForm(imageFields(), source));
     expect(response.status).toBe(200);
     const { ticket, message } = (await response.json()).data;
     expect(message.image).toMatchObject({ width: 1600, height: 800, mimeType: 'image/webp' });
@@ -241,7 +248,7 @@ describe('support image attachments', () => {
       { x: 400, y: 600, rgba: [32, 32, 240, 255] }, { x: 1200, y: 600, rgba: [240, 240, 240, 255] },
       { x: 200, y: 60, rgba: [16, 16, 16, 255] },
     ]);
-    const reply = await f.upload(f.customer, `/support/tickets/${ticket.id}/messages`, imageForm({ clientMessageId: randomUUID(), message: '' }, source));
+    const reply = await f.upload(sender, `${prefix}/tickets/${ticket.id}/messages`, imageForm({ clientMessageId: randomUUID(), message: '' }, source));
     expect(reply.status).toBe(200);
     expect((await reply.json()).data.message.image).toMatchObject({ width: 1600, height: 800 });
   });
@@ -321,8 +328,11 @@ describe('support image attachments', () => {
     expect(message.image.byteSize).toBeLessThanOrEqual(512 * 1024);
   }, 20_000);
 
-  it('rejects malformed, oversized, unsupported, animated, or excessive-dimension images', async () => {
+  it.each(['customer', 'admin'] as const)('rejects malformed, oversized, unsupported, animated, or excessive-dimension %s images', async role => {
     const f = await fixture();
+    const existing = role === 'admin' ? (await f.create()).data.ticket : undefined;
+    const sender = role === 'admin' ? f.admin : f.customer;
+    const path = existing ? `/admin/support/tickets/${existing.id}/messages` : '/support/tickets';
     const animated = Buffer.from([...[255, 0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0], ...[0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 255]]);
     const animation = await sharp(animated, { raw: { width: 2, height: 4, channels: 3, pageHeight: 2 } }).webp({ loop: 0, delay: [100, 100] }).toBuffer();
     expect((await sharp(animation).metadata()).pages).toBe(2);
@@ -339,22 +349,93 @@ describe('support image attachments', () => {
       [animation, 'image/webp'], [apng, 'image/png'],
     ];
     for (const [bytes, mime] of cases) {
-      const response = await f.upload(f.customer, '/support/tickets', imageForm(imageFields(), bytes, mime));
+      const response = await f.upload(sender, path, imageForm(imageFields(), bytes, mime));
       expect(response.status).toBe(400);
       expect((await response.json()).error.code).toBe('SUPPORT_IMAGE_INVALID');
     }
-    expect((await (await f.request(f.customer, '/support/tickets')).json()).data.total).toBe(0);
+    if (existing) expect((await (await f.request(f.customer, `/support/tickets/${existing.id}`)).json()).data.messages).toHaveLength(1);
+    else expect((await (await f.request(f.customer, '/support/tickets')).json()).data.total).toBe(0);
   });
 
-  it('allows one customer image per message, requires text or an image, and retains strict limits elsewhere', async () => {
+  it('deduplicates concurrent administrator uploads and delivers one private customer reply', async () => {
+    const f = await fixture(), { data } = await f.create();
+    const publish = vi.spyOn(f.supportRealtime, 'publish');
+    const path = `/admin/support/tickets/${data.ticket.id}/messages`;
+    const fields = { clientMessageId: randomUUID(), message: 'Try this configuration.' }, bytes = await screenshot();
+    const responses = await Promise.all(Array.from({ length: 3 }, () => f.upload(f.admin, path, imageForm(fields, bytes))));
+    expect(responses.map(response => response.status)).toEqual([200, 200, 200]);
+    const results = await Promise.all(responses.map(response => response.json()));
+    const message = results[0].data.message;
+    expect(new Set(results.map(result => result.data.message.id)).size).toBe(1);
+    expect(message).toMatchObject({ sender: 'admin', body: fields.message, sequence: 2, image: { mimeType: 'image/webp' } });
+    expect(publish).toHaveBeenCalledExactlyOnceWith({ type: 'message', ticketId: data.ticket.id, message }, { admins: true, ownerId: f.customer.user.id });
+    const samePixels = await sharp(bytes).withMetadata({ density: 144 }).png().toBuffer();
+    expect((await f.upload(f.admin, path, imageForm(fields, samePixels))).status).toBe(409);
+    expect((await f.upload(f.admin, path, imageForm({ ...fields, message: 'Changed caption' }, bytes))).status).toBe(409);
+    expect((await f.request(f.admin, path, 'POST', fields)).status).toBe(409);
+    const detail = (await (await f.request(f.customer, `/support/tickets/${data.ticket.id}`)).json()).data;
+    expect(detail.messages).toHaveLength(2);
+    expect(detail.ticket).toMatchObject({ messageCount: 2, lastSender: 'admin', unreadCount: 1 });
+    expect(detail.messages[1]).toEqual(message);
+    expect((await f.request(f.other, message.image.url.replace('/portal/v1', ''))).status).toBe(404);
+  });
+
+  it('allows administrator image-only replies on resolved tickets without reopening them', async () => {
+    const f = await fixture(), { data } = await f.create();
+    const path = `/admin/support/tickets/${data.ticket.id}`;
+    expect((await f.request(f.admin, path, 'PATCH', { status: 'resolved' })).status).toBe(200);
+    const bytes = await sharp(await screenshot()).webp().toBuffer();
+    const response = await f.upload(f.admin, `${path}/messages`, imageForm({ clientMessageId: randomUUID() }, bytes, 'image/webp'));
+    expect(response.status).toBe(200);
+    const result = (await response.json()).data;
+    expect(result.message).toMatchObject({ sender: 'admin', body: '', image: { mimeType: 'image/webp' } });
+    expect(result.ticket).toMatchObject({ status: 'resolved', messageCount: 2, lastMessage: 'Image' });
+    expect((await f.request(f.customer, result.message.image.url.replace('/portal/v1', ''))).status).toBe(200);
+    expect((await f.upload(f.customer, `/support/tickets/${data.ticket.id}/messages`, imageForm({ clientMessageId: randomUUID(), message: '' }, bytes, 'image/webp'))).status).toBe(403);
+  });
+
+  it('checks administrator privileges, session, Origin, CSRF, ticket access and rate limits before decoding uploads', async () => {
+    const f = await fixture(), { data } = await f.create();
+    const path = `/admin/support/tickets/${data.ticket.id}/messages`;
+    const invalid = () => imageForm({ clientMessageId: randomUUID(), message: '' }, new Uint8Array([1, 2, 3]));
+    const persist = vi.spyOn(f.supportStore, 'reply');
+    expect((await f.app.request(`/portal/v1${path}`, { method: 'POST', body: invalid() })).status).toBe(401);
+    expect((await f.upload(f.customer, path, invalid())).status).toBe(403);
+    for (const changes of [{ origin: 'https://attacker.invalid' }, { 'x-csrf-token': '' }, { 'x-csrf-token': 'invalid' }]) {
+      const requestHeaders: Record<string, string> = { ...headers(f.admin), ...changes }; delete requestHeaders['content-type'];
+      expect((await f.app.request(`/portal/v1${path}`, { method: 'POST', headers: requestHeaders, body: invalid() })).status).toBe(403);
+    }
+    if (config.publicSiteOrigins[0]) {
+      const requestHeaders: Record<string, string> = { ...headers(f.admin), origin: config.publicSiteOrigins[0] }; delete requestHeaders['content-type'];
+      expect((await f.app.request(`/portal/v1${path}`, { method: 'POST', headers: requestHeaders, body: invalid() })).status).toBe(403);
+    }
+    expect((await f.upload(f.admin, `/admin/support/tickets/${randomUUID()}/messages`, invalid())).status).toBe(404);
+    for (const update of [{ status: 'inactive' }, { role: 'user' }]) {
+      const changed = await fixture(); Object.assign(changed.profile, update);
+      expect((await changed.upload(changed.admin, path, invalid())).status).toBe(403);
+    }
+    const limit = vi.spyOn(f.store, 'hitRateLimit').mockResolvedValue(true);
+    expect((await f.upload(f.admin, path, invalid())).status).toBe(429);
+    expect(limit).toHaveBeenCalledWith('support:write:3', 30, 60);
+    limit.mockRestore();
+    await f.store.revoke(f.admin.id);
+    expect((await f.upload(f.admin, path, invalid())).status).toBe(401);
+    expect(persist).not.toHaveBeenCalled();
+  });
+
+  it('allows one image per reply, requires text or an image, and retains strict limits elsewhere', async () => {
     const f = await fixture();
     const { data } = await f.create();
     const bytes = await screenshot();
     const duplicate = imageForm(imageFields(), bytes);
     duplicate.append('image', new Blob([new Uint8Array(bytes)], { type: 'image/png' }), 'second.png');
     expect((await f.upload(f.customer, '/support/tickets', duplicate)).status).toBe(400);
-    expect((await f.upload(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), bytes))).status).toBe(403);
+    expect((await f.upload(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), bytes))).status).toBe(200);
     expect((await f.upload(f.admin, `/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), bytes))).status).toBe(403);
+    const adminDuplicate = imageForm({ clientMessageId: randomUUID(), message: '' }, bytes);
+    adminDuplicate.append('image', new Blob([new Uint8Array(bytes)], { type: 'image/png' }), 'second.png');
+    expect((await f.upload(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, adminDuplicate)).status).toBe(400);
+    expect((await f.request(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, 'POST', { clientMessageId: randomUUID(), message: '   ' })).status).toBe(400);
     expect((await f.request(f.customer, '/support/tickets', 'POST', imageFields('   '))).status).toBe(400);
     const missingSubject = imageFields(); delete (missingSubject as Partial<typeof missingSubject>).subject;
     expect((await f.upload(f.customer, '/support/tickets', imageForm(missingSubject, bytes))).status).toBe(400);
@@ -362,7 +443,9 @@ describe('support image attachments', () => {
     expect((await f.upload(f.customer, `/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), new Uint8Array(11 * 1024 * 1024)))).status).toBe(413);
     expect((await f.request(f.customer, '/support/tickets', 'POST', imageFields('x'.repeat(129 * 1024)))).status).toBe(413);
     expect((await f.request(f.customer, `/support/tickets/${data.ticket.id}/messages`, 'POST', { clientMessageId: randomUUID(), message: 'x'.repeat(129 * 1024) })).status).toBe(413);
-    expect((await f.upload(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), new Uint8Array(129 * 1024)))).status).toBe(413);
+    expect((await f.upload(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, imageForm(imageFields(), new Uint8Array(11 * 1024 * 1024)))).status).toBe(413);
+    expect((await f.request(f.admin, `/admin/support/tickets/${data.ticket.id}/messages`, 'POST', { clientMessageId: randomUUID(), message: 'x'.repeat(129 * 1024) })).status).toBe(413);
+    expect((await f.upload(f.admin, '/admin/support/tickets', imageForm(imageFields(), new Uint8Array(129 * 1024)))).status).toBe(413);
     expect((await f.upload(f.customer, '/support/tickets/not-a-ticket/read', imageForm(imageFields(), new Uint8Array(129 * 1024)))).status).toBe(413);
   });
 });

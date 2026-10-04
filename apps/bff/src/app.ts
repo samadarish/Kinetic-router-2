@@ -148,7 +148,8 @@ export function createApp(
   app.use('*', (c, next) => {
     if (c.req.path === '/portal/v1/playground/conversations/import') return importBodyLimit(c, next);
     const supportImageUpload = c.req.method === 'POST'
-      && /^\/portal\/v1\/support\/tickets(?:\/[a-f0-9-]{36}\/messages)?$/i.test(c.req.path)
+      && (/^\/portal\/v1\/support\/tickets(?:\/[a-f0-9-]{36}\/messages)?$/i.test(c.req.path)
+        || /^\/portal\/v1\/admin\/support\/tickets\/[a-f0-9-]{36}\/messages$/i.test(c.req.path))
       && c.req.header('content-type')?.split(';')[0]?.trim().toLowerCase() === 'multipart/form-data';
     return supportImageUpload ? supportImageBodyLimit(c, next) : standardBodyLimit(c, next);
   });

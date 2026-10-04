@@ -356,7 +356,10 @@ for (const kind of ['memory', 'postgres'] as const) {
       await expect(store.image(other, created.ticket.id, created.message.id)).rejects.toMatchObject({ status: 404 });
       await expect(store.image(customer, randomUUID(), created.message.id)).rejects.toMatchObject({ status: 404 });
       await expect(store.image(customer, created.ticket.id, randomUUID())).rejects.toMatchObject({ status: 404 });
-      await expect(store.reply(admin, created.ticket.id, reply(), attachment)).rejects.toMatchObject({ status: 403 });
+      const adminImage = await store.reply(admin, created.ticket.id, reply(''), attachment);
+      expect(adminImage.message).toMatchObject({ sender: 'admin', body: '', image: { mimeType: 'image/webp' } });
+      expect(await store.image(customer, created.ticket.id, adminImage.message.id)).toEqual(attachment);
+      await expect(store.image(other, created.ticket.id, adminImage.message.id)).rejects.toMatchObject({ status: 404 });
       const text = await store.reply(admin, created.ticket.id, reply());
       await expect(store.image(customer, created.ticket.id, text.message.id)).rejects.toMatchObject({ status: 404 });
       const sent = await store.reply(customer, created.ticket.id, reply('Here is the next view.'), attachment);
@@ -366,11 +369,11 @@ for (const kind of ['memory', 'postgres'] as const) {
         const pg = store as PostgresSupportStore;
         const messages = await pg.pool.query('SELECT data FROM kr_support_messages');
         expect(messages.rows.every(row => !('bytes' in row.data) && !('bytes' in (row.data.image ?? {})))).toBe(true);
-        expect(Number((await pg.pool.query('SELECT count(*) FROM kr_support_images')).rows[0].count)).toBe(2);
+        expect(Number((await pg.pool.query('SELECT count(*) FROM kr_support_images')).rows[0].count)).toBe(3);
       }
     });
 
-    it('includes image content in retry conflicts and serializes concurrent image sends', async () => {
+    it.each([customer, admin])('includes image content in retry conflicts and serializes concurrent image sends (sender=$id)', async sender => {
       const attachment = await image(), changed = await image('#ff0000');
       const request = { ...input(), message: 'Screenshot attached' };
       const creates = await Promise.all(Array.from({ length: 6 }, () => store.create(customer, request, attachment)));
@@ -379,9 +382,10 @@ for (const kind of ['memory', 'postgres'] as const) {
       await expect(store.create(customer, request, changed)).rejects.toMatchObject({ status: 409 });
       await expect(store.create(customer, request)).rejects.toMatchObject({ status: 409 });
       const next = reply('');
-      const replies = await Promise.all(Array.from({ length: 6 }, () => store.reply(customer, ticket.id, next, attachment)));
+      const replies = await Promise.all(Array.from({ length: 6 }, () => store.reply(sender, ticket.id, next, attachment)));
       expect(replies.filter(result => result.created)).toHaveLength(1);
-      await expect(store.reply(customer, ticket.id, next, changed)).rejects.toMatchObject({ status: 409 });
+      await expect(store.reply(sender, ticket.id, next, changed)).rejects.toMatchObject({ status: 409 });
+      await expect(store.reply(sender, ticket.id, { ...next, message: 'Changed caption' }, attachment)).rejects.toMatchObject({ status: 409 });
       expect((await store.detail(customer, ticket.id)).messages.map(message => message.sequence)).toEqual([1, 2]);
       if (kind === 'postgres') expect(Number((await (store as PostgresSupportStore).pool.query('SELECT count(*) FROM kr_support_images')).rows[0].count)).toBe(2);
     });
@@ -399,7 +403,7 @@ for (const kind of ['memory', 'postgres'] as const) {
       await accept();
       const created = await store.create(customer, request, attachment);
       await reject();
-      await expect(store.reply(customer, created.ticket.id, reply(''), attachment)).rejects.toMatchObject({ status: 503 });
+      for (const sender of [customer, admin]) await expect(store.reply(sender, created.ticket.id, reply(''), attachment)).rejects.toMatchObject({ status: 503 });
       expect((await store.detail(customer, created.ticket.id)).ticket.messageCount).toBe(1);
       for (const table of ['kr_support_messages', 'kr_support_images']) expect(Number((await pg.pool.query(`SELECT count(*) FROM ${table}`)).rows[0].count)).toBe(1);
     });

@@ -306,7 +306,7 @@ function TicketConversation({ admin, ticketId, draftKey, detail, visible }: { ad
   }, [detail.data?.messages]);
   const nextBefore = earlierCursor === undefined ? detail.data?.nextBefore : earlierCursor;
   const reply = useMutation({
-    mutationFn: () => portalApi<SendResult>(`${prefix}/tickets/${encodeURIComponent(ticketId)}/messages`, { method: 'POST', ...supportMessageBody({ clientMessageId: draft.clientMessageId, message: draft.message }, admin ? null : attachment.image) }),
+    mutationFn: () => portalApi<SendResult>(`${prefix}/tickets/${encodeURIComponent(ticketId)}/messages`, { method: 'POST', ...supportMessageBody({ clientMessageId: draft.clientMessageId, message: draft.message }, attachment.image) }),
     onSuccess: async result => {
       const next = newDraft(); setDraft(next); writeDraft(draftKey, null); nearBottom.current = true;
       await attachment.clear();
@@ -418,7 +418,7 @@ function TicketConversation({ admin, ticketId, draftKey, detail, visible }: { ad
   }
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (customerReadOnly || sending.current || reply.isPending || (!admin && attachment.busy) || (!draft.message.trim() && (admin || !attachment.image))) return;
+    if (customerReadOnly || sending.current || reply.isPending || attachment.busy || (!draft.message.trim() && !attachment.image)) return;
     // Focus once at submission, so later responses cannot steal focus after
     // someone opens settings or moves to another conversation.
     if (textarea.current?.getClientRects().length) textarea.current.focus({ preventScroll: true });
@@ -440,8 +440,8 @@ function TicketConversation({ admin, ticketId, draftKey, detail, visible }: { ad
     {customerReadOnly ? <div className="support-composer"><p className="support-resolved-note" role="status"><CircleCheck size={14} />This ticket is resolved. Create a new ticket for more help.</p></div> : <form className="support-composer" onSubmit={submit}>
       {ticket.status === 'resolved' && <p className="support-resolved-note"><CircleCheck size={14} />This ticket is resolved. Reopen it if more help is needed.</p>}
       {reply.error && <p className="support-notice support-notice-error" role="alert">{failure(reply.error)} Your message is saved. Try sending again.</p>}
-      <div className="support-compose-row"><label className="support-compose-label"><span className="support-visually-hidden">Your message</span><textarea ref={textarea} className="field-textarea" aria-label="Your message" placeholder="Write a message…" rows={1} maxLength={10000} required={admin || !attachment.image} readOnly={reply.isPending} aria-busy={reply.isPending || undefined} value={draft.message} onPaste={admin ? undefined : event => { if (!sending.current) attachment.onPaste(event); }} onChange={event => { const next = { ...draft, message: event.target.value, clientMessageId: crypto.randomUUID() }; setDraft(next); writeDraft(draftKey, next); reply.reset(); }} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /></label><Button disabled={reply.isPending || (!admin && attachment.busy) || (!draft.message.trim() && (admin || !attachment.image))}><Send size={15} />{reply.isPending ? 'Sending…' : reply.error ? 'Try again' : 'Send'}</Button></div>
-      <div className="support-compose-actions">{!admin && <SupportImagePicker attachment={attachment} disabled={reply.isPending} />}<span className="support-compose-hint"><span className="support-key-hint">Enter to send · Shift + Enter for a new line</span>{(draft.message || attachment.image) && <span className="support-mobile-hint">Your draft is saved</span>}</span></div>
+      <div className="support-compose-row"><label className="support-compose-label"><span className="support-visually-hidden">Your message</span><textarea ref={textarea} className="field-textarea" aria-label="Your message" placeholder="Write a message…" rows={1} maxLength={10000} required={!attachment.image} readOnly={reply.isPending} aria-busy={reply.isPending || undefined} value={draft.message} onPaste={event => { if (!sending.current) attachment.onPaste(event); }} onChange={event => { const next = { ...draft, message: event.target.value, clientMessageId: crypto.randomUUID() }; setDraft(next); writeDraft(draftKey, next); reply.reset(); }} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /></label><Button disabled={reply.isPending || attachment.busy || (!draft.message.trim() && !attachment.image)}><Send size={15} />{reply.isPending ? 'Sending…' : reply.error ? 'Try again' : 'Send'}</Button></div>
+      <div className="support-compose-actions"><SupportImagePicker attachment={attachment} disabled={reply.isPending} /><span className="support-compose-hint"><span className="support-key-hint">Enter to send · Shift + Enter for a new line</span>{(draft.message || attachment.image) && <span className="support-mobile-hint">Your draft is saved</span>}</span></div>
     </form>}
   </>;
 }
