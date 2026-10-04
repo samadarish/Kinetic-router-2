@@ -297,6 +297,11 @@ a.console-topnav-link:hover { background:var(--muted); color:var(--foreground); 
 .provider-availability.verified { border-color:color-mix(in srgb,var(--success) 34%,transparent); background:var(--success-soft); color:var(--success); }
 .provider-availability.partial { border-color:color-mix(in srgb,var(--primary) 32%,transparent); background:var(--brand-soft); color:var(--primary); }
 .provider-availability.planned { border-color:color-mix(in srgb,var(--warning) 30%,transparent); background:var(--warning-soft); color:var(--warning); }
+.quick-integration .provider-availability { padding:0; border:0; border-radius:0; background:none; }
+.quick-integration .provider-availability.verified { color:#15803d; }
+.quick-integration .provider-availability.planned { color:#dc2626; }
+.dark .quick-integration .provider-availability.verified { color:#4ade80; }
+.dark .quick-integration .provider-availability.planned { color:#f87171; }
 .provider-panel { padding:16px 18px 18px; }
 .integration-availability-warning { display:flex; align-items:center; gap:8px; margin-bottom:10px; padding:9px 11px; border:1px solid color-mix(in srgb,var(--warning) 30%,transparent); border-radius:8px; background:var(--warning-soft); color:var(--warning); font-size:12px; }
 .integration-availability-warning strong { flex:none; font-size:12px; }
@@ -305,6 +310,21 @@ a.console-topnav-link:hover { background:var(--muted); color:var(--foreground); 
 .endpoint-row>div { min-width:0; display:flex; flex:1; flex-direction:column; }
 .endpoint-row span,.integration-model-note span { color:var(--muted-foreground); font-size:12px; font-weight:650; }
 .endpoint-row code { margin-top:3px; overflow:hidden; color:var(--primary); font:12px 'JetBrains Mono',monospace; text-overflow:ellipsis; white-space:nowrap; }
+.integration-endpoints { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.integration-endpoint-card { min-width:0; padding:14px; border:1px solid var(--border); border-radius:9px; background:color-mix(in srgb,var(--elevated) 58%,transparent); }
+.integration-endpoint-card[data-selected=true] { border-color:var(--brand-border); }
+.integration-endpoint-heading { display:flex; align-items:center; gap:8px; width:100%; padding:0; border:0; background:transparent; color:var(--foreground); font:inherit; text-align:left; cursor:pointer; }
+.integration-endpoint-heading>svg { flex:none; }
+.integration-endpoint-heading strong { color:var(--foreground); font-size:13px; font-weight:650; }
+.integration-endpoint-protocol { margin:10px 0 4px; color:var(--muted-foreground); font-size:12px; }
+.integration-endpoint-url { display:block; color:var(--primary); text-decoration:none; }
+.integration-endpoint-url code { font:12px/1.65 'JetBrains Mono',monospace; overflow-wrap:anywhere; }
+.integration-endpoint-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:14px; }
+.integration-ping-result { color:var(--muted-foreground); font-size:12px; font-variant-numeric:tabular-nums; }
+.integration-ping-result[data-status=ready] { color:var(--foreground); font-weight:650; }
+.integration-ping-result[data-status=error] { color:var(--danger); }
+.integration-latency-note { margin:10px 0 3px; color:var(--muted-foreground); font-size:12px; }
+@media(max-width:620px) { .integration-endpoints { grid-template-columns:minmax(0,1fr); } }
 .copy-button,.copy-code-button,.codex-actions button { display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; border:1px solid var(--border); border-radius:7px; background:var(--elevated); color:var(--muted-foreground); padding:0 9px; font-size:12px; font-weight:650; }
 .copy-button:hover,.copy-code-button:hover,.codex-actions button:hover { border-color:var(--brand-border); color:var(--primary); }
 .copy-button:disabled,.copy-code-button:disabled { cursor:not-allowed; border-color:var(--border); background:var(--muted); color:var(--muted-foreground); opacity:.72; }

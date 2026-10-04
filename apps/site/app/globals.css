@@ -183,6 +183,11 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+.home-provider-status[data-status='available'] { color: #15803d; }
+.home-provider-status[data-status='planned'] { color: #dc2626; }
+.dark .home-provider-status[data-status='available'] { color: #4ade80; }
+.dark .home-provider-status[data-status='planned'] { color: #f87171; }
+
 .syntax-keyword { color: var(--syntax-keyword); }
 .syntax-string { color: var(--syntax-string); }
 .syntax-property { color: var(--syntax-property); }
@@ -260,12 +265,14 @@ textarea:focus-visible {
 
 .home-hero-period {
   display: inline-block;
-  background: var(--brand-gradient);
-  background-clip: text;
-  color: transparent;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
   text-shadow: none;
+  animation: home-hero-period-blip 1.6s ease-in-out infinite;
+}
+
+@keyframes home-hero-period-blip {
+  0%, 55%, 100% { opacity: 1; }
+  75% { opacity: 0; }
 }
 
 .hero-grid {
@@ -481,6 +488,7 @@ textarea:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+  .home-hero-period { animation-duration: 1.6s !important; animation-iteration-count: infinite !important; }
 }
 
 /* Customer-facing working surfaces retain the brand, with quieter decoration. */

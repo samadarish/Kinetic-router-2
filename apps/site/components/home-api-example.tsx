@@ -169,7 +169,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
               <button key={id} type="button" aria-pressed={active} onClick={() => selectProvider(id)} className="provider-pill inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold shadow-lg">
                 <HomeProviderLogo provider={id} className="h-4 w-4" />
                 {status.label}
-                <span className="text-[8px] tracking-wider opacity-65">{status.badgeLabel.toUpperCase()}</span>
+                <span className="home-provider-status text-[8px] tracking-wider" data-status={status.badgeLabel.toLowerCase()}>{status.badgeLabel.toUpperCase()}</span>
               </button>
             );
           })}
@@ -189,7 +189,6 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
                 <button key={id} id={`home-provider-tab-${id}`} type="button" role="tab" aria-selected={active} aria-controls="home-provider-panel" tabIndex={active ? 0 : -1} onClick={() => selectProvider(id)} onKeyDown={(event) => handleTabKeyDown(event, id)} className="provider-code-tab inline-flex h-11 shrink-0 items-center gap-1.5 border-b-2 px-3 text-xs font-medium">
                   <HomeProviderLogo provider={id} className="h-3.5 w-3.5" />
                   {status.label}
-                  <span className="text-[7px] opacity-60">{status.badgeLabel.toUpperCase()}</span>
                 </button>
               );
             })}

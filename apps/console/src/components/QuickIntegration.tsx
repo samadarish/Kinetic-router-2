@@ -1,157 +1,34 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Check, ChevronDown, Code2, Copy, ExternalLink, TerminalSquare } from 'lucide-react';
+import { Activity, Check, ChevronDown, Code2, Copy, ExternalLink, Globe2, LoaderCircle, TerminalSquare } from 'lucide-react';
+import { isProviderIntegrationCopyable } from '../lib/provider-display-status';
 import {
-  getProviderDisplayEndpoint,
-  getProviderDisplayStatus,
-  isProviderIntegrationCopyable,
-  providerDisplayIds,
-  type ProviderDisplayId,
-} from '../lib/provider-display-status';
-import { ProviderIcon } from './ProviderIcon';
+  getIntegrationEndpoint,
+  getIntegrationExamples,
+  getIntegrationProvider,
+  integrationLanguages as languages,
+  integrationProviderIds,
+  integrationRouteIds,
+  integrationRoutes,
+  type IntegrationLanguage as Language,
+  type IntegrationProviderId,
+  type IntegrationRouteId,
+} from '../lib/quick-integration';
+import { measureApiLatency } from '../lib/api-latency';
+import { CloudflareIcon, IntegrationProviderIcon } from './IntegrationIcons';
 import { CodexIcon } from './CodexIcon';
 import { Card } from './Ui';
 import { publicSiteHref } from '../lib/public-site';
 
-const languages = ['python', 'node', 'curl'] as const;
-type Language = typeof languages[number];
-type CopyTarget = 'endpoint' | 'example' | 'codex';
-
-type ProviderConfig = {
-  model: string;
-  examples: Record<Language, string>;
-};
-
-const providerEndpoints: Record<ProviderDisplayId, string> = {
-  openai: getProviderDisplayEndpoint('openai'),
-  anthropic: getProviderDisplayEndpoint('anthropic'),
-  grok: getProviderDisplayEndpoint('grok'),
-};
-
-const providers: Record<ProviderDisplayId, ProviderConfig> = {
-  openai: {
-    model: 'openai/gpt-5.4',
-    examples: {
-      python: `from openai import OpenAI
-
-client = OpenAI(
-    base_url="${providerEndpoints.openai}",
-    api_key="YOUR_KINETICROUTER_API_KEY",
-)
-
-response = client.chat.completions.create(
-    model="openai/gpt-5.4",
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-
-print(response.choices[0].message.content)`,
-      node: `import OpenAI from "openai";
-
-const client = new OpenAI({
-  baseURL: "${providerEndpoints.openai}",
-  apiKey: "YOUR_KINETICROUTER_API_KEY",
-});
-
-const response = await client.chat.completions.create({
-  model: "openai/gpt-5.4",
-  messages: [{ role: "user", content: "Hello!" }],
-});
-
-console.log(response.choices[0].message.content);`,
-      curl: `curl ${providerEndpoints.openai}/chat/completions \\
-  -H "Authorization: Bearer YOUR_KINETICROUTER_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "openai/gpt-5.4",
-    "messages": [{"role": "user", "content": "Hello!"}]
-  }'`,
-    },
-  },
-  anthropic: {
-    model: 'anthropic/claude-opus-4.8',
-    examples: {
-      python: `import anthropic
-
-client = anthropic.Anthropic(
-    base_url="${providerEndpoints.anthropic}",
-    api_key="YOUR_KINETICROUTER_API_KEY",
-)
-
-message = client.messages.create(
-    model="anthropic/claude-opus-4.8",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-
-print(message.content[0].text)`,
-      node: `import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({
-  baseURL: "${providerEndpoints.anthropic}",
-  apiKey: "YOUR_KINETICROUTER_API_KEY",
-});
-
-const message = await client.messages.create({
-  model: "anthropic/claude-opus-4.8",
-  max_tokens: 1024,
-  messages: [{ role: "user", content: "Hello!" }],
-});
-
-console.log(message.content[0].text);`,
-      curl: `curl ${providerEndpoints.anthropic}/v1/messages \\
-  -H "x-api-key: YOUR_KINETICROUTER_API_KEY" \\
-  -H "anthropic-version: 2023-06-01" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "anthropic/claude-opus-4.8",
-    "max_tokens": 1024,
-    "messages": [{"role": "user", "content": "Hello!"}]
-  }'`,
-    },
-  },
-  grok: {
-    model: 'grok/grok-4.6',
-    examples: {
-      python: `from openai import OpenAI
-
-client = OpenAI(
-    base_url="${providerEndpoints.grok}",
-    api_key="YOUR_KINETICROUTER_API_KEY",
-)
-
-response = client.chat.completions.create(
-    model="grok/grok-4.6",
-    messages=[{"role": "user", "content": "Hello!"}],
-)
-
-print(response.choices[0].message.content)`,
-      node: `import OpenAI from "openai";
-
-const client = new OpenAI({
-  baseURL: "${providerEndpoints.grok}",
-  apiKey: "YOUR_KINETICROUTER_API_KEY",
-});
-
-const response = await client.chat.completions.create({
-  model: "grok/grok-4.6",
-  messages: [{ role: "user", content: "Hello!" }],
-});
-
-console.log(response.choices[0].message.content);`,
-      curl: `curl ${providerEndpoints.grok}/chat/completions \\
-  -H "Authorization: Bearer YOUR_KINETICROUTER_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "model": "grok/grok-4.6",
-    "messages": [{"role": "user", "content": "Hello!"}]
-  }'`,
-    },
-  },
-};
+type CopyTarget = `endpoint-${IntegrationRouteId}` | 'example' | 'codex';
+type PingState =
+  | { status: 'idle' | 'testing' }
+  | { status: 'ready'; ms: number }
+  | { status: 'error'; message: string };
 
 const codexConfig = `# Add this provider alongside your existing configuration.
 [model_providers.kineticrouter]
 name = "kineticRouter"
-base_url = "${providerEndpoints.openai}"
+base_url = "${getIntegrationEndpoint('openai', 'direct')}"
 env_key = "KINETICROUTER_API_KEY"
 wire_api = "responses"`;
 
@@ -164,29 +41,37 @@ const integrationGuides = [
 ];
 
 export function QuickIntegration() {
-  const [providerId, setProviderId] = useState<ProviderDisplayId>('openai');
+  const [providerId, setProviderId] = useState<IntegrationProviderId>('openai');
+  const [routeId, setRouteId] = useState<IntegrationRouteId>('direct');
   const [language, setLanguage] = useState<Language>('python');
   const [copied, setCopied] = useState<CopyTarget | null>(null);
   const [copyError, setCopyError] = useState<CopyTarget | null>(null);
+  const [pings, setPings] = useState<Record<IntegrationRouteId, PingState>>({ direct: { status: 'idle' }, cloudflare: { status: 'idle' } });
   const resetCopyRef = useRef<number | null>(null);
-  const provider = providers[providerId];
-  const providerDisplay = getProviderDisplayStatus(providerId);
-  const endpoint = providerEndpoints[providerId];
+  const copyAttemptRef = useRef(0);
+  const pingControllers = useRef<Partial<Record<IntegrationRouteId, AbortController>>>({});
+  const providerDisplay = getIntegrationProvider(providerId);
+  const examples = getIntegrationExamples(providerId, routeId);
   const isAvailable = isProviderIntegrationCopyable(providerDisplay);
 
   useEffect(() => () => {
+    copyAttemptRef.current++;
     if (resetCopyRef.current !== null) window.clearTimeout(resetCopyRef.current);
+    for (const controller of Object.values(pingControllers.current)) controller.abort();
   }, []);
 
   async function copy(value: string, target: CopyTarget) {
+    const attempt = ++copyAttemptRef.current;
     try {
       await writeClipboard(value);
+      if (attempt !== copyAttemptRef.current) return;
       window.dispatchEvent(new Event('portal:analytics-docs-copy'));
       setCopyError(null);
       setCopied(target);
       if (resetCopyRef.current !== null) window.clearTimeout(resetCopyRef.current);
       resetCopyRef.current = window.setTimeout(() => { setCopied(null); setCopyError(null); }, 1600);
     } catch {
+      if (attempt !== copyAttemptRef.current) return;
       setCopied(null);
       setCopyError(target);
       if (resetCopyRef.current !== null) window.clearTimeout(resetCopyRef.current);
@@ -195,8 +80,29 @@ export function QuickIntegration() {
   }
 
   function clearCopyFeedback() {
+    copyAttemptRef.current++;
+    if (resetCopyRef.current !== null) window.clearTimeout(resetCopyRef.current);
     setCopied(null);
     setCopyError(null);
+  }
+
+  async function testPing(id: IntegrationRouteId) {
+    if (pingControllers.current[id]) return;
+    const controller = new AbortController();
+    pingControllers.current[id] = controller;
+    setPings(previous => ({ ...previous, [id]: { status: 'testing' } }));
+    try {
+      const ms = await measureApiLatency(id, controller.signal);
+      if (!controller.signal.aborted) setPings(previous => ({ ...previous, [id]: { status: 'ready', ms } }));
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        const timedOut = error !== null && typeof error === 'object' && 'name' in error && error.name === 'TimeoutError';
+        const message = timedOut ? 'Timed out' : 'Could not reach host';
+        setPings(previous => ({ ...previous, [id]: { status: 'error', message } }));
+      }
+    } finally {
+      if (pingControllers.current[id] === controller) delete pingControllers.current[id];
+    }
   }
 
   return <section className="quick-integration" aria-labelledby="quick-integration-title">
@@ -207,8 +113,8 @@ export function QuickIntegration() {
       </header>
 
       <div className="integration-tabs provider-tabs" role="tablist" aria-label="API provider">
-        {providerDisplayIds.map((id) => {
-          const display = getProviderDisplayStatus(id);
+        {integrationProviderIds.map((id) => {
+          const display = getIntegrationProvider(id);
           return <button
             key={id}
             id={`provider-tab-${id}`}
@@ -219,20 +125,40 @@ export function QuickIntegration() {
             tabIndex={providerId === id ? 0 : -1}
             data-provider={id}
             onClick={() => { setProviderId(id); clearCopyFeedback(); }}
-            onKeyDown={(event) => handleTabsKeydown(event, providerDisplayIds, id, (value) => { setProviderId(value); clearCopyFeedback(); })}
-          ><ProviderIcon provider={id} size={15} /><span>{display.label}</span><small className={`provider-availability ${display.apiState}`}>{display.badgeLabel}</small></button>;
+            onKeyDown={(event) => handleTabsKeydown(event, integrationProviderIds, id, (value) => { setProviderId(value); clearCopyFeedback(); })}
+          ><IntegrationProviderIcon provider={id} size={15} /><span>{display.label}</span><small className={`provider-availability ${display.apiState}`}>{display.badgeLabel}</small></button>;
         })}
       </div>
 
       <div id={`provider-panel-${providerId}`} role="tabpanel" aria-labelledby={`provider-tab-${providerId}`} className="provider-panel">
         {!isAvailable && <div className="integration-availability-warning" role="status"><strong>{providerDisplay.badgeLabel} integration</strong><span>{providerDisplay.summary}</span></div>}
-        <div className="endpoint-row">
-          <div><span>{isAvailable ? providerDisplay.protocolLabel : `${providerDisplay.badgeLabel} ${providerDisplay.protocolLabel}`} base URL</span><code>{endpoint}</code></div>
-          <button className="copy-button" type="button" disabled={!isAvailable} onClick={() => void copy(endpoint, 'endpoint')} aria-label={isAvailable ? `Copy ${providerDisplay.label} base URL` : `${providerDisplay.label} base URL is ${providerDisplay.apiState} and cannot be copied`}>
-            {copied === 'endpoint' ? <Check size={15} /> : <Copy size={15} />}<span>{!isAvailable ? 'Not available' : copied === 'endpoint' ? 'Copied' : copyError === 'endpoint' ? 'Copy failed' : 'Copy URL'}</span>
-          </button>
+        <div className="integration-endpoints" role="group" aria-label="API connection">
+          {integrationRouteIds.map(id => {
+            const route = integrationRoutes[id];
+            const endpoint = getIntegrationEndpoint(providerId, id);
+            const target: CopyTarget = `endpoint-${id}`;
+            const ping = pings[id];
+            return <div key={id} className="integration-endpoint-card" data-route={id} data-selected={routeId === id}>
+              <button className="integration-endpoint-heading" type="button" aria-label={`Use ${route.label}`} aria-pressed={routeId === id} onClick={() => { setRouteId(id); clearCopyFeedback(); }}>
+                {id === 'cloudflare' ? <CloudflareIcon /> : <Globe2 size={19} aria-hidden="true" />}
+                <strong>{route.label}</strong>
+              </button>
+              <p className="integration-endpoint-protocol">{isAvailable ? providerDisplay.protocolLabel : `${providerDisplay.badgeLabel} ${providerDisplay.protocolLabel}`} base URL</p>
+              <span className="integration-endpoint-url"><code>{endpoint}</code></span>
+              <div className="integration-endpoint-controls">
+                <button className="copy-button" type="button" disabled={!isAvailable} onClick={() => void copy(endpoint, target)} aria-label={`Copy ${route.label} URL`}>
+                  {copied === target ? <Check size={15} /> : <Copy size={15} />}<span>{!isAvailable ? 'Not available' : copied === target ? 'Copied' : copyError === target ? 'Copy failed' : 'Copy URL'}</span>
+                </button>
+                <button className="copy-button integration-ping-button" type="button" disabled={ping.status === 'testing'} aria-busy={ping.status === 'testing'} aria-label={`Test ${route.label} ping`} onClick={() => void testPing(id)}>
+                  {ping.status === 'testing' ? <LoaderCircle size={15} className="spin" aria-hidden="true" /> : <Activity size={15} aria-hidden="true" />}<span>{ping.status === 'testing' ? 'Testing…' : 'Test ping'}</span>
+                </button>
+                <span className="integration-ping-result" data-status={ping.status} role="status" aria-label={`${route.label} ping result`} aria-live="polite">{ping.status === 'ready' ? `${ping.ms} ms` : ping.status === 'error' ? ping.message : ping.status === 'testing' ? 'Testing…' : 'Not tested'}</span>
+              </div>
+            </div>;
+          })}
         </div>
-        <div className="integration-model-note"><span>Example model</span><code>{provider.model}</code></div>
+        <p className="integration-latency-note">Connection latency from your browser; model response times may differ.</p>
+        <div className="integration-model-note"><span>Example model</span><code>{providerDisplay.model}</code></div>
 
         <details className="example-disclosure">
           <summary><span><TerminalSquare size={16} />Example Code</span><span className="example-summary-hint">{isAvailable ? 'Python, Node.js, and cURL' : 'Future reference only'}</span><ChevronDown size={16} /></summary>
@@ -251,11 +177,11 @@ export function QuickIntegration() {
                   onKeyDown={(event) => handleTabsKeydown(event, languages, id, (value) => { setLanguage(value); clearCopyFeedback(); })}
                 >{languageLabel(id)}</button>)}
               </div>
-              <button className="copy-code-button" type="button" disabled={!isAvailable} onClick={() => void copy(provider.examples[language], 'example')}>
+              <button className="copy-code-button" type="button" disabled={!isAvailable} onClick={() => void copy(examples[language], 'example')}>
                 {copied === 'example' ? <Check size={14} /> : <Copy size={14} />}{!isAvailable ? providerDisplay.badgeLabel : copied === 'example' ? 'Copied' : copyError === 'example' ? 'Copy failed' : 'Copy code'}
               </button>
             </div>
-            <pre id={`language-panel-${language}`} role="tabpanel" aria-labelledby={`language-tab-${language}`} tabIndex={0} className="integration-code"><code>{provider.examples[language]}</code></pre>
+            <pre id={`language-panel-${language}`} role="tabpanel" aria-labelledby={`language-tab-${language}`} tabIndex={0} className="integration-code"><code>{examples[language]}</code></pre>
           </div>
         </details>
       </div>
