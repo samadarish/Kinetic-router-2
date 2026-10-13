@@ -13,9 +13,11 @@ const homepageOnlyProviders = {
   deepseek: { label: 'DeepSeek', model: 'deepseek/deepseek-flash' },
   zhipu: { label: 'Zhipu', model: 'zhipu/glm-5.3-flash' },
   moonshot: { label: 'Moonshot', model: 'moonshot/kimi-k3' },
+  gemini: { label: 'Gemini', model: 'gemini/gemini-3.8-flash' },
+  minimax: { label: 'MiniMax', model: 'minimax/minimax-m3' },
 } as const;
 type HomeProviderId = ProviderId | keyof typeof homepageOnlyProviders;
-const allProviders: HomeProviderId[] = ['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot'];
+const allProviders: HomeProviderId[] = ['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot', 'gemini', 'minimax'];
 const homepageOnlyStatus = {
   enabled: true,
   badgeLabel: 'Available',
@@ -97,6 +99,8 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
     deepseek: { ...homepageOnlyStatus, ...homepageOnlyProviders.deepseek },
     zhipu: { ...homepageOnlyStatus, ...homepageOnlyProviders.zhipu },
     moonshot: { ...homepageOnlyStatus, ...homepageOnlyProviders.moonshot },
+    gemini: { ...homepageOnlyStatus, ...homepageOnlyProviders.gemini },
+    minimax: { ...homepageOnlyStatus, ...homepageOnlyProviders.minimax },
   };
   const enabledProviders = allProviders.filter((id) => homepageProviders[id].enabled);
   const providerOrder = enabledProviders.length ? enabledProviders : allProviders;

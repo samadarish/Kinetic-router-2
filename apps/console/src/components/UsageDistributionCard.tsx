@@ -1,6 +1,6 @@
 import { memo, useId, useMemo, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { ProviderIcon } from './ProviderIcon';
+import { UsageProviderIcon as ProviderIcon } from './UsageProviderIcon';
 import { Card } from './Ui';
 import { formatMoney } from '../lib/format';
 

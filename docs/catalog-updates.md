@@ -27,9 +27,9 @@ pricing rules. This is a standard reference table, not a billing-engine change.
 Actual account charges remain authoritative in the customer console.
 
 The existing kineticRouter OpenAI-compatible examples use its own API base URL
-and environment-held API key. Native Anthropic access is not claimed because
-that kineticRouter route is still marked planned. Model/tool access is still
-controlled by the deployed gateway and account configuration.
+and environment-held API key. Native Anthropic and dedicated Grok routes are
+available through the shared provider registry. Model/tool access is controlled
+by the deployed gateway and account configuration.
 
 The initial Astra update brought the catalog to 21 models and 196 active reference price rows.
 Astra appears first in the recommended listing, in OpenAI and chat catalogs, the
@@ -54,8 +54,8 @@ September 11, 2026. The serialized record preserves cache-read pricing at
 
 [Anthropic's model documentation](https://platform.claude.com/docs/en/models/fable-5-1/overview)
 confirms the September 1 release, 1M-token context, 128K maximum output,
-text/image input, text output, and standard rates. Native Anthropic availability
-on kineticRouter remains planned; the new page preserves that reference status.
+text/image input, text output, and standard rates. The page shows native
+Anthropic access as Available while retaining the dated reference prices.
 
 The combined catalog now contains 22 models and 208 active price rows. The
 homepage selects the newest captured chat model per provider by release date:

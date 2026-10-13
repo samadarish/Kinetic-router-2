@@ -1,11 +1,11 @@
-import { providerAvailability } from './provider-availability';
+import { getProviderDisplayEndpoint } from '@kineticrouter/platform-config/providers';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
 import { PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
 import { localizeDocumentationImages } from './documentation-images';
 
-const openAiBaseUrl = providerAvailability.openai.baseUrl!;
-const anthropicBaseUrl = providerAvailability.anthropic.previewBaseUrl!;
-const grokBaseUrl = providerAvailability.grok.previewBaseUrl!;
+const openAiBaseUrl = getProviderDisplayEndpoint('openai');
+const anthropicBaseUrl = getProviderDisplayEndpoint('anthropic');
+const grokBaseUrl = getProviderDisplayEndpoint('grok');
 
 export const BRAND = {
   name: PRODUCT.name,

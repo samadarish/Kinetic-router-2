@@ -9,9 +9,9 @@ import {
 } from '../apps/console/src/lib/provider-display-status';
 
 describe('provider display-status registry', () => {
-  it('locks the generated registry metadata and provider order', () => {
+  it('locks the canonical registry metadata and provider order', () => {
     expect(providerDisplayRegistry.version).toBe(1);
-    expect(providerDisplayRegistry.checkedAt).toBe('2026-09-03');
+    expect(providerDisplayRegistry.checkedAt).toBe('2026-10-13');
     expect(providerDisplayRegistry.displayOnly).toBe(true);
     expect(providerDisplayIds).toEqual(['openai', 'anthropic', 'grok']);
   });
@@ -36,21 +36,21 @@ describe('provider display-status registry', () => {
   it.each([
     ['anthropic', 'https://api.kineticrouter.com/anthropic', 'Anthropic native'],
     ['grok', 'https://api.kineticrouter.com/grok/v1', 'xAI-compatible'],
-  ] as const)('keeps %s reference-only behind a preview URL', (id, endpoint, protocolLabel) => {
+  ] as const)('keeps %s available and copyable through its base URL', (id, endpoint, protocolLabel) => {
     const provider = getProviderDisplayStatus(id);
     expect(provider).toMatchObject({
       id,
       catalogState: 'reference',
-      apiState: 'planned',
-      interactionMode: 'reference-only',
-      badgeLabel: 'Planned',
+      apiState: 'verified',
+      interactionMode: 'live',
+      badgeLabel: 'Available',
       protocolLabel,
-      previewBaseUrl: endpoint,
-      modelAccessState: 'reference',
+      baseUrl: endpoint,
+      modelAccessState: 'verified',
     });
-    expect(provider.baseUrl).toBeUndefined();
+    expect(provider.previewBaseUrl).toBeUndefined();
     expect(getProviderDisplayEndpoint(provider)).toBe(endpoint);
-    expect(isProviderIntegrationCopyable(provider)).toBe(false);
+    expect(isProviderIntegrationCopyable(provider)).toBe(true);
   });
 
   it('resolves aliases without inventing unknown providers', () => {

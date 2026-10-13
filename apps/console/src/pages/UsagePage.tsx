@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Activity, Coins, Download, Percent, RefreshCw, Search, Timer, Zap } from 'lucide-react';
 import { usageSummarySchema, type Paginated, type UsageEvent } from '@kineticrouter/portal-contract';
 import type { DistributionItem } from '../components/UsageDistributionCard';
-import { ProviderIcon } from '../components/ProviderIcon';
+import { UsageProviderIcon as ProviderIcon } from '../components/UsageProviderIcon';
 import UsageDateRangePicker, { getDefaultUsageRange, type UsageDateRange } from '../components/UsageDateRangePicker';
 import { Button, Card, EmptyState, ErrorState, LoadingState, PageHeader, StatCard } from '../components/Ui';
 import { PortalApiError, portalApi, queryString } from '../lib/api';

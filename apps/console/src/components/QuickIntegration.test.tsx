@@ -105,20 +105,48 @@ describe('dashboard quick integration', () => {
     expect(element('.copy-announcement').textContent).toBe('');
   });
 
-  it('preserves planned paths, native Anthropic code, notices, and disabled copying', async () => {
-    await click('[aria-label="Use Cloudflare CDN"]');
-    for (const [id, path] of [['anthropic', '/anthropic'], ['grok', '/grok/v1']]) {
-      await click(`#provider-tab-${id}`);
-      expect(element('.integration-availability-warning').textContent).toContain('Planned integration');
-      expect(code()).toContain(`https://cdn-api.kineticrouter.com${path}`);
-      for (const selector of ['[aria-label="Copy Direct API URL"]', '[aria-label="Copy Cloudflare CDN URL"]', '.copy-code-button']) {
-        expect(element<HTMLButtonElement>(selector).disabled).toBe(true);
-        await click(selector);
+  it('enables Anthropic and Grok copying on both routes with the correct SDK and request shape', async () => {
+    for (const [id, path] of [['anthropic', '/anthropic'], ['grok', '/grok/v1']] as const) {
+      await click('#provider-tab-' + id);
+      expect(host.querySelector('.integration-availability-warning')).toBeNull();
+      expect(element('#provider-tab-' + id + ' .provider-availability').textContent).toBe('Available');
+      for (const [route, origin, label] of [
+        ['direct', 'https://api.kineticrouter.com', 'Direct API'],
+        ['cloudflare', 'https://cdn-api.kineticrouter.com', 'Cloudflare CDN'],
+      ] as const) {
+        await click('[aria-label="Use ' + label + '"]');
+        const copyUrl = '[aria-label="Copy ' + label + ' URL"]';
+        expect(element<HTMLButtonElement>(copyUrl).disabled).toBe(false);
+        await click(copyUrl);
+        expect(clipboard).toHaveBeenLastCalledWith(origin + path);
+        expect(element('[data-route="' + route + '"]').getAttribute('data-selected')).toBe('true');
+        for (const language of ['python', 'node', 'curl']) {
+          await click('#language-tab-' + language);
+          expect(code()).toContain(origin + path);
+          expect(code()).not.toContain('Future reference');
+          if (id === 'anthropic') {
+            if (language === 'python') expect(code()).toContain('anthropic.Anthropic');
+            if (language === 'node') expect(code()).toContain('@anthropic-ai/sdk');
+            if (language === 'curl') {
+              expect(code()).toContain(origin + path + '/v1/messages');
+              expect(code()).toContain('x-api-key: YOUR_KINETICROUTER_API_KEY');
+              expect(code()).toContain('anthropic-version: 2023-06-01');
+            }
+            expect(code()).toContain('max_tokens');
+            expect(code()).toContain('anthropic/claude-opus-4.8');
+          } else {
+            if (language === 'curl') {
+              expect(code()).toContain(origin + path + '/chat/completions');
+              expect(code()).toContain('Authorization: Bearer YOUR_KINETICROUTER_API_KEY');
+            }
+            expect(code()).toContain('grok/grok-4.6');
+          }
+          expect(element<HTMLButtonElement>('.copy-code-button').disabled).toBe(false);
+          await click('.copy-code-button');
+          expect(clipboard).toHaveBeenLastCalledWith(code());
+        }
       }
-      expect(element<HTMLButtonElement>('[aria-label="Test Direct API ping"]').disabled).toBe(false);
-      if (id === 'anthropic') expect(code()).toContain('anthropic.Anthropic');
     }
-    expect(clipboard).not.toHaveBeenCalled();
   });
 
   it('supports keyboard traversal and wraps across all six providers', async () => {

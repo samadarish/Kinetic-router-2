@@ -1,7 +1,8 @@
 import { ProviderIcon, resolveProviderIconKind } from '@kineticrouter/brand-ui';
+import type { ProviderIconKind } from '@kineticrouter/brand-ui';
 import { providerDisplayStatus, resolveProviderId } from '@/data/provider-availability';
 
-export type ProviderId = 'openai' | 'anthropic' | 'claude' | 'grok' | 'unknown';
+export type ProviderId = ProviderIconKind;
 
 export function resolveProvider(provider?: string, model?: string): ProviderId {
   return resolveProviderIconKind({ provider, model });

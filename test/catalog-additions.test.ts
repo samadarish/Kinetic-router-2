@@ -54,7 +54,7 @@ describe('supplementary catalog references', () => {
       expect(example.code).toContain('KINETICROUTER_API_KEY');
     }
     expect(model.codeExamples.find((example) => example.language === 'python')?.code).toContain('os.environ["KINETICROUTER_API_KEY"]');
-    expect(model.faq.find((item) => item.kind === 'api_access')?.a).toContain('remains planned');
+    expect(model.faq.find((item) => item.kind === 'api_access')?.a).not.toContain('remains planned');
     expect(additions.sourceRef).toBe('docs/catalog-updates.md');
   });
 
@@ -72,6 +72,9 @@ describe('supplementary catalog references', () => {
     expect(model.date).toBe('2026-09-01');
     expect(model.catalogCapturedAt).toBe('2026-09-11');
     expect(model.availability).toBe(providerDisplayStatus('anthropic').modelAccessState);
+    expect(model.availability).toBe('verified');
+    expect(model.faq.find((item) => item.kind === 'api_access')?.a).toContain('https://api.kineticrouter.com/anthropic');
+    expect(model.faq.find((item) => item.kind === 'api_access')?.a).not.toMatch(/planned|reference-only/);
     expect(displayContextWindow(model)).toBe(1_000_000);
     expect(model.upstreamMaxOutput).toBe(128_000);
     for (const [component, sell, official] of [['input', 2.5, 10], ['output', 12.5, 50], ['cache_read', .0625, .25], ['cache_creation', 3.125, 12.5], ['cache_creation_5m', 3.125, 12.5], ['cache_creation_1h', 5, 20]] as const) {

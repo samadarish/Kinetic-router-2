@@ -27,6 +27,7 @@ describe('shared product configuration', () => {
   it('uses one canonical provider registry', () => {
     expect(resolveProviderDisplayId('codex')).toBe('openai');
     expect(resolveProviderDisplayId('claude')).toBe('anthropic');
-    expect(getProviderDisplayStatus('grok').interactionMode).toBe('reference-only');
+    expect(getProviderDisplayStatus('grok').interactionMode).toBe('live');
+    expect(getProviderDisplayStatus('anthropic').interactionMode).toBe('live');
   });
 });

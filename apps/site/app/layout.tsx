@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: 'kineticRouter — OpenAI-compatible API and model reference',
     template: '%s — kineticRouter',
   },
-  description: 'OpenAI-compatible API access with a transparent model and pricing reference catalog. Native Anthropic and Grok routes are planned.',
+  description: 'OpenAI-compatible, Anthropic-native, and Grok API access with a transparent model and pricing reference catalog.',
   applicationName: 'kineticRouter',
   verification: process.env.GOOGLE_SITE_VERIFICATION?.trim() ? { google: process.env.GOOGLE_SITE_VERIFICATION.trim() } : undefined,
   manifest: '/manifest.webmanifest',

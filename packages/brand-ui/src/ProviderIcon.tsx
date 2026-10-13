@@ -1,6 +1,7 @@
 import type { SVGProps } from 'react';
+import { ProviderColorGlyph } from './ProviderColorGlyph.js';
 
-export type ProviderIconKind = 'openai' | 'anthropic' | 'claude' | 'grok' | 'unknown';
+export type ProviderIconKind = 'openai' | 'anthropic' | 'claude' | 'grok' | 'gemini' | 'minimax' | 'unknown';
 export type ProviderSignals = { provider?: string | null; protocol?: string | null; vendor?: string | null; model?: string | null };
 export type ProviderIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & ProviderSignals & { label?: string; size?: number | string };
 
@@ -24,6 +25,7 @@ export function ProviderIcon({ provider, protocol, vendor, model, label, size = 
     {kind === 'anthropic' && <path d={anthropicPath} />}
     {kind === 'claude' && <path d={claudePath} fillRule="nonzero" />}
     {kind === 'grok' && <path d={grokPath} fillRule="evenodd" />}
+    {(kind === 'gemini' || kind === 'minimax') && <ProviderColorGlyph kind={kind} />}
     {kind === 'unknown' && <><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M9.65 9.25a2.5 2.5 0 114.2 1.83c-.9.77-1.85 1.22-1.85 2.67" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><circle cx="12" cy="17.2" r="1" /></>}
   </svg>;
 }
@@ -36,11 +38,15 @@ function providerKindFromPrefix(value: string | null | undefined): Exclude<Provi
   if (/^anthropic(?:[\s/_.:-]|$)/.test(normalized)) return 'anthropic';
   if (/^claude(?:[\s/_.:-]|$)/.test(normalized)) return 'claude';
   if (/^(?:grok|x[\s._-]*ai)(?:[\s/_.:-]|$)/.test(normalized)) return 'grok';
+  if (/^(?:gemini|google)(?:[\s/_.:-]|$)/.test(normalized)) return 'gemini';
+  if (/^minimax(?:[\s/_.:-]|$)/.test(normalized)) return 'minimax';
   return undefined;
 }
 function providerKindFromModel(value: string | null | undefined): Exclude<ProviderIconKind, 'unknown'> | undefined {
   const normalized = normalize(value)?.replace(/^models?[/.:_-]+/, '');
   if (!normalized) return undefined;
+  if (/^(?:google[/.:_-]+)?gemini(?:[\s/_.:-]|$)/.test(normalized)) return 'gemini';
+  if (/^minimax(?:[\s/_.:-]|$)/.test(normalized)) return 'minimax';
   if (/^(?:anthropic[/.:_-]+)?claude(?:[\s/_.:-]|$)/.test(normalized)) return 'claude';
   if (/^(?:grok|x[\s._-]*ai)(?:[\s/_.:-]|$)/.test(normalized)) return 'grok';
   if (/^openai(?:[\s/_.:-]|$)/.test(normalized) || /^(?:gpt|chatgpt|codex|o[1-9]|dall[\s._-]*e|text[\s._-]*embedding|whisper|tts|sora)(?:[\s/_.:-]|$)/.test(normalized)) return 'openai';

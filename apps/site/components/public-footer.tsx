@@ -2,7 +2,7 @@ import { SiteLink } from './site-link';
 import { Brand } from './brand';
 import { ProviderLogo } from './provider-logo';
 import { FooterSocialLinks } from './footer-social-links';
-import { displayStateLabel, type ProviderId } from '@/data/provider-availability';
+import type { ProviderId } from '@/data/provider-availability';
 import type { SiteConfig } from '@/data/site-config';
 
 export function PublicFooter({ content }: { content: SiteConfig }) {
@@ -31,7 +31,7 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
                       <SiteLink href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'noreferrer' : undefined} className={`inline-flex items-center gap-2 text-xs text-muted-foreground transition hover:text-foreground ${provider === 'anthropic' ? 'text-[#D97757]' : ''}`}>
                         {provider && <ProviderLogo provider={provider} className="h-3.5 w-3.5" />}
                         {link.label}
-                        {status && <span className="text-[7px] tracking-wider opacity-60">{displayStateLabel(status.modelAccessState).toUpperCase()}</span>}
+                        {status && <span className="text-[7px] tracking-wider opacity-60">{status.badgeLabel.toUpperCase()}</span>}
                       </SiteLink>
                     </li>
                   );

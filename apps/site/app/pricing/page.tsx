@@ -1,6 +1,5 @@
 import { catalogModel } from '@/data/model-utils';
 import { pageMetadata } from '@/data/seo';
-import { CatalogNotice } from '@/components/catalog-notice';
 import { PricingComparison } from '@/components/pricing-comparison';
 import { SiteFrame } from '@/components/site-frame';
 import { catalogSnapshot } from '@/data/documentation';
@@ -22,7 +21,6 @@ export default function PricingPage() {
       <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-primary">Pricing reference</p>
       <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-semibold leading-[1.1] tracking-[-.045em] md:text-[3.5rem]">Model pricing reference</h1>
       <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-muted-foreground">The base model and price snapshot was captured on {catalogSnapshot.capturedAt}. {catalogUpdateNotice} These are reference values; your customer portal remains authoritative for actual billing.</p>
-      <div className="mx-auto mt-7 max-w-3xl text-left"><CatalogNotice supplement={catalogUpdateNotice} /></div>
       <div className="mx-auto mt-10 grid max-w-5xl overflow-hidden rounded-lg border border-border sm:grid-cols-2 lg:grid-cols-3">{metrics.map(([value, label]) => <div key={label} className="border-b border-border px-4 py-5 last:border-0 sm:border-r lg:border-b-0"><strong className="block text-2xl font-semibold text-primary">{value}</strong><span className="mt-1 block text-[10px] text-muted-foreground">{label}</span></div>)}</div>
     </section>
     <section className="border-y border-border bg-muted/20 py-12 md:py-16"><div className="page-container"><div className="grid gap-3 md:grid-cols-3">{[

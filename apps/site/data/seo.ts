@@ -4,10 +4,10 @@ import { providerDisplayStatus } from './provider-availability';
 import { canonicalPath, canonicalUrl, isIndexableRoute, SITE_ORIGIN } from './seo-policy.mjs';
 
 const pages: Record<string, { title: string; description: string }> = {
-  '/': { title: 'OpenAI-Compatible AI API & Model Reference', description: 'Access the OpenAI-compatible kineticRouter API. Explore model reference pricing, provider availability, API documentation, and coding-agent setup guides.' },
+  '/': { title: 'AI API Access & Model Reference', description: 'Access OpenAI-compatible, Anthropic-native, and Grok APIs through kineticRouter. Explore model reference pricing, API documentation, and coding-agent setup guides.' },
   '/models': { title: 'AI Models & API Pricing Reference', description: 'Browse the dated GPT, Claude, and Grok model catalog. Compare reference pricing, context limits, and capabilities with kineticRouter provider availability.' },
   '/pricing': { title: 'AI API Pricing Comparison', description: 'Compare kineticRouter snapshot prices with official reference prices for GPT, Claude, and Grok models. Check the customer console for actual billed rates.' },
-  '/vibe-coding': { title: 'Codex & Claude Code Integration Reference', description: 'Configure coding agents with kineticRouter route status visible. Read the Codex setup guide and check the planned Anthropic-native Claude Code integration.' },
+  '/vibe-coding': { title: 'Codex & Claude Code Integration', description: 'Connect Codex and Claude Code to kineticRouter with available OpenAI-compatible and Anthropic-native routes. Follow the setup guides with your API key.' },
   '/privacy': { title: 'Privacy Policy', description: 'Read how kineticRouter handles account information, API requests, usage data, payments, security, and privacy choices.' },
   '/terms-of-service': { title: 'Terms of Service', description: 'Read the kineticRouter terms for accounts, AI API access, usage, payments, content, service availability, and support.' },
 };

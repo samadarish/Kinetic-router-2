@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { trackDocsCopy } from '@kineticrouter/analytics-client';
+import { getProviderDisplayEndpoint } from '@kineticrouter/platform-config/providers';
 import type { Model } from '@/data/model-utils';
 import { providerAllowsInteraction, providerDisplayStatus } from '@/data/provider-availability';
 import { ClipboardIcon } from './icons';
@@ -9,7 +10,13 @@ import { ProviderLogo } from './provider-logo';
 export function CodeExamples({ model }: { model: Pick<Model, 'id' | 'provider' | 'codeExamples'> }) {
   const status = providerDisplayStatus(model.provider);
   const canInteract = providerAllowsInteraction(model.provider);
-  const examples = model.codeExamples.length ? model.codeExamples : [{ language: 'curl', label: 'cURL', source: 'provider', code: `curl https://api.kineticrouter.com/v1/chat/completions \\\n+  -H "Authorization: Bearer $KINETICROUTER_API_KEY" \\\n+  -H "Content-Type: application/json" \\\n+  -d '{"model":"${model.id}","messages":[{"role":"user","content":"Hello!"}]}'` }];
+  const examples = model.codeExamples.length ? model.codeExamples : [{
+    language: 'curl', label: 'cURL', source: 'provider',
+    code: `curl ${getProviderDisplayEndpoint(status)}/chat/completions \\
+  -H "Authorization: Bearer $KINETICROUTER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model":"${model.id}","messages":[{"role":"user","content":"Hello!"}]}'`,
+  }];
   const visibleExamples = examples.map((example) => ({ ...example, code: example.code.replaceAll('\n+', '\n') }));
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);

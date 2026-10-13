@@ -46,6 +46,26 @@ describe('authored customer documentation', () => {
     expect(getDocsPage('/docs/api/openai/chat').status.guide).toBeUndefined();
   });
 
+  it('publishes available Anthropic and Grok docs with their request examples restored', () => {
+    const apiRoutes = [
+      '/docs/api/anthropic/messages', '/docs/api/anthropic/models',
+      '/docs/api/grok/chat-completions', '/docs/api/grok/responses', '/docs/api/grok/models',
+    ];
+    for (const route of apiRoutes) {
+      const { status, content } = getDocsPage(route);
+      expect(status, route).toMatchObject({ status: 'verified', label: 'Available' });
+      expect(content?.html, route).toContain('<pre');
+      expect(content?.html, route).not.toContain('docs-pending-example');
+      expect(status.summary, route).not.toMatch(/planned|reference-only/);
+    }
+    for (const route of docsRoutes.filter(route => route.startsWith('/docs/integrations/claude-'))) {
+      expect(getDocsPage(route).status, route).toMatchObject({ status: 'verified', label: 'Available' });
+    }
+    expect(getDocsPage('/docs/api/anthropic/messages').content?.text).toContain('https://api.kineticrouter.com/anthropic');
+    expect(getDocsPage('/docs/api/grok/chat-completions').content?.text).toContain('https://api.kineticrouter.com/grok/v1');
+    expect(getDocsPage('/docs/api/openapi/provider-pricing').status.status).toBe('planned');
+  });
+
   it('uses credential-aware Codex examples without implying WebSocket support', () => {
     const guide = getDocsPage('/docs/integrations/codex').content!;
     expect(guide.text).toContain(codexProviderConfig);

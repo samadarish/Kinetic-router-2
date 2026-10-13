@@ -1,12 +1,10 @@
 import { SiteLink } from './site-link';
 import { providerDisplayStatus } from '@/data/provider-availability';
 import { ArrowRightIcon } from './icons';
-import { CatalogNotice } from './catalog-notice';
 import { ProviderLogo } from './provider-logo';
 import { CodexCard } from './home-codex-card';
 import { models } from '@/data/content';
 import { formatUsd, usdPrice } from '@/data/model-utils';
-import { catalogUpdateNotice } from '@/data/catalog-summary';
 
 const popular = ['anthropic', 'openai', 'grok'].flatMap((provider) => {
   const model = models.filter((item) => item.provider === provider && item.enabled && item.category === 'chat').sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -33,7 +31,7 @@ export function HomeSections() {
   return (
     <>
       <section className="border-y border-border/60 bg-muted/25 py-10 md:py-14"><div className="page-container mx-auto max-w-4xl"><CodexCard /></div></section>
-      <section className="border-b border-border/60 py-10 md:py-14"><div className="page-container"><div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-semibold tracking-tight">Popular reference prices</h2><p className="mt-1 text-xs text-muted-foreground">Prices from the dated catalog, with provider availability.</p></div><SiteLink href="/models" className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-xs text-muted-foreground transition hover:text-foreground sm:ml-auto">View full model pricing <ArrowRightIcon className="h-4 w-4" /></SiteLink></div><CatalogNotice compact supplement={catalogUpdateNotice} /><div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">{popular.map((item) => <PriceCard key={item.id} item={item} />)}</div></div></section>
+      <section className="border-b border-border/60 py-10 md:py-14"><div className="page-container"><div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center"><div><h2 className="text-2xl font-semibold tracking-tight">Popular reference prices</h2><p className="mt-1 text-xs text-muted-foreground">Prices from the dated catalog, with provider availability.</p></div><SiteLink href="/models" className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-xs text-muted-foreground transition hover:text-foreground sm:ml-auto">View full model pricing <ArrowRightIcon className="h-4 w-4" /></SiteLink></div><div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">{popular.map((item) => <PriceCard key={item.id} item={item} />)}</div></div></section>
     </>
   );
 }

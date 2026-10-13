@@ -73,7 +73,9 @@ export function DocsArticle({ html }: { html: string }) {
       }
       if (button.title !== 'Copy code') return;
       event.preventDefault();
-      const code = button.closest('pre')?.querySelector('code')?.textContent ?? '';
+      // Tabbed examples place their copy toolbar above the pre element.
+      const codeBlock = button.closest('pre') ?? button.closest('[role="tabpanel"]')?.querySelector('pre');
+      const code = codeBlock?.querySelector('code')?.textContent ?? '';
       if (!code) return;
       const write = navigator.clipboard?.writeText(code);
       if (!write) { setCopyStatus('Copy is unavailable. Select the code to copy it manually.'); return; }

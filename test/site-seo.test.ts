@@ -23,16 +23,25 @@ describe('site SEO', () => {
 
   it('consolidates real duplicate views and keeps planned content out of both sitemaps', () => {
     const routes = indexableRoutes();
-    expect(routes).toHaveLength(72);
+    expect(routes).toHaveLength(83);
     expect(new Set(routes).size).toBe(routes.length);
     for (const [alias, canonical] of Object.entries(canonicalAliases)) {
       expect(routes).not.toContain(alias);
       expect(pageMetadata(alias).alternates?.canonical).toBe(canonicalUrl(canonical));
     }
     const docs = routes.filter((route) => route.startsWith('/docs'));
-    expect(docs).toHaveLength(41);
+    expect(docs).toHaveLength(52);
     const sitemap = readFileSync('apps/site/public/docs-sitemap.xml', 'utf8');
     expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1])).toEqual(docs.map(canonicalUrl));
+    const providerDocs = docsRoutes.filter(route =>
+      route.startsWith('/docs/api/anthropic/') || route.startsWith('/docs/api/grok/') || route.startsWith('/docs/integrations/claude-'),
+    );
+    expect(providerDocs).toHaveLength(11);
+    for (const route of providerDocs) {
+      expect(routes, route).toContain(route);
+      expect(pageMetadata(route).robots, route).toMatchObject({ index: true });
+      expect(structuredData(route), route).toBeDefined();
+    }
     for (const route of docsRoutes.filter((route) => getDocsPage(route).status.status === 'planned')) {
       expect(isIndexableRoute(route, 'planned')).toBe(false);
       expect(pageMetadata(route).robots).toMatchObject({ index: false });

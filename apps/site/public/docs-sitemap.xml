@@ -64,6 +64,39 @@
     <loc>https://kineticrouter.com/docs/api/openai/images</loc>
   </url>
   <url>
+    <loc>https://kineticrouter.com/docs/api/anthropic/messages</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/api/anthropic/models</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/api/grok/chat-completions</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/api/grok/responses</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/api/grok/models</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-code</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-code/installation</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-code/model-provider</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-code/contextline</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-code/skills</loc>
+  </url>
+  <url>
+    <loc>https://kineticrouter.com/docs/integrations/claude-coworks</loc>
+  </url>
+  <url>
     <loc>https://kineticrouter.com/docs/integrations/codex</loc>
   </url>
   <url>

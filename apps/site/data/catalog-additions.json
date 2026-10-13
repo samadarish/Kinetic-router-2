@@ -155,7 +155,7 @@
         },
         {
           "q": "How can I call GPT-6 Astra through kineticRouter?",
-          "a": "Use model ID openai/gpt-6-astra with your kineticRouter API key and the OpenAI-compatible base URL https://api.kineticrouter.com/v1. Confirm that your key can access this model. Hosted tools require the Responses API; Anthropic-native kineticRouter routing remains planned.",
+          "a": "Use model ID openai/gpt-6-astra with your kineticRouter API key and the OpenAI-compatible base URL https://api.kineticrouter.com/v1. Confirm that your key can access this model. Hosted tools require the Responses API.",
           "kind": "api_access"
         },
         {
@@ -434,7 +434,7 @@
         },
         {
           "q": "Can I use Claude Fable 5.1 through kineticRouter?",
-          "a": "This model is listed as a reference. Native Anthropic routing on kineticRouter remains planned. Confirm route and model availability for your account before integrating.",
+          "a": "Use model ID anthropic/claude-fable-5-1 with your kineticRouter API key and the Anthropic-native base URL https://api.kineticrouter.com/anthropic. Confirm that your key can access this model before integrating.",
           "kind": "api_access"
         },
         {

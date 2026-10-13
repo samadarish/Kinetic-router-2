@@ -22,17 +22,17 @@
     },
     {
       "prefix": "/docs/api/anthropic/",
-      "summary": "This page preserves the Anthropic-native request shape as an integration reference.",
+      "summary": "This page documents the Anthropic-native protocol shape used by kineticRouter.",
       "provider": "anthropic"
     },
     {
       "prefix": "/docs/api/grok/",
-      "summary": "This page preserves the dedicated Grok request shape as an integration reference.",
+      "summary": "This page documents the dedicated Grok protocol shape used by kineticRouter.",
       "provider": "grok"
     },
     {
       "prefix": "/docs/integrations/claude-",
-      "summary": "This page preserves configuration steps for the Anthropic-native protocol.",
+      "summary": "This page documents configuration steps for the available Anthropic-native protocol.",
       "provider": "claude"
     },
     {

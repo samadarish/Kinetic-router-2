@@ -67,10 +67,10 @@ for (const [id, provider] of Object.entries(providerAvailability.providers)) {
 
 for (const provider of ['anthropic', 'grok']) {
   const providerStatus = providerForAlias(provider);
-  expect(providerStatus?.apiState === 'planned' && providerStatus.interactionMode === 'reference-only', `${provider} must remain reference-only until an authoritative route check passes`);
+  expect(providerStatus?.apiState === 'verified' && providerStatus.interactionMode === 'live' && providerStatus.badgeLabel === 'Available' && providerStatus.modelAccessState === 'verified', `${provider} must be available for API examples and model access`);
 }
 expect(providerForAlias('codex')?.apiState === 'verified', 'Codex must resolve through the available OpenAI provider status');
-expect(providerForAlias('claude')?.apiState === 'planned', 'Claude must resolve through the Anthropic provider status');
+expect(providerForAlias('claude')?.apiState === 'verified', 'Claude must resolve through the available Anthropic provider status');
 
 const indexableDocs = manifest.docsRoutes.filter((route) => isIndexableRoute(route, documentationRouteStatus(route, status)));
 const sitemapRoutes = [...docsSitemap.matchAll(/<loc>https:\/\/kineticrouter\.com([^<]+)<\/loc>/g)].map((match) => match[1]);
@@ -80,7 +80,6 @@ const inventories = `${llms}\n${llmsFull}`;
 expect(!/database-driven|live model catalog|live pricing/i.test(inventories), 'LLM exports still claim live/database-driven catalog data');
 expect(!/DeepSeek/i.test(inventories), 'LLM exports list a provider absent from the snapshot');
 expect(!inventories.includes('/docs/develop/advanced/model-routing'), 'LLM exports contain the removed model-routing path');
-expect(!/api\.kineticrouter\.com\/(?:anthropic|grok\/v1)/i.test(homeHero), 'Landing hero exposes a planned provider endpoint');
 expect((homeHero.match(/<h1\b/g) ?? []).length === 1, 'Landing hero must contain exactly one semantic h1');
 expect(homeHero.includes('{home.title}<span className="home-hero-period">.</span>'), 'Landing hero must render the gradient period as HTML text');
 expect(/<img[\s\S]*?alt=""[\s\S]*?aria-hidden="true"[\s\S]*?fetchPriority="high"/.test(homeHero), 'Landing hero image must be decorative and loaded with high priority');

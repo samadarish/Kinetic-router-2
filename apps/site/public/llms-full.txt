@@ -10,7 +10,7 @@ Combined catalog: 22 models, 208 active reference price records
 
 ## Interpretation
 
-This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is available for authenticated requests. Anthropic-native and dedicated Grok routes are planned. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
+This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is available for authenticated requests. Anthropic-native `/anthropic` and dedicated Grok `/grok/v1` routes are available for authenticated requests, with copyable examples and searchable documentation. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
 
 ## Main pages
 
@@ -77,21 +77,24 @@ This public site preserves a locked model/pricing list as a dated reference whil
 - https://kineticrouter.com/docs/integrations/immersive-translate
 - https://kineticrouter.com/docs/integrations/others
 
-## Planned native-route references — noindex, examples disabled
+## Available Anthropic and Grok API and integration references
 
 - https://kineticrouter.com/docs/api/anthropic/messages
 - https://kineticrouter.com/docs/api/anthropic/models
 - https://kineticrouter.com/docs/api/grok/chat-completions
 - https://kineticrouter.com/docs/api/grok/responses
 - https://kineticrouter.com/docs/api/grok/models
-- https://kineticrouter.com/docs/api/openapi/balance
-- https://kineticrouter.com/docs/api/openapi/provider-pricing
 - https://kineticrouter.com/docs/integrations/claude-code
 - https://kineticrouter.com/docs/integrations/claude-code/installation
 - https://kineticrouter.com/docs/integrations/claude-code/model-provider
 - https://kineticrouter.com/docs/integrations/claude-code/contextline
 - https://kineticrouter.com/docs/integrations/claude-code/skills
 - https://kineticrouter.com/docs/integrations/claude-coworks
+
+## Pending platform endpoint references — noindex
+
+- https://kineticrouter.com/docs/api/openapi/balance
+- https://kineticrouter.com/docs/api/openapi/provider-pricing
 
 ## Crawler guidance
 

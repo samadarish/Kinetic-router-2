@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "checkedAt": "2026-09-03",
+  "checkedAt": "2026-10-13",
   "displayOnly": true,
   "providers": {
     "openai": {
@@ -21,28 +21,28 @@
       "label": "Anthropic",
       "aliases": ["claude"],
       "catalogState": "reference",
-      "modelAccessState": "reference",
-      "apiState": "planned",
-      "interactionMode": "reference-only",
-      "badgeLabel": "Planned",
+      "modelAccessState": "verified",
+      "apiState": "verified",
+      "interactionMode": "live",
+      "badgeLabel": "Available",
       "protocolLabel": "Anthropic native",
-      "previewBaseUrl": "https://api.kineticrouter.com/anthropic",
-      "summary": "The Anthropic-native route is planned and its configuration is shown only as a reference.",
-      "evidenceNote": "This route must be enabled and verified by a kineticRouter administrator before its availability status changes.",
+      "baseUrl": "https://api.kineticrouter.com/anthropic",
+      "summary": "The Anthropic-native API is available for authenticated kineticRouter requests.",
+      "evidenceNote": "Use your kineticRouter API key with the published Anthropic base URL and supported native endpoints.",
       "protocolSources": ["https://platform.claude.com/docs/en/api/messages/create"]
     },
     "grok": {
       "label": "Grok",
       "aliases": ["xai", "x-ai", "x.ai"],
       "catalogState": "reference",
-      "modelAccessState": "reference",
-      "apiState": "planned",
-      "interactionMode": "reference-only",
-      "badgeLabel": "Planned",
+      "modelAccessState": "verified",
+      "apiState": "verified",
+      "interactionMode": "live",
+      "badgeLabel": "Available",
       "protocolLabel": "xAI-compatible",
-      "previewBaseUrl": "https://api.kineticrouter.com/grok/v1",
-      "summary": "The dedicated Grok route is planned and its configuration is shown only as a reference.",
-      "evidenceNote": "This route must be enabled and verified by a kineticRouter administrator before its availability status changes.",
+      "baseUrl": "https://api.kineticrouter.com/grok/v1",
+      "summary": "The dedicated Grok API is available for authenticated kineticRouter requests.",
+      "evidenceNote": "Use your kineticRouter API key with the published Grok base URL and supported xAI-compatible endpoints.",
       "protocolSources": ["https://docs.x.ai/developers/model-capabilities/text/generate-text"]
     }
   }

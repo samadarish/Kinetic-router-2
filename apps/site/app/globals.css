@@ -378,36 +378,9 @@ textarea:focus-visible {
 .docs-pending-example strong { font-size: .75rem; }
 .docs-pending-example p { margin-top: .4rem; color: var(--muted-foreground); font-size: .72rem; line-height: 1.6; }
 
-.docs-status-banner,
-.catalog-notice {
-  display: flex;
-  gap: .85rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--brand-soft-border);
-  border-radius: .75rem;
-  background: var(--brand-soft-bg);
-  padding: .9rem 1rem;
-  color: var(--foreground);
-}
-
-.docs-status-banner { display: block; }
-.docs-status-heading { display: flex; align-items: center; gap: .5rem; font-size: .75rem; }
-.docs-status-heading > span { margin-left: auto; border: 1px solid currentColor; border-radius: 999px; padding: .1rem .5rem; font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .72; }
-.docs-status-banner > p { margin-top: .45rem; color: var(--muted-foreground); font-size: .73rem; line-height: 1.6; }
-.docs-status-meta { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .55rem; color: var(--muted-foreground); font-size: .64rem; }
-.docs-status-meta a { color: var(--primary); }
-.docs-status-planned { border-color: color-mix(in oklab, #d97757 45%, var(--border)); background: color-mix(in oklab, #d97757 9%, var(--background)); }
-.docs-status-reference { border-color: var(--border); background: color-mix(in oklab, var(--muted) 55%, transparent); }
 .docs-route-planned .docs-article button[title='Copy code'],
 .docs-route-planned .docs-article button[title='Toggle word wrap'] { display: none !important; }
 .docs-route-planned .docs-article pre { border-style: dashed; }
-
-.catalog-notice { align-items: center; margin: 0 0 1.5rem; }
-.catalog-notice strong { display: block; font-size: .75rem; }
-.catalog-notice p { margin-top: .2rem; color: var(--muted-foreground); font-size: .68rem; line-height: 1.5; }
-.catalog-provider-icons { display: flex; flex: 0 0 auto; gap: .45rem; color: var(--foreground); }
-.catalog-notice-link { margin-left: auto; flex: 0 0 auto; color: var(--primary); font-size: .68rem; font-weight: 600; }
-.catalog-notice-compact { margin-bottom: 1rem; padding: .75rem .9rem; }
 
 .docs-navigation { scrollbar-gutter: stable; }
 .docs-navigation-group { margin-bottom: 1.65rem; }
@@ -480,8 +453,6 @@ textarea:focus-visible {
 
 @media (max-width: 767px) {
   .hero-glow::before, .hero-glow::after { width: 18rem; height: 18rem; }
-  .catalog-notice { align-items: flex-start; flex-wrap: wrap; }
-  .catalog-notice-link { width: 100%; margin-left: 0; }
   .docs-home-hero { padding: 2.8rem 0 2.5rem; }
   .docs-home-card-grid { grid-template-columns: 1fr; }
 }

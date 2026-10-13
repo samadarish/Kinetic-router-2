@@ -5,7 +5,6 @@ import type { DocsPresentation } from '@/data/docs-presentation';
 import type { DocumentationStatus } from '@/data/documentation';
 import { docsNavigation } from '@/data/docs-navigation';
 import { DocsNavigation } from './docs-navigation';
-import { DocsStatusBanner } from './docs-status-banner';
 import { siteConfig } from '@/data/site-config';
 import { SiteTheme } from './site-theme';
 
@@ -29,7 +28,6 @@ export function DocsShell({ route, presentation, text, status }: { route: string
 
         <main className={`min-w-0 px-5 py-8 sm:px-8 lg:px-10 xl:px-12 docs-route-${status.status} ${isDocsHome ? 'docs-home-route' : ''}`}>
           <div className={`mx-auto ${isDocsHome ? 'max-w-5xl' : 'max-w-3xl'}`}>
-            {!isDocsHome && <DocsStatusBanner status={status} />}
             {status.status !== 'planned' && <CopyPageButton key={`copy:${route}`} text={text} />}
             <DocsArticle key={`article:${route}`} html={renderedHtml} />
           </div>
