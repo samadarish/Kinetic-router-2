@@ -1,13 +1,14 @@
+import { PriceDiscount } from './price-discount';
 import { SiteLink } from './site-link';
 import { CodeExamples } from './model-code-examples';
 
 import type { Model } from '@/data/model-utils';
-import { displayContextWindow, formatTokens, formatUsd, usdPrice } from '@/data/model-utils';
+import { displayContextWindow, formatTokens, formatUsd } from '@/data/model-utils';
 import { displayStateLabel, providerAllowsInteraction, providerDisplayStatus } from '@/data/provider-availability';
 import { ArrowRightIcon, CheckIcon } from './icons';
 import { ProviderLogo, providerLabel, resolveProvider } from './provider-logo';
 
-const componentLabels: Record<string, string> = { input: 'Input', output: 'Output', cache_read: 'Cache read', cache_creation: 'Cache write', cache_creation_5m: '5m cache write', cache_creation_1h: '1h cache write' };
+const componentLabels: Record<string, string> = { input: 'Input', output: 'Output', cache_read: 'Cache read', cache_creation: 'Cache write', cache_creation_5m: '5m cache write', cache_creation_1h: '1h cache write', image_output: 'Image output tokens', audio_input: 'Audio input' };
 
 function readableTagline(model: Model) {
   if (model.tagline.includes('Ã¦') || model.tagline.includes('ï¿½')) return `${model.name.replace(/^OpenAI: /, '')} is an advanced coding model for agentic software engineering, terminal workflows, and complex technical tasks.`;
@@ -16,7 +17,7 @@ function readableTagline(model: Model) {
 
 
 function modelLimit(value: number | undefined, fallback: number) {
-  if (value === 0) return 'Provider-defined';
+  if (value === 0) return '\u2014';
   return formatTokens(value ?? fallback);
 }
 
@@ -25,7 +26,9 @@ export function ModelDetail({ model }: { model: Model }) {
   const canInteract = providerAllowsInteraction(model.provider);
   const modelState = model.availability ?? providerStatus.modelAccessState;
   const modelStateLabel = canInteract && modelState === 'verified' ? providerStatus.badgeLabel : displayStateLabel(modelState);
-  const components = ['input', 'output', 'cache_read', 'cache_creation', 'cache_creation_5m', 'cache_creation_1h'].filter((component) => usdPrice(model, 'sell', component) != null || usdPrice(model, 'official', component) != null);
+  const priceRows = model.prices.filter((price) => price.active && price.role === 'official').map((official) => ({
+    official, sell: model.prices.find((price) => price.active && price.role === 'sell' && price.component === official.component && price.tierLabel === official.tierLabel && price.unit === official.unit),
+  }));
   return (
     <>
       <section className="border-b border-border/60 py-10 md:py-14">
@@ -39,13 +42,14 @@ export function ModelDetail({ model }: { model: Model }) {
       </section>
       <section className="page-container grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:py-14">
         <div className="min-w-0">
-          <h2 className="text-2xl font-semibold tracking-tight">Reference pricing</h2><p className="mt-2 text-xs text-muted-foreground">Imported snapshot values per 1M tokens. Your customer portal is authoritative for actual kineticRouter billing.</p>
-          <div className="mt-5 overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[560px] border-collapse text-left text-xs"><thead className="bg-muted/50"><tr><th className="px-4 py-3">Component</th><th className="px-4 py-3 text-primary">Mirrored snapshot</th><th className="px-4 py-3">Official reference</th></tr></thead><tbody>{components.map((component) => { const sell = usdPrice(model, 'sell', component); const official = usdPrice(model, 'official', component); return <tr key={component} className="border-t border-border"><td className="px-4 py-3 text-muted-foreground">{componentLabels[component] ?? component}</td><td className="px-4 py-3 font-semibold text-primary">{formatUsd(sell)}</td><td className="px-4 py-3 text-muted-foreground">{formatUsd(official)}</td></tr>; })}</tbody></table></div>
+          <h2 className="text-2xl font-semibold tracking-tight">Model pricing</h2><div className="mt-3"><PriceDiscount model={model} /></div><p className="mt-2 text-xs text-muted-foreground">kineticRouter prices are 90% off official reference rates. Prices are shown per 1M tokens. Your customer portal is authoritative for actual kineticRouter billing.</p>
+          {model.pricingNote && <p className="mt-2 text-xs leading-6 text-muted-foreground">{model.pricingNote}</p>}
+          <div className="mt-5 overflow-x-auto rounded-xl border border-border"><table className="w-full min-w-[560px] border-collapse text-left text-xs"><thead className="bg-muted/50"><tr><th className="px-4 py-3">Component</th><th className="px-4 py-3 text-primary">kineticRouter</th><th className="px-4 py-3">Official reference</th></tr></thead><tbody>{priceRows.map(({ official, sell }) => <tr key={official.id} className="border-t border-border"><td className="px-4 py-3 text-muted-foreground">{componentLabels[official.component] ?? official.component}{official.tierLabel && <span className="mt-1 block text-[10px]">{official.tierLabel}</span>}</td><td className="px-4 py-3 font-semibold text-primary">{formatUsd(sell ? sell.priceMicroUsd / 1_000_000 : undefined)}</td><td className="px-4 py-3 text-muted-foreground">{formatUsd(official.priceMicroUsd / 1_000_000)}</td></tr>)}</tbody></table></div>
           <h2 className="mt-12 text-2xl font-semibold tracking-tight">API example</h2><p className="mt-2 text-xs text-muted-foreground">{canInteract ? `Use the ${providerStatus.protocolLabel} kineticRouter route with ${model.name.replace(/^[^:]+:\s*/, '')}.` : providerStatus.summary}</p><CodeExamples key={model.id} model={{ id: model.id, provider: model.provider, codeExamples: model.codeExamples }} />
           <h2 className="mt-12 text-2xl font-semibold tracking-tight">About this model</h2><p className="mt-3 text-sm leading-7 text-muted-foreground">{readableTagline(model)}</p>
-          {!!model.faq.length && <div className="mt-12"><h2 className="text-2xl font-semibold tracking-tight">Snapshot FAQ</h2><p className="mt-2 text-xs text-muted-foreground">Imported reference copy; verify runtime behavior before production use.</p><div className="mt-5 divide-y divide-border rounded-xl border border-border">{model.faq.map((item) => <details key={item.q} className="group p-5"><summary className="cursor-pointer list-none text-sm font-semibold">{item.q}<span className="float-right text-muted-foreground group-open:rotate-45">＋</span></summary><p className="mt-3 text-xs leading-6 text-muted-foreground">{item.a}</p></details>)}</div></div>}
+          {!!model.faq.length && <div className="mt-12"><h2 className="text-2xl font-semibold tracking-tight">Model FAQ</h2><p className="mt-2 text-xs text-muted-foreground">Setup details for the shared OpenAI-compatible API.</p><div className="mt-5 divide-y divide-border rounded-xl border border-border">{model.faq.map((item) => <details key={item.q} className="group p-5"><summary className="cursor-pointer list-none text-sm font-semibold">{item.q}<span className="float-right text-muted-foreground group-open:rotate-45">＋</span></summary><p className="mt-3 text-xs leading-6 text-muted-foreground">{item.a}</p></details>)}</div></div>}
         </div>
-        <aside className="hidden lg:block"><div className="sticky top-24 space-y-5"><div className="surface p-5"><h2 className="text-xs font-semibold">Compatibility reference</h2><div className="mt-3 flex flex-wrap gap-2">{model.compatIcons.map((item) => { const provider = resolveProvider(item, model.id); return <span key={item} className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs"><ProviderLogo provider={provider} className="h-3.5 w-3.5" />{item} API</span>; })}</div></div><div className="surface p-5"><h2 className="text-xs font-semibold">Details</h2><dl className="mt-4 space-y-3 text-xs"><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Category</dt><dd className="capitalize">{model.category}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Hosted on</dt><dd>{model.hostedOn}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Released</dt><dd>{model.date}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Input</dt><dd>{model.inputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Output</dt><dd>{model.outputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Fact check</dt><dd>{model.sourceVerifiedAt}</dd></div></dl>{model.sourceUrl && <SiteLink href={model.sourceUrl} className="mt-4 block text-xs font-semibold text-primary">Official model reference ↗</SiteLink>}</div></div></aside>
+        <aside className="hidden lg:block"><div className="sticky top-24 space-y-5"><div className="surface p-5"><h2 className="text-xs font-semibold">Compatibility reference</h2><div className="mt-3 flex flex-wrap gap-2">{model.compatIcons.map((item) => { const provider = resolveProvider(item, model.id); return <span key={item} className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-xs"><ProviderLogo provider={provider} className="h-3.5 w-3.5" />{item} API</span>; })}</div></div><div className="surface p-5"><h2 className="text-xs font-semibold">Details</h2><dl className="mt-4 space-y-3 text-xs"><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Category</dt><dd className="capitalize">{model.category}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Hosted on</dt><dd>{model.hostedOn}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Released</dt><dd>{model.date || '\u2014'}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Input</dt><dd>{model.inputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Output</dt><dd>{model.outputModalities.join(', ')}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted-foreground">Fact check</dt><dd>{model.sourceVerifiedAt}</dd></div></dl>{model.sourceUrl && <SiteLink href={model.sourceUrl} className="mt-4 block text-xs font-semibold text-primary">Official model reference ↗</SiteLink>}</div></div></aside>
       </section>
     </>
   );

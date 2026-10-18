@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { measureApiLatency } from '../lib/api-latency';
+import { publicModelChoices, defaultProviderModel } from '@kineticrouter/platform-config/models';
 import { QuickIntegration } from './QuickIntegration';
 
 vi.mock('../lib/api-latency', () => ({ measureApiLatency: vi.fn() }));
@@ -20,6 +21,19 @@ function element<T extends Element>(selector: string): T {
 }
 async function click(selector: string) {
   await act(async () => element<HTMLElement>(selector).click());
+}
+async function selectModel(id: string) {
+  await click('.integration-model-trigger');
+  const option = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]')).find((item) => item.textContent?.includes(id));
+  expect(option, id).toBeTruthy();
+  await act(async () => option!.click());
+}
+async function searchModels(value: string) {
+  const input = element<HTMLInputElement>('[role="combobox"]');
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 }
 function code() { return element<HTMLElement>('.integration-code').textContent!; }
 function deferred<T>() {
@@ -49,17 +63,17 @@ afterEach(async () => {
 });
 
 describe('dashboard quick integration', () => {
-  it('adds the three available providers after Grok and exposes their existing homepage models', async () => {
-    expect(Array.from(host.querySelectorAll('.provider-tabs button')).map(button => button.getAttribute('data-provider')))
-      .toEqual(['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot']);
-    expect(element('[aria-label="Use Direct API"]').getAttribute('aria-pressed')).toBe('true');
-    expect(element('[data-cloudflare-icon]')).toBeTruthy();
-    for (const [id, model] of [['deepseek', 'deepseek/deepseek-flash'], ['zhipu', 'zhipu/glm-5.3-flash'], ['moonshot', 'moonshot/kimi-k3']]) {
-      await click(`#provider-tab-${id}`);
-      expect(element(`#provider-tab-${id} .provider-availability`).textContent).toBe('Available');
-      expect(code()).toContain(`model="${model}"`);
+  it('offers all 36 models grouped by company with provider icons', async () => {
+    expect(code()).toContain('openai/gpt-6-astra');
+    await click('.integration-model-trigger');
+    expect(host.querySelectorAll('[role="option"]')).toHaveLength(36);
+    expect(host.querySelectorAll('[role="group"][aria-labelledby]')).toHaveLength(8);
+    expect(host.querySelectorAll('.integration-model-group [data-provider-icon="unknown"]')).toHaveLength(0);
+    await act(async () => element('[role="combobox"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    for (const model of publicModelChoices.filter((item, index, all) => all.findIndex((other) => other.provider === item.provider) === index)) {
+      await selectModel(model.id);
+      expect(code()).toContain(model.id);
       expect(code()).toContain('https://api.kineticrouter.com/v1');
-      expect(element<HTMLButtonElement>('.copy-code-button').disabled).toBe(false);
     }
   });
 
@@ -70,8 +84,8 @@ describe('dashboard quick integration', () => {
       expect(code()).toContain('https://cdn-api.kineticrouter.com/v1');
       expect(code()).not.toContain('https://api.kineticrouter.com/v1');
     }
-    await click('#provider-tab-zhipu');
-    expect(code()).toContain('zhipu/glm-5.3-flash');
+    await selectModel(defaultProviderModel('zhipu').id);
+    expect(code()).toContain('zhipu/glm-5.3');
     expect(element('[aria-label="Use Cloudflare CDN"]').getAttribute('aria-pressed')).toBe('true');
     await click('.copy-code-button');
     expect(clipboard).toHaveBeenLastCalledWith(code());
@@ -99,63 +113,48 @@ describe('dashboard quick integration', () => {
     const pending = deferred<void>();
     clipboard.mockReturnValueOnce(pending.promise);
     await click('[aria-label="Copy Direct API URL"]');
-    await click('#provider-tab-deepseek');
+    await selectModel(defaultProviderModel('deepseek').id);
     await act(async () => pending.resolve());
     expect(element('[aria-label="Copy Direct API URL"]').textContent).toBe('Copy URL');
     expect(element('.copy-announcement').textContent).toBe('');
   });
 
-  it('enables Anthropic and Grok copying on both routes with the correct SDK and request shape', async () => {
-    for (const [id, path] of [['anthropic', '/anthropic'], ['grok', '/grok/v1']] as const) {
-      await click('#provider-tab-' + id);
-      expect(host.querySelector('.integration-availability-warning')).toBeNull();
-      expect(element('#provider-tab-' + id + ' .provider-availability').textContent).toBe('Available');
-      for (const [route, origin, label] of [
-        ['direct', 'https://api.kineticrouter.com', 'Direct API'],
-        ['cloudflare', 'https://cdn-api.kineticrouter.com', 'Cloudflare CDN'],
-      ] as const) {
+  it.each(['anthropic/claude-opus-5-5', 'grok/grok-4.7'])('uses the OpenAI SDK and /v1 on both routes for %s', async (model) => {
+      await selectModel(model);
+      for (const [origin, label] of [['https://api.kineticrouter.com', 'Direct API'], ['https://cdn-api.kineticrouter.com', 'Cloudflare CDN']]) {
         await click('[aria-label="Use ' + label + '"]');
-        const copyUrl = '[aria-label="Copy ' + label + ' URL"]';
-        expect(element<HTMLButtonElement>(copyUrl).disabled).toBe(false);
-        await click(copyUrl);
-        expect(clipboard).toHaveBeenLastCalledWith(origin + path);
-        expect(element('[data-route="' + route + '"]').getAttribute('data-selected')).toBe('true');
+        await click('[aria-label="Copy ' + label + ' URL"]');
+        expect(clipboard).toHaveBeenLastCalledWith(origin + '/v1');
         for (const language of ['python', 'node', 'curl']) {
           await click('#language-tab-' + language);
-          expect(code()).toContain(origin + path);
-          expect(code()).not.toContain('Future reference');
-          if (id === 'anthropic') {
-            if (language === 'python') expect(code()).toContain('anthropic.Anthropic');
-            if (language === 'node') expect(code()).toContain('@anthropic-ai/sdk');
-            if (language === 'curl') {
-              expect(code()).toContain(origin + path + '/v1/messages');
-              expect(code()).toContain('x-api-key: YOUR_KINETICROUTER_API_KEY');
-              expect(code()).toContain('anthropic-version: 2023-06-01');
-            }
-            expect(code()).toContain('max_tokens');
-            expect(code()).toContain('anthropic/claude-opus-4.8');
-          } else {
-            if (language === 'curl') {
-              expect(code()).toContain(origin + path + '/chat/completions');
-              expect(code()).toContain('Authorization: Bearer YOUR_KINETICROUTER_API_KEY');
-            }
-            expect(code()).toContain('grok/grok-4.6');
-          }
-          expect(element<HTMLButtonElement>('.copy-code-button').disabled).toBe(false);
+          expect(code()).toContain(model);
+          expect(code()).toContain(origin + '/v1');
+          expect(code()).not.toMatch(/anthropic.Anthropic|@anthropic-ai|x-api-key|anthropic-version|\/grok\/v1|\/v1\/v1/);
+          if (language === 'python') expect(code()).toContain('from openai import OpenAI');
+          if (language === 'node') expect(code()).toContain('import OpenAI from "openai"');
+          if (language === 'curl') expect(code()).toContain('/v1/chat/completions');
           await click('.copy-code-button');
           expect(clipboard).toHaveBeenLastCalledWith(code());
         }
       }
-    }
   });
 
-  it('supports keyboard traversal and wraps across all six providers', async () => {
-    const cases = [['openai', 'End', 'moonshot'], ['moonshot', 'ArrowRight', 'openai'], ['openai', 'ArrowLeft', 'moonshot'], ['moonshot', 'Home', 'openai']];
-    for (const [current, key, next] of cases) {
-      await act(async () => element(`#provider-tab-${current}`).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })));
-      expect(element(`#provider-tab-${next}`).getAttribute('aria-selected')).toBe('true');
-      expect(document.activeElement).toBe(element(`#provider-tab-${next}`));
-    }
+  it('supports search, empty results, keyboard selection, escape, and restored focus', async () => {
+    await click('.integration-model-trigger');
+    expect(document.activeElement).toBe(element('[role="combobox"]'));
+    await searchModels('sonnet');
+    expect(host.querySelectorAll('[role="option"]')).toHaveLength(1);
+    await act(async () => element('[role="combobox"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+    expect(code()).toContain('anthropic/claude-sonnet-5-5');
+    expect(document.activeElement).toBe(element('.integration-model-trigger'));
+    await click('.integration-model-trigger');
+    await searchModels('does not exist');
+    expect(element('[role="status"].integration-model-empty').textContent).toContain('No models match');
+    await act(async () => element('[role="combobox"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[role="combobox"]')).toBeNull();
+    await click('.integration-model-trigger');
+    for (const key of ['End', 'ArrowDown', 'Home', 'Enter']) await act(async () => element('[role="combobox"]').dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })));
+    expect(code()).toContain('openai/gpt-6-astra');
   });
 
   it('runs both host tests independently and keeps their results when providers change', async () => {
@@ -171,7 +170,7 @@ describe('dashboard quick integration', () => {
     expect(element('[aria-label="Cloudflare CDN ping result"]').textContent).toBe('35 ms');
     expect(element('[aria-label="Direct API ping result"]').textContent).toBe('Testing…');
     expect(element('[aria-label="Use Direct API"]').getAttribute('aria-pressed')).toBe('true');
-    await click('#provider-tab-moonshot');
+    await selectModel(defaultProviderModel('moonshot').id);
     await act(async () => direct.resolve(60));
     expect(element('[aria-label="Direct API ping result"]').textContent).toBe('60 ms');
     expect(element('[aria-label="Cloudflare CDN ping result"]').textContent).toBe('35 ms');

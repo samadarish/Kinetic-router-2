@@ -4,6 +4,7 @@ import {
   type ProviderId,
   type ProviderInteractionMode,
 } from './provider-availability';
+import { providerDisplayIds, activeProviderIds } from '@kineticrouter/platform-config/providers';
 import { PRODUCT } from '@kineticrouter/platform-config/brand';
 import { OPENAI_API_BASE_URL, PRODUCTION_ORIGINS } from '@kineticrouter/platform-config/origins';
 
@@ -107,9 +108,7 @@ export const siteConfig: SiteConfig = {
         id: 'providers',
         title: 'Providers',
         links: [
-          { id: 'openai', label: 'OpenAI', href: '/models/openai', enabled: true, order: 10 },
-          { id: 'anthropic', label: 'Anthropic', href: '/models/anthropic', enabled: true, order: 20 },
-          { id: 'grok', label: 'Grok', href: '/models/grok', enabled: true, order: 30 },
+          ...activeProviderIds.map((id, index) => ({ id, label: providerAvailability[id].label, href: `/models/${id}`, enabled: true as const, order: (index + 1) * 10 })),
         ],
       },
       {
@@ -132,9 +131,5 @@ export const siteConfig: SiteConfig = {
     secondaryCta: { label: 'Explore Models', href: '/models' },
     footerDescription: PRODUCT.tagline,
   },
-  providers: {
-    openai: staticProvider('openai'),
-    anthropic: staticProvider('anthropic'),
-    grok: staticProvider('grok'),
-  },
+  providers: Object.fromEntries(providerDisplayIds.map((id) => [id, staticProvider(id)])) as SiteProviderMap,
 };

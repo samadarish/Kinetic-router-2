@@ -2,27 +2,70 @@
 
 Canonical site: https://kineticrouter.com
 Customer console: https://console.kineticrouter.com/sign-in
-Reference snapshot source: imported catalog archive
-Snapshot captured: 2026-08-30
-Snapshot scope: 20 models, 188 active price records, 57 documentation pages
-Supplementary references: GPT-6 Astra and Claude Fable 5.1, captured 2026-09-11
-Combined catalog: 22 models, 208 active reference price records
 
 ## Interpretation
 
-This public site preserves a locked model/pricing list as a dated reference while presenting kineticRouter availability separately. OpenAI-compatible `/v1` is available for authenticated requests. Anthropic-native `/anthropic` and dedicated Grok `/grok/v1` routes are available for authenticated requests, with copyable examples and searchable documentation. A documentation page is not proof that its route is enabled. The authenticated customer console is authoritative for account balance, subscriptions, usage, and actual billing.
+The current public catalog contains 36 models across 8 providers. Official reference rates were checked 2026-10-18. Displayed kineticRouter prices are official rates divided by 10 (90% off), including published cache, tiered, and image-token components. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
+
+Every active provider uses the OpenAI-compatible https://api.kineticrouter.com/v1 base URL, or https://cdn-api.kineticrouter.com/v1. Use provider/model IDs and a kineticRouter API key. Meta support is planned and has no active catalog entries. Public display prices are separate from actual account billing; the authenticated customer console reports billed usage and account rates.
 
 ## Main pages
-
-- https://kineticrouter.com/models/openai/gpt-6-astra
-- https://kineticrouter.com/models/anthropic/claude-fable-5-1
 
 - https://kineticrouter.com/
 - https://kineticrouter.com/models
 - https://kineticrouter.com/pricing
-- https://kineticrouter.com/quickstart
-- https://kineticrouter.com/vibe-coding
 - https://kineticrouter.com/docs
+- https://kineticrouter.com/quickstart
+
+## Providers
+
+- OpenAI: https://kineticrouter.com/models/openai
+- Anthropic: https://kineticrouter.com/models/anthropic
+- Grok: https://kineticrouter.com/models/grok
+- DeepSeek: https://kineticrouter.com/models/deepseek
+- Zhipu: https://kineticrouter.com/models/zhipu
+- Moonshot: https://kineticrouter.com/models/moonshot
+- Gemini: https://kineticrouter.com/models/gemini
+- MiniMax: https://kineticrouter.com/models/minimax
+
+## Models
+
+- OpenAI: GPT-6 Astra — https://kineticrouter.com/models/openai/gpt-6-astra
+- OpenAI: GPT-6.1 Sol — https://kineticrouter.com/models/openai/gpt-6.1-sol
+- OpenAI: GPT-6 Luna — https://kineticrouter.com/models/openai/gpt-6-luna
+- Anthropic: Claude Sonnet 5.5 — https://kineticrouter.com/models/anthropic/claude-sonnet-5-5
+- Anthropic: Claude Opus 5.5 — https://kineticrouter.com/models/anthropic/claude-opus-5-5
+- DeepSeek: DeepSeek V4.1 Flash — https://kineticrouter.com/models/deepseek/deepseek-flash
+- DeepSeek: DeepSeek V4 Pro — https://kineticrouter.com/models/deepseek/deepseek-v4-pro
+- Zhipu: GLM-5.3 — https://kineticrouter.com/models/zhipu/glm-5.3
+- Moonshot: Kimi K3 — https://kineticrouter.com/models/moonshot/kimi-k3
+- Moonshot: Kimi K2.7 Code — https://kineticrouter.com/models/moonshot/kimi-k2.7-code
+- Grok: Grok 4.7 — https://kineticrouter.com/models/grok/grok-4.7
+- MiniMax: MiniMax M3 — https://kineticrouter.com/models/minimax/minimax-m3
+- Gemini: Gemini 3.8 Flash — https://kineticrouter.com/models/gemini/gemini-3.8-flash
+- Gemini: Gemini 3.8 Flash High — https://kineticrouter.com/models/gemini/gemini-3.8-flash-high
+- Gemini: Gemini 3.8 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.8-flash-low
+- Gemini: Gemini 3.8 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.8-flash-medium
+- Gemini: Gemini 3.8 Flash Tiered — https://kineticrouter.com/models/gemini/gemini-3.8-flash-tiered
+- Gemini: Gemini 3.7 Flash High — https://kineticrouter.com/models/gemini/gemini-3.7-flash-high
+- Gemini: Gemini 3.7 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.7-flash-low
+- Gemini: Gemini 3.7 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.7-flash-medium
+- Gemini: Gemini 3.6 Flash High — https://kineticrouter.com/models/gemini/gemini-3.6-flash-high
+- Gemini: Gemini 3.6 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.6-flash-low
+- Gemini: Gemini 3.6 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.6-flash-medium
+- Gemini: Gemini 3.5 Flash Extra Low — https://kineticrouter.com/models/gemini/gemini-3.5-flash-extra-low
+- Gemini: Gemini 3.5 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.5-flash-low
+- Gemini: Gemini 3.5 Flash Lite — https://kineticrouter.com/models/gemini/gemini-3.5-flash-lite
+- Gemini: Gemini 3.1 Flash Image — https://kineticrouter.com/models/gemini/gemini-3.1-flash-image
+- Gemini: Gemini 3.1 Flash Lite — https://kineticrouter.com/models/gemini/gemini-3.1-flash-lite
+- Gemini: Gemini 3.1 Pro High — https://kineticrouter.com/models/gemini/gemini-3.1-pro-high
+- Gemini: Gemini 3.1 Pro Low — https://kineticrouter.com/models/gemini/gemini-3.1-pro-low
+- Gemini: Gemini 3 Flash — https://kineticrouter.com/models/gemini/gemini-3-flash
+- Gemini: Gemini 3 Flash Agent — https://kineticrouter.com/models/gemini/gemini-3-flash-agent
+- Gemini: Gemini 2.5 Flash — https://kineticrouter.com/models/gemini/gemini-2.5-flash
+- Gemini: Gemini 2.5 Flash Thinking — https://kineticrouter.com/models/gemini/gemini-2.5-flash-thinking
+- Gemini: Gemini 2.5 Flash Lite — https://kineticrouter.com/models/gemini/gemini-2.5-flash-lite
+- Gemini: Gemini 2.5 Pro — https://kineticrouter.com/models/gemini/gemini-2.5-pro
 
 ## Reference documentation
 
@@ -43,20 +86,25 @@ This public site preserves a locked model/pricing list as a dated reference whil
 - https://kineticrouter.com/docs/develop/observability/dashboard
 - https://kineticrouter.com/docs/develop/observability/usage-tracking
 - https://kineticrouter.com/docs/develop/observability/pricing
-
-## Available OpenAI-compatible API references
-
 - https://kineticrouter.com/docs/api/openai/chat-completions
 - https://kineticrouter.com/docs/api/openai/responses
 - https://kineticrouter.com/docs/api/openai/models
 - https://kineticrouter.com/docs/api/openai/images
+- https://kineticrouter.com/docs/api/anthropic/messages
+- https://kineticrouter.com/docs/api/anthropic/models
+- https://kineticrouter.com/docs/api/grok/chat-completions
+- https://kineticrouter.com/docs/api/grok/responses
+- https://kineticrouter.com/docs/api/grok/models
+- https://kineticrouter.com/docs/integrations/claude-code
+- https://kineticrouter.com/docs/integrations/claude-code/installation
+- https://kineticrouter.com/docs/integrations/claude-code/model-provider
+- https://kineticrouter.com/docs/integrations/claude-code/contextline
+- https://kineticrouter.com/docs/integrations/claude-code/skills
+- https://kineticrouter.com/docs/integrations/claude-coworks
 - https://kineticrouter.com/docs/integrations/codex
 - https://kineticrouter.com/docs/integrations/codex/installation
 - https://kineticrouter.com/docs/integrations/codex/model-provider
 - https://kineticrouter.com/docs/integrations/codex/websocket
-
-## Provider-neutral and OpenAI-oriented integration references
-
 - https://kineticrouter.com/docs/integrations/cc-switch
 - https://kineticrouter.com/docs/integrations/openclaw
 - https://kineticrouter.com/docs/integrations/opencode
@@ -77,29 +125,11 @@ This public site preserves a locked model/pricing list as a dated reference whil
 - https://kineticrouter.com/docs/integrations/immersive-translate
 - https://kineticrouter.com/docs/integrations/others
 
-## Available Anthropic and Grok API and integration references
-
-- https://kineticrouter.com/docs/api/anthropic/messages
-- https://kineticrouter.com/docs/api/anthropic/models
-- https://kineticrouter.com/docs/api/grok/chat-completions
-- https://kineticrouter.com/docs/api/grok/responses
-- https://kineticrouter.com/docs/api/grok/models
-- https://kineticrouter.com/docs/integrations/claude-code
-- https://kineticrouter.com/docs/integrations/claude-code/installation
-- https://kineticrouter.com/docs/integrations/claude-code/model-provider
-- https://kineticrouter.com/docs/integrations/claude-code/contextline
-- https://kineticrouter.com/docs/integrations/claude-code/skills
-- https://kineticrouter.com/docs/integrations/claude-coworks
-
-## Pending platform endpoint references — noindex
+## Pending platform references — noindex
 
 - https://kineticrouter.com/docs/api/openapi/balance
 - https://kineticrouter.com/docs/api/openapi/provider-pricing
 
 ## Crawler guidance
 
-- Prefer canonical English routes listed above.
-- Treat pages marked Reference snapshot as historical/catalog reference material.
-- Treat Available as a live kineticRouter route; use an authenticated API key for requests.
-- Do not present Planned pages as active kineticRouter endpoints.
-- Do not infer availability from an imported model ID or code example.
+Use canonical URLs and respect planned/noindex statuses. Model metadata does not establish a particular account's model access.

@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Activity, Check, ChevronDown, Code2, Copy, ExternalLink, Globe2, LoaderCircle, TerminalSquare } from 'lucide-react';
+import { defaultModelId, getPublicModel } from '@kineticrouter/platform-config/models';
+import { IntegrationModelSelect } from './IntegrationModelSelect';
 import { isProviderIntegrationCopyable } from '../lib/provider-display-status';
 import {
   getIntegrationEndpoint,
   getIntegrationExamples,
   getIntegrationProvider,
   integrationLanguages as languages,
-  integrationProviderIds,
   integrationRouteIds,
   integrationRoutes,
   type IntegrationLanguage as Language,
-  type IntegrationProviderId,
   type IntegrationRouteId,
 } from '../lib/quick-integration';
 import { measureApiLatency } from '../lib/api-latency';
-import { CloudflareIcon, IntegrationProviderIcon } from './IntegrationIcons';
+import { CloudflareIcon } from './IntegrationIcons';
 import { CodexIcon } from './CodexIcon';
 import { Card } from './Ui';
 import { publicSiteHref } from '../lib/public-site';
@@ -41,7 +41,9 @@ const integrationGuides = [
 ];
 
 export function QuickIntegration() {
-  const [providerId, setProviderId] = useState<IntegrationProviderId>('openai');
+  const [modelId, setModelId] = useState(defaultModelId);
+  const selectedModel = getPublicModel(modelId);
+  const providerId = selectedModel.provider;
   const [routeId, setRouteId] = useState<IntegrationRouteId>('direct');
   const [language, setLanguage] = useState<Language>('python');
   const [copied, setCopied] = useState<CopyTarget | null>(null);
@@ -51,7 +53,7 @@ export function QuickIntegration() {
   const copyAttemptRef = useRef(0);
   const pingControllers = useRef<Partial<Record<IntegrationRouteId, AbortController>>>({});
   const providerDisplay = getIntegrationProvider(providerId);
-  const examples = getIntegrationExamples(providerId, routeId);
+  const examples = getIntegrationExamples(modelId, routeId);
   const isAvailable = isProviderIntegrationCopyable(providerDisplay);
 
   useEffect(() => () => {
@@ -109,28 +111,11 @@ export function QuickIntegration() {
     <Card className="quick-integration-card">
       <header className="quick-integration-header">
         <div className="integration-title-icon"><Code2 size={19} /></div>
-        <div><h2 id="quick-integration-title">Quick Integration</h2><p>Connect with the protocol and SDK your application already uses.</p></div>
+        <div><h2 id="quick-integration-title">Quick Integration</h2><p>Choose a model and connect with the OpenAI-compatible API.</p></div>
       </header>
 
-      <div className="integration-tabs provider-tabs" role="tablist" aria-label="API provider">
-        {integrationProviderIds.map((id) => {
-          const display = getIntegrationProvider(id);
-          return <button
-            key={id}
-            id={`provider-tab-${id}`}
-            type="button"
-            role="tab"
-            aria-selected={providerId === id}
-            aria-controls={`provider-panel-${id}`}
-            tabIndex={providerId === id ? 0 : -1}
-            data-provider={id}
-            onClick={() => { setProviderId(id); clearCopyFeedback(); }}
-            onKeyDown={(event) => handleTabsKeydown(event, integrationProviderIds, id, (value) => { setProviderId(value); clearCopyFeedback(); })}
-          ><IntegrationProviderIcon provider={id} size={15} /><span>{display.label}</span><small className={`provider-availability ${display.apiState}`}>{display.badgeLabel}</small></button>;
-        })}
-      </div>
-
-      <div id={`provider-panel-${providerId}`} role="tabpanel" aria-labelledby={`provider-tab-${providerId}`} className="provider-panel">
+      <IntegrationModelSelect value={modelId} onChange={(id) => { setModelId(id); clearCopyFeedback(); }} />
+      <div className="provider-panel" aria-label="Model integration">
         {!isAvailable && <div className="integration-availability-warning" role="status"><strong>{providerDisplay.badgeLabel} integration</strong><span>{providerDisplay.summary}</span></div>}
         <div className="integration-endpoints" role="group" aria-label="API connection">
           {integrationRouteIds.map(id => {
@@ -158,7 +143,7 @@ export function QuickIntegration() {
           })}
         </div>
         <p className="integration-latency-note">Connection latency from your browser; model response times may differ.</p>
-        <div className="integration-model-note"><span>Example model</span><code>{providerDisplay.model}</code></div>
+        <div className="integration-model-note"><span>Example model</span><code>{modelId}</code></div>
 
         <details className="example-disclosure">
           <summary><span><TerminalSquare size={16} />Example Code</span><span className="example-summary-hint">{isAvailable ? 'Python, Node.js, and cURL' : 'Future reference only'}</span><ChevronDown size={16} /></summary>

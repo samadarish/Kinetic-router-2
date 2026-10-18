@@ -1,7 +1,7 @@
 import { providerAvailability } from './provider-availability.mjs';
 
 const ids = Object.keys(providerAvailability.providers ?? {}).sort();
-if (providerAvailability.version !== 1 || providerAvailability.displayOnly !== true || ids.join(',') !== 'anthropic,grok,openai') {
+if (providerAvailability.version !== 1 || providerAvailability.displayOnly !== true || ids.join(',') !== 'anthropic,deepseek,gemini,grok,meta,minimax,moonshot,openai,zhipu') {
   console.error('The canonical provider registry is invalid.');
   process.exit(1);
 }

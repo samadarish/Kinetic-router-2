@@ -1,7 +1,8 @@
 import type { SVGProps } from 'react';
 import { ProviderColorGlyph } from './ProviderColorGlyph.js';
+import { providerExtraPaths } from './ProviderPaths.js';
 
-export type ProviderIconKind = 'openai' | 'anthropic' | 'claude' | 'grok' | 'gemini' | 'minimax' | 'unknown';
+export type ProviderIconKind = 'openai' | 'anthropic' | 'claude' | 'grok' | 'gemini' | 'minimax' | 'deepseek' | 'zhipu' | 'moonshot' | 'meta' | 'unknown';
 export type ProviderSignals = { provider?: string | null; protocol?: string | null; vendor?: string | null; model?: string | null };
 export type ProviderIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & ProviderSignals & { label?: string; size?: number | string };
 
@@ -20,7 +21,9 @@ export function resolveProviderIconKind({ provider, protocol, vendor, model }: P
 
 export function ProviderIcon({ provider, protocol, vendor, model, label, size = 16, className = '', width, height, ...props }: ProviderIconProps) {
   const kind = resolveProviderIconKind({ provider, protocol, vendor, model });
-  return <svg {...props} className={`provider-icon provider-icon-${kind}${className ? ` ${className}` : ''}`} data-provider-icon={kind} viewBox="0 0 24 24" width={width ?? size} height={height ?? size} fill="currentColor" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">
+  const color = ({ deepseek: '#4D6BFE', zhipu: '#3859FF', meta: '#0866FF' } as Partial<Record<ProviderIconKind, string>>)[kind];
+  return <svg {...props} style={{ color, ...props.style }} className={`provider-icon provider-icon-${kind}${className ? ` ${className}` : ''}`} data-provider-icon={kind} viewBox="0 0 24 24" width={width ?? size} height={height ?? size} fill="currentColor" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">
+    {providerExtraPaths[kind] && <path d={providerExtraPaths[kind]} fillRule="evenodd" />}
     {kind === 'openai' && <path d={openAiPath} />}
     {kind === 'anthropic' && <path d={anthropicPath} />}
     {kind === 'claude' && <path d={claudePath} fillRule="nonzero" />}
@@ -34,6 +37,10 @@ export const ProviderLogo = ProviderIcon;
 function providerKindFromPrefix(value: string | null | undefined): Exclude<ProviderIconKind, 'unknown'> | undefined {
   const normalized = normalize(value);
   if (!normalized) return undefined;
+  if (/^deepseek(?:[\s/_.:-]|$)/.test(normalized)) return 'deepseek';
+  if (/^(?:zhipu|glm|z[\s._-]*ai)(?:[\s/_.:-]|$)/.test(normalized)) return 'zhipu';
+  if (/^(?:moonshot|kimi)(?:[\s/_.:-]|$)/.test(normalized)) return 'moonshot';
+  if (/^(?:meta|llama)(?:[\s/_.:-]|$)/.test(normalized)) return 'meta';
   if (/^(?:openai|azure[\s._-]*openai)(?:[\s/_.:-]|$)/.test(normalized)) return 'openai';
   if (/^anthropic(?:[\s/_.:-]|$)/.test(normalized)) return 'anthropic';
   if (/^claude(?:[\s/_.:-]|$)/.test(normalized)) return 'claude';
@@ -44,6 +51,8 @@ function providerKindFromPrefix(value: string | null | undefined): Exclude<Provi
 }
 function providerKindFromModel(value: string | null | undefined): Exclude<ProviderIconKind, 'unknown'> | undefined {
   const normalized = normalize(value)?.replace(/^models?[/.:_-]+/, '');
+  const explicit = providerKindFromPrefix(normalized);
+  if (explicit) return explicit;
   if (!normalized) return undefined;
   if (/^(?:google[/.:_-]+)?gemini(?:[\s/_.:-]|$)/.test(normalized)) return 'gemini';
   if (/^minimax(?:[\s/_.:-]|$)/.test(normalized)) return 'minimax';

@@ -1,13 +1,14 @@
+import { activeProviderIds } from '@kineticrouter/platform-config/providers';
 import type { Metadata } from 'next';
 import { getDocsPage, manifest, models } from './content';
 import { providerDisplayStatus } from './provider-availability';
 import { canonicalPath, canonicalUrl, isIndexableRoute, SITE_ORIGIN } from './seo-policy.mjs';
 
 const pages: Record<string, { title: string; description: string }> = {
-  '/': { title: 'AI API Access & Model Reference', description: 'Access OpenAI-compatible, Anthropic-native, and Grok APIs through kineticRouter. Explore model reference pricing, API documentation, and coding-agent setup guides.' },
-  '/models': { title: 'AI Models & API Pricing Reference', description: 'Browse the dated GPT, Claude, and Grok model catalog. Compare reference pricing, context limits, and capabilities with kineticRouter provider availability.' },
-  '/pricing': { title: 'AI API Pricing Comparison', description: 'Compare kineticRouter snapshot prices with official reference prices for GPT, Claude, and Grok models. Check the customer console for actual billed rates.' },
-  '/vibe-coding': { title: 'Codex & Claude Code Integration', description: 'Connect Codex and Claude Code to kineticRouter with available OpenAI-compatible and Anthropic-native routes. Follow the setup guides with your API key.' },
+  '/': { title: 'AI API Access & Model Reference', description: 'Access leading AI models through one OpenAI-compatible /v1 API. Explore model reference pricing, API documentation, and coding-agent setup guides.' },
+  '/models': { title: 'AI Models & API Pricing Reference', description: 'Browse 36 models from OpenAI, Anthropic, Gemini, DeepSeek, Zhipu, Moonshot, Grok, and MiniMax. Compare reference pricing, context limits, and capabilities with kineticRouter provider availability.' },
+  '/pricing': { title: 'AI API Pricing Comparison', description: 'Compare kineticRouter prices at 90% off official reference rates across eight AI providers. Check the customer console for actual billed rates.' },
+  '/vibe-coding': { title: 'Codex & Claude Code Integration', description: 'Connect Codex and Claude Code to kineticRouter with the shared OpenAI-compatible /v1 route. Follow the setup guides with your API key.' },
   '/privacy': { title: 'Privacy Policy', description: 'Read how kineticRouter handles account information, API requests, usage data, payments, security, and privacy choices.' },
   '/terms-of-service': { title: 'Terms of Service', description: 'Read the kineticRouter terms for accounts, AI API access, usage, payments, content, service availability, and support.' },
 };
@@ -24,7 +25,8 @@ export function routeSeo(requestedRoute: string) {
     modified = doc.status.guide?.updatedAt;
   }
   if (route === '/models' || route === '/pricing') kind = 'CollectionPage';
-  const provider = /^\/models\/(openai|anthropic|grok)$/.exec(route)?.[1];
+  const providerSlug = /^\/models\/([^/]+)$/.exec(route)?.[1];
+  const provider = activeProviderIds.find((id) => id === providerSlug);
   if (provider) {
     const status = providerDisplayStatus(provider);
     details = { title: `${status.label} Models & API Pricing Reference`, description: `Explore ${status.label} model reference prices, context limits, and capabilities. The kineticRouter ${status.protocolLabel} route is ${status.badgeLabel.toLowerCase()}; confirm model access in your account.` };

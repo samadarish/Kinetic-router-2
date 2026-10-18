@@ -1,0 +1,1287 @@
+{
+  "verifiedAt": "2026-10-18",
+  "sellMultiplier": 0.1,
+  "profiles": {
+    "astra": {
+      "sourceUrl": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 10,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 50,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 12.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 20,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 75,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 2,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 25,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "releasedAt": "2026-09-03"
+    },
+    "sol": {
+      "sourceUrl": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 10,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 2.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 4,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 15,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.2,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 5,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "luna": {
+      "sourceUrl": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 0.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.01,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 0.125,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 0.2,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 0.75,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.02,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 0.25,
+          "tierLabel": "Over 272K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "releasedAt": "2026-09-22"
+    },
+    "sonnet": {
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 10,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 2.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation_1h",
+          "usd": 4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "metadataSourceUrl": "https://platform.claude.com/docs/en/models/sonnet-5-5/overview",
+      "pricingNote": "The standard cache-write rate uses a 5-minute TTL; the 1-hour rate is listed separately.",
+      "releasedAt": "2026-09-28"
+    },
+    "opus": {
+      "sourceUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 20,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation_1h",
+          "usd": 8,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "metadataSourceUrl": "https://platform.claude.com/docs/en/models/opus-5-5/overview",
+      "pricingNote": "The standard cache-write rate uses a 5-minute TTL; the 1-hour rate is listed separately."
+    },
+    "deepseekFlash": {
+      "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "contextWindow": 1000000,
+      "maxOutput": 384000,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 1.2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.006,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 0.15,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 0.6,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.003,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "deepseek-flash",
+      "pricingNote": "Headline prices use official peak rates. Off-peak token rates are shown separately."
+    },
+    "deepseekPro": {
+      "sourceUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "contextWindow": 1000000,
+      "maxOutput": 384000,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 1.32,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3.96,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.044,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 0.66,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 1.98,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.022,
+          "tierLabel": "Off-peak hours",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "glm": {
+      "sourceUrl": "https://docs.z.ai/guides/overview/pricing",
+      "contextWindow": 0,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 1.4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 4.4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.26,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "kimiK3": {
+      "sourceUrl": "https://platform.kimi.ai/docs/pricing/chat",
+      "contextWindow": 1048576,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 15,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation_1h",
+          "usd": 6,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "kimiCode": {
+      "sourceUrl": "https://platform.kimi.ai/docs/pricing/chat",
+      "contextWindow": 262144,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.95,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.19,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "grok": {
+      "sourceUrl": "https://docs.x.ai/developers/grok-4-7",
+      "contextWindow": 500000,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 6,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "minimax": {
+      "sourceUrl": "https://platform.minimax.io/subscribe/token-plan?tab=api-enterprise",
+      "contextWindow": 1000000,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text",
+        "image",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 1.2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.06,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 0.6,
+          "tierLabel": "Over 512K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 2.4,
+          "tierLabel": "Over 512K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.12,
+          "tierLabel": "Over 512K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "pricingNote": "Official standard rates include MiniMax’s published permanent 50% reduction."
+    },
+    "gemini25Flash": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-flash",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 2.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.03,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "audio_input",
+          "usd": 1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-2.5-flash"
+    },
+    "gemini25Lite": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-flash-lite",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 0.4,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.01,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-2.5-flash-lite"
+    },
+    "gemini25Pro": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-2.5-pro",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 1.25,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 10,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.125,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 2.5,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 15,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.25,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-2.5-pro"
+    },
+    "gemini3Flash": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3-flash-preview",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.05,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "audio_input",
+          "usd": 1,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3-flash-preview"
+    },
+    "gemini31Image": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.1-flash-image",
+      "contextWindow": 131072,
+      "maxOutput": 32768,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text",
+        "image"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "image_output",
+          "usd": 60,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.1-flash-image",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-image"
+    },
+    "gemini31Lite": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.1-flash-lite",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.25,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 1.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.025,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "audio_input",
+          "usd": 0.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.1-flash-lite"
+    },
+    "gemini31Pro": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.1-pro-preview",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 12,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "input",
+          "usd": 4,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 18,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.4,
+          "tierLabel": "Over 200K input tokens",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.1-pro-preview"
+    },
+    "gemini35Flash": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-flash",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 1.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 9,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.15,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.5-flash",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash"
+    },
+    "gemini35Lite": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-flash-lite",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.3,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 2.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.03,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.5-flash-lite",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite"
+    },
+    "gemini36Flash": {
+      "sourceUrl": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.075,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.6-flash",
+      "pricingNote": "Official introductory standard rates apply through December 31, 2026.",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.6-flash"
+    },
+    "gemini37Flash": {
+      "sourceUrl": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.075,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.7-flash",
+      "pricingNote": "Official introductory standard rates apply through December 31, 2026.",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.7-flash"
+    },
+    "gemini38Flash": {
+      "sourceUrl": "https://ai.google.dev/gemini-api/docs/pricing#gemini-3.8-flash",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "inputModalities": [
+        "text",
+        "image"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 3.75,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.075,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ],
+      "referenceModel": "gemini-3.8-flash",
+      "pricingNote": "Official introductory standard rates apply through December 31, 2026.",
+      "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash"
+    }
+  },
+  "models": [
+    {
+      "provider": "openai",
+      "slug": "gpt-6-astra",
+      "name": "GPT-6 Astra",
+      "pricingProfile": "astra",
+      "tagline": "Flagship reasoning for demanding coding, research, and professional work."
+    },
+    {
+      "provider": "openai",
+      "slug": "gpt-6.1-sol",
+      "name": "GPT-6.1 Sol",
+      "pricingProfile": "sol",
+      "tagline": "Complex coding and professional work with balanced intelligence and cost."
+    },
+    {
+      "provider": "openai",
+      "slug": "gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "pricingProfile": "luna",
+      "tagline": "Efficient reasoning for focused tasks and high-volume applications."
+    },
+    {
+      "provider": "anthropic",
+      "slug": "claude-sonnet-5-5",
+      "name": "Claude Sonnet 5.5",
+      "pricingProfile": "sonnet",
+      "tagline": "Fast reasoning and coding for everyday development and document workflows."
+    },
+    {
+      "provider": "anthropic",
+      "slug": "claude-opus-5-5",
+      "name": "Claude Opus 5.5",
+      "pricingProfile": "opus",
+      "tagline": "Advanced reasoning for long-running coding and complex knowledge work."
+    },
+    {
+      "provider": "deepseek",
+      "slug": "deepseek-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "pricingProfile": "deepseekFlash",
+      "tagline": "Efficient reasoning with vision, coding, and a large context window."
+    },
+    {
+      "provider": "deepseek",
+      "slug": "deepseek-v4-pro",
+      "name": "DeepSeek V4 Pro",
+      "pricingProfile": "deepseekPro",
+      "tagline": "Large-context reasoning and coding with separate peak and off-peak pricing."
+    },
+    {
+      "provider": "zhipu",
+      "slug": "glm-5.3",
+      "name": "GLM-5.3",
+      "pricingProfile": "glm",
+      "tagline": "Reasoning and coding from Zhipu, available through the shared /v1 API."
+    },
+    {
+      "provider": "moonshot",
+      "slug": "kimi-k3",
+      "name": "Kimi K3",
+      "pricingProfile": "kimiK3",
+      "tagline": "Long-horizon coding and knowledge work with a one-million-token context."
+    },
+    {
+      "provider": "moonshot",
+      "slug": "kimi-k2.7-code",
+      "name": "Kimi K2.7 Code",
+      "pricingProfile": "kimiCode",
+      "tagline": "A coding-focused Kimi model for software development workflows."
+    },
+    {
+      "provider": "grok",
+      "slug": "grok-4.7",
+      "name": "Grok 4.7",
+      "pricingProfile": "grok",
+      "tagline": "Reasoning, coding, and knowledge work with text and image input."
+    },
+    {
+      "provider": "minimax",
+      "slug": "minimax-m3",
+      "name": "MiniMax M3",
+      "pricingProfile": "minimax",
+      "tagline": "Coding and multimodal understanding for large development projects."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.8-flash",
+      "name": "Gemini 3.8 Flash",
+      "pricingProfile": "gemini38Flash",
+      "tagline": "Gemini 3.8 Flash through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.8-flash-high",
+      "name": "Gemini 3.8 Flash High",
+      "pricingProfile": "gemini38Flash",
+      "tagline": "Gemini 3.8 Flash High through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.8-flash-low",
+      "name": "Gemini 3.8 Flash Low",
+      "pricingProfile": "gemini38Flash",
+      "tagline": "Gemini 3.8 Flash Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.8-flash-medium",
+      "name": "Gemini 3.8 Flash Medium",
+      "pricingProfile": "gemini38Flash",
+      "tagline": "Gemini 3.8 Flash Medium through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.8-flash-tiered",
+      "name": "Gemini 3.8 Flash Tiered",
+      "pricingProfile": "gemini38Flash",
+      "tagline": "Gemini 3.8 Flash Tiered through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.7-flash-high",
+      "name": "Gemini 3.7 Flash High",
+      "pricingProfile": "gemini37Flash",
+      "tagline": "Gemini 3.7 Flash High through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.7-flash-low",
+      "name": "Gemini 3.7 Flash Low",
+      "pricingProfile": "gemini37Flash",
+      "tagline": "Gemini 3.7 Flash Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.7-flash-medium",
+      "name": "Gemini 3.7 Flash Medium",
+      "pricingProfile": "gemini37Flash",
+      "tagline": "Gemini 3.7 Flash Medium through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.6-flash-high",
+      "name": "Gemini 3.6 Flash High",
+      "pricingProfile": "gemini36Flash",
+      "tagline": "Gemini 3.6 Flash High through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.6-flash-low",
+      "name": "Gemini 3.6 Flash Low",
+      "pricingProfile": "gemini36Flash",
+      "tagline": "Gemini 3.6 Flash Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.6-flash-medium",
+      "name": "Gemini 3.6 Flash Medium",
+      "pricingProfile": "gemini36Flash",
+      "tagline": "Gemini 3.6 Flash Medium through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.5-flash-extra-low",
+      "name": "Gemini 3.5 Flash Extra Low",
+      "pricingProfile": "gemini35Flash",
+      "tagline": "Gemini 3.5 Flash Extra Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.5-flash-low",
+      "name": "Gemini 3.5 Flash Low",
+      "pricingProfile": "gemini35Flash",
+      "tagline": "Gemini 3.5 Flash Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.5-flash-lite",
+      "name": "Gemini 3.5 Flash Lite",
+      "pricingProfile": "gemini35Lite",
+      "tagline": "Gemini 3.5 Flash Lite through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.1-flash-image",
+      "name": "Gemini 3.1 Flash Image",
+      "pricingProfile": "gemini31Image",
+      "tagline": "Gemini 3.1 Flash Image through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.1-flash-lite",
+      "name": "Gemini 3.1 Flash Lite",
+      "pricingProfile": "gemini31Lite",
+      "tagline": "Gemini 3.1 Flash Lite through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.1-pro-high",
+      "name": "Gemini 3.1 Pro High",
+      "pricingProfile": "gemini31Pro",
+      "tagline": "Gemini 3.1 Pro High through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3.1-pro-low",
+      "name": "Gemini 3.1 Pro Low",
+      "pricingProfile": "gemini31Pro",
+      "tagline": "Gemini 3.1 Pro Low through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3-flash",
+      "name": "Gemini 3 Flash",
+      "pricingProfile": "gemini3Flash",
+      "tagline": "Gemini 3 Flash through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-3-flash-agent",
+      "name": "Gemini 3 Flash Agent",
+      "pricingProfile": "gemini3Flash",
+      "tagline": "Gemini 3 Flash Agent through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-2.5-flash",
+      "name": "Gemini 2.5 Flash",
+      "pricingProfile": "gemini25Flash",
+      "tagline": "Gemini 2.5 Flash through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-2.5-flash-thinking",
+      "name": "Gemini 2.5 Flash Thinking",
+      "pricingProfile": "gemini25Flash",
+      "tagline": "Gemini 2.5 Flash Thinking through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-2.5-flash-lite",
+      "name": "Gemini 2.5 Flash Lite",
+      "pricingProfile": "gemini25Lite",
+      "tagline": "Gemini 2.5 Flash Lite through the OpenAI-compatible kineticRouter API."
+    },
+    {
+      "provider": "gemini",
+      "slug": "gemini-2.5-pro",
+      "name": "Gemini 2.5 Pro",
+      "pricingProfile": "gemini25Pro",
+      "tagline": "Gemini 2.5 Pro through the OpenAI-compatible kineticRouter API."
+    }
+  ]
+}

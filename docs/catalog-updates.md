@@ -1,5 +1,39 @@
 # Catalog updates
 
+## Current public catalog - October 18, 2026
+
+The active public offer contains 36 unique models across OpenAI, Anthropic, Grok,
+DeepSeek, Zhipu, Moonshot, Gemini, and MiniMax. Meta is planned and has no active
+models. The roster and official price profiles are maintained in
+`packages/platform-config/src/model-catalog.json`; the website adapter derives
+all displayed offer prices at exactly 0.1 times the matching official component.
+Actual gateway billing is unchanged.
+
+Every active provider uses the OpenAI-compatible direct or CDN `/v1` base URL.
+The dashboard selects exact provider/model IDs from the same shared inventory.
+Gemini effort, thinking, agent, and tiered variants without separate official
+rates use the named base model's pricing, as requested. DeepSeek headline prices
+use peak rates; off-peak and long-context rates retain their own table rows.
+Image output is priced per million image tokens, separately from text output.
+Introductory Gemini 3.6-3.8 rates are dated through December 31, 2026.
+
+Primary price references checked October 18, 2026:
+
+- [OpenAI model documentation](https://developers.openai.com/api/docs/models)
+- [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing)
+- [DeepSeek pricing](https://api-docs.deepseek.com/quick_start/pricing/)
+- [Zhipu pricing](https://docs.z.ai/guides/overview/pricing)
+- [Kimi pricing](https://platform.kimi.ai/docs/pricing/chat)
+- [Grok 4.7](https://docs.x.ai/developers/grok-4-7)
+- [MiniMax pricing](https://platform.minimax.io/subscribe/token-plan?tab=api-enterprise)
+- [Gemini pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- [Google Cloud pricing](https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing)
+
+The original August snapshot and September supplements below remain historical
+records. They are excluded from active listings and model detail routes.
+Run `npm run sync:model-inventory -w @kineticrouter/site` after roster changes.
+
+
 ## GPT-6 Astra
 
 Added `openai/gpt-6-astra` from the owner's

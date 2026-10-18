@@ -1,53 +1,75 @@
 # kineticRouter
 
-> Public documentation and model-reference index for https://kineticrouter.com.
+> Public documentation and model pricing index.
 
-## Data and availability policy
+## Catalog and availability
 
-- The model names and price values are a locked reference snapshot captured 2026-08-30.
-- The snapshot contains 20 models, 188 active price records, and 57 documentation pages.
-- Supplementary Astra and Claude Fable 5.1 references were added on 2026-09-11. The combined catalog contains 22 models and 208 active reference price records; the August snapshot is unchanged.
-- Snapshot values are not an authoritative account billing feed. Use the authenticated customer console for balances, subscriptions, usage, and actual billing.
-- OpenAI-compatible `/v1` routes are available for authenticated requests.
-- Anthropic-native `/anthropic` and dedicated Grok `/grok/v1` routes are available for authenticated requests. Their API and integration examples are copyable, searchable, and included in the sitemaps.
+The current public catalog contains 36 models across 8 providers. Official reference rates were checked 2026-10-18. Displayed kineticRouter prices are official rates divided by 10 (90% off), including published cache, tiered, and image-token components. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
+
+Every active provider uses the OpenAI-compatible https://api.kineticrouter.com/v1 base URL, or https://cdn-api.kineticrouter.com/v1. Use provider/model IDs and a kineticRouter API key. Meta support is planned and has no active catalog entries. Public display prices are separate from actual account billing; the authenticated customer console reports billed usage and account rates.
 
 ## Primary pages
 
-- Home: https://kineticrouter.com/
-- Model reference catalog: https://kineticrouter.com/models
-- Price reference comparison: https://kineticrouter.com/pricing
-- Documentation: https://kineticrouter.com/docs
-- Quick start: https://kineticrouter.com/quickstart
+- https://kineticrouter.com/
+- https://kineticrouter.com/models
+- https://kineticrouter.com/pricing
+- https://kineticrouter.com/docs
+- https://kineticrouter.com/quickstart
 - Customer console: https://console.kineticrouter.com/sign-in
 
-## Supplementary model references
+## Providers
 
-- GPT-6 Astra: https://kineticrouter.com/models/openai/gpt-6-astra
-- Model ID: `openai/gpt-6-astra`. Reference captured 2026-09-11.
-- Standard reference prices per 1M tokens: input $1.50, output $7.50, cache read $0.15, cache write $1.875. Actual account rates and additional charges are shown in the customer console.
-- Upstream context: 1,050,000 tokens; maximum output: 128,000 tokens. The captured gateway catalog records 1,000,000 input tokens.
+- OpenAI: https://kineticrouter.com/models/openai
+- Anthropic: https://kineticrouter.com/models/anthropic
+- Grok: https://kineticrouter.com/models/grok
+- DeepSeek: https://kineticrouter.com/models/deepseek
+- Zhipu: https://kineticrouter.com/models/zhipu
+- Moonshot: https://kineticrouter.com/models/moonshot
+- Gemini: https://kineticrouter.com/models/gemini
+- MiniMax: https://kineticrouter.com/models/minimax
 
-- Claude Fable 5.1: https://kineticrouter.com/models/anthropic/claude-fable-5-1
-- Model ID: `anthropic/claude-fable-5-1`. Reference captured 2026-09-11.
-- Standard reference prices per 1M tokens: input $2.50, output $12.50, cache read $0.0625, five-minute cache write $3.125, one-hour cache write $5. Native Anthropic routing is available with a kineticRouter API key.
+## Models
 
-The homepage features the newest captured chat model from each provider, with prices drawn from the same catalog records as the model detail pages.
+- OpenAI: GPT-6 Astra — https://kineticrouter.com/models/openai/gpt-6-astra
+- OpenAI: GPT-6.1 Sol — https://kineticrouter.com/models/openai/gpt-6.1-sol
+- OpenAI: GPT-6 Luna — https://kineticrouter.com/models/openai/gpt-6-luna
+- Anthropic: Claude Sonnet 5.5 — https://kineticrouter.com/models/anthropic/claude-sonnet-5-5
+- Anthropic: Claude Opus 5.5 — https://kineticrouter.com/models/anthropic/claude-opus-5-5
+- DeepSeek: DeepSeek V4.1 Flash — https://kineticrouter.com/models/deepseek/deepseek-flash
+- DeepSeek: DeepSeek V4 Pro — https://kineticrouter.com/models/deepseek/deepseek-v4-pro
+- Zhipu: GLM-5.3 — https://kineticrouter.com/models/zhipu/glm-5.3
+- Moonshot: Kimi K3 — https://kineticrouter.com/models/moonshot/kimi-k3
+- Moonshot: Kimi K2.7 Code — https://kineticrouter.com/models/moonshot/kimi-k2.7-code
+- Grok: Grok 4.7 — https://kineticrouter.com/models/grok/grok-4.7
+- MiniMax: MiniMax M3 — https://kineticrouter.com/models/minimax/minimax-m3
+- Gemini: Gemini 3.8 Flash — https://kineticrouter.com/models/gemini/gemini-3.8-flash
+- Gemini: Gemini 3.8 Flash High — https://kineticrouter.com/models/gemini/gemini-3.8-flash-high
+- Gemini: Gemini 3.8 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.8-flash-low
+- Gemini: Gemini 3.8 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.8-flash-medium
+- Gemini: Gemini 3.8 Flash Tiered — https://kineticrouter.com/models/gemini/gemini-3.8-flash-tiered
+- Gemini: Gemini 3.7 Flash High — https://kineticrouter.com/models/gemini/gemini-3.7-flash-high
+- Gemini: Gemini 3.7 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.7-flash-low
+- Gemini: Gemini 3.7 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.7-flash-medium
+- Gemini: Gemini 3.6 Flash High — https://kineticrouter.com/models/gemini/gemini-3.6-flash-high
+- Gemini: Gemini 3.6 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.6-flash-low
+- Gemini: Gemini 3.6 Flash Medium — https://kineticrouter.com/models/gemini/gemini-3.6-flash-medium
+- Gemini: Gemini 3.5 Flash Extra Low — https://kineticrouter.com/models/gemini/gemini-3.5-flash-extra-low
+- Gemini: Gemini 3.5 Flash Low — https://kineticrouter.com/models/gemini/gemini-3.5-flash-low
+- Gemini: Gemini 3.5 Flash Lite — https://kineticrouter.com/models/gemini/gemini-3.5-flash-lite
+- Gemini: Gemini 3.1 Flash Image — https://kineticrouter.com/models/gemini/gemini-3.1-flash-image
+- Gemini: Gemini 3.1 Flash Lite — https://kineticrouter.com/models/gemini/gemini-3.1-flash-lite
+- Gemini: Gemini 3.1 Pro High — https://kineticrouter.com/models/gemini/gemini-3.1-pro-high
+- Gemini: Gemini 3.1 Pro Low — https://kineticrouter.com/models/gemini/gemini-3.1-pro-low
+- Gemini: Gemini 3 Flash — https://kineticrouter.com/models/gemini/gemini-3-flash
+- Gemini: Gemini 3 Flash Agent — https://kineticrouter.com/models/gemini/gemini-3-flash-agent
+- Gemini: Gemini 2.5 Flash — https://kineticrouter.com/models/gemini/gemini-2.5-flash
+- Gemini: Gemini 2.5 Flash Thinking — https://kineticrouter.com/models/gemini/gemini-2.5-flash-thinking
+- Gemini: Gemini 2.5 Flash Lite — https://kineticrouter.com/models/gemini/gemini-2.5-flash-lite
+- Gemini: Gemini 2.5 Pro — https://kineticrouter.com/models/gemini/gemini-2.5-pro
 
-## Available OpenAI-compatible API references
+## API references
 
-- OpenAI chat completions: https://kineticrouter.com/docs/api/openai/chat-completions
-- OpenAI Responses: https://kineticrouter.com/docs/api/openai/responses
-- OpenAI models: https://kineticrouter.com/docs/api/openai/models
-- OpenAI images: https://kineticrouter.com/docs/api/openai/images
-- Codex integration: https://kineticrouter.com/docs/integrations/codex
-
-## Available Anthropic and Grok API references
-
-- Anthropic Messages: https://kineticrouter.com/docs/api/anthropic/messages
-- Anthropic models: https://kineticrouter.com/docs/api/anthropic/models
-- Grok chat completions: https://kineticrouter.com/docs/api/grok/chat-completions
-- Grok Responses: https://kineticrouter.com/docs/api/grok/responses
-- Grok models: https://kineticrouter.com/docs/api/grok/models
-- Claude Code: https://kineticrouter.com/docs/integrations/claude-code
-
-Do not infer runtime availability from the presence of a reference model or documentation page. Follow the status banner on each page.
+- Chat completions: https://kineticrouter.com/docs/api/openai/chat-completions
+- Responses: https://kineticrouter.com/docs/api/openai/responses
+- Model discovery: https://kineticrouter.com/docs/api/openai/models
+- SDK setup: https://kineticrouter.com/docs/integrations/openai-sdk

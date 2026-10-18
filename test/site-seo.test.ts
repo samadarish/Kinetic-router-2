@@ -23,7 +23,7 @@ describe('site SEO', () => {
 
   it('consolidates real duplicate views and keeps planned content out of both sitemaps', () => {
     const routes = indexableRoutes();
-    expect(routes).toHaveLength(83);
+    expect(routes).toHaveLength(102);
     expect(new Set(routes).size).toBe(routes.length);
     for (const [alias, canonical] of Object.entries(canonicalAliases)) {
       expect(routes).not.toContain(alias);
@@ -60,7 +60,7 @@ describe('site SEO', () => {
       if (seo.modified) expect(seo.modified).toBe(authoredGuidesUpdatedAt);
     }
     expect(routeSeo('/docs/api/openai/chat')?.modified).toBeUndefined();
-    expect(routeSeo('/models/openai/gpt-5.4')?.modified).toBeUndefined();
+    expect(routeSeo('/models/openai/gpt-6-astra')?.modified).toBeUndefined();
     const hostile = { name: '</script><script>alert(1)</script>\u2028\u2029' };
     const json = serializeJsonLd(hostile);
     expect(json).not.toContain('<');
@@ -81,7 +81,7 @@ describe('site SEO', () => {
       expect(pageMetadata(route).openGraph).toMatchObject({ images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'kineticRouter' }] });
       expect(pageMetadata(route).twitter).toMatchObject({ card: 'summary_large_image', images: ['/og.jpg'] });
     }
-    for (const route of ['/docs', '/docs/integrations/codex', '/models/openai/gpt-5.4']) {
+    for (const route of ['/docs', '/docs/integrations/codex', '/models/openai/gpt-6-astra']) {
       expect(pageMetadata(route).openGraph).toMatchObject({ images: [] });
       expect(pageMetadata(route).twitter).toMatchObject({ card: 'summary', images: [] });
     }

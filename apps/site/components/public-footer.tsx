@@ -2,7 +2,7 @@ import { SiteLink } from './site-link';
 import { Brand } from './brand';
 import { ProviderLogo } from './provider-logo';
 import { FooterSocialLinks } from './footer-social-links';
-import type { ProviderId } from '@/data/provider-availability';
+import { activeProviderIds } from '@kineticrouter/platform-config/providers';
 import type { SiteConfig } from '@/data/site-config';
 
 export function PublicFooter({ content }: { content: SiteConfig }) {
@@ -24,7 +24,7 @@ export function PublicFooter({ content }: { content: SiteConfig }) {
               <h2 className="text-xs font-semibold">{column.title}</h2>
               <ul className="mt-5 space-y-3.5">
                 {column.links.map((link) => {
-                  const provider = (['openai', 'anthropic', 'grok'] as ProviderId[]).find((id) => link.id === id || link.href === `/models/${id}`);
+                  const provider = activeProviderIds.find((id) => link.id === id || link.href === `/models/${id}`);
                   const status = provider ? providers[provider] : undefined;
                   return (
                     <li key={link.id}>

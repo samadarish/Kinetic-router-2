@@ -1,6 +1,8 @@
 import rawRegistry from './provider-registry.json' with { type: 'json' };
 
-export const providerDisplayIds = ['openai', 'anthropic', 'grok'] as const;
+export const activeProviderIds = ['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot', 'gemini', 'minimax'] as const;
+export type ActiveProviderId = typeof activeProviderIds[number];
+export const providerDisplayIds = [...activeProviderIds, 'meta'] as const;
 export type ProviderDisplayId = typeof providerDisplayIds[number];
 export type ProviderDisplayState = 'verified' | 'partial' | 'planned' | 'reference';
 export type ProviderInteractionMode = 'live' | 'validation' | 'reference-only';

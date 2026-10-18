@@ -3,33 +3,16 @@ import { SiteLink } from './site-link';
 import { trackDocsCopy } from '@kineticrouter/analytics-client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { providerDisplayIds } from '@kineticrouter/platform-config/providers';
+import { defaultProviderModel, openAICompatibleExamples } from '@kineticrouter/platform-config/models';
 import type { ProviderId } from '@/data/provider-availability';
 import type { SiteConfig, SiteProviderMap } from '@/data/site-config';
 import { ArrowRightIcon, ClipboardIcon } from './icons';
 import { HomeProviderLogo } from './home-provider-logo';
 
 type SyntaxKind = 'keyword' | 'string' | 'property' | 'number';
-const homepageOnlyProviders = {
-  deepseek: { label: 'DeepSeek', model: 'deepseek/deepseek-flash' },
-  zhipu: { label: 'Zhipu', model: 'zhipu/glm-5.3-flash' },
-  moonshot: { label: 'Moonshot', model: 'moonshot/kimi-k3' },
-  gemini: { label: 'Gemini', model: 'gemini/gemini-3.8-flash' },
-  minimax: { label: 'MiniMax', model: 'minimax/minimax-m3' },
-} as const;
-type HomeProviderId = ProviderId | keyof typeof homepageOnlyProviders;
-const allProviders: HomeProviderId[] = ['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot', 'gemini', 'minimax'];
-const homepageOnlyStatus = {
-  enabled: true,
-  badgeLabel: 'Available',
-  interactionMode: 'live',
-  protocolLabel: 'OpenAI-compatible',
-  summary: '',
-  evidenceNote: '',
-} as const;
-
-function isHomepageOnlyProvider(id: HomeProviderId): id is keyof typeof homepageOnlyProviders {
-  return id in homepageOnlyProviders;
-}
+type HomeProviderId = ProviderId;
+const allProviders = providerDisplayIds;
 const pythonTokenPattern = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(from|import|as|return|await|async|def|class|if|else|for|in|True|False|None)\b|([A-Za-z_]\w*)(?=\s*=)|(\b\d+(?:\.\d+)?\b)/g;
 
 function syntaxKind(match: RegExpExecArray): SyntaxKind {
@@ -61,47 +44,13 @@ function SyntaxColoredCode({ source }: { source: string }) {
   });
 }
 
-function endpoint(providers: SiteProviderMap, id: HomeProviderId) {
-  const route = providers[isHomepageOnlyProvider(id) ? 'openai' : id];
-  return route.baseUrl ?? route.previewBaseUrl ?? 'https://api.kineticrouter.com/v1';
-}
-
 function providerExample(providers: SiteProviderMap, id: HomeProviderId) {
-  if (id === 'anthropic') return `from anthropic import Anthropic
-
-client = Anthropic(
-    base_url="${endpoint(providers, id)}",
-    api_key="YOUR_KINETICROUTER_API_KEY"
-)
-
-message = client.messages.create(
-    model="anthropic/claude-sonnet-4.6",
-    max_tokens=1024,
-    messages=[{"role": "user", "content": "Hello!"}]
-)`;
-  const model = isHomepageOnlyProvider(id) ? homepageOnlyProviders[id].model : id === 'grok' ? 'grok/grok-4.6' : 'openai/gpt-5.4';
-  return `from openai import OpenAI
-
-client = OpenAI(
-    base_url="${endpoint(providers, id)}",
-    api_key="YOUR_KINETICROUTER_API_KEY"
-)
-
-response = client.chat.completions.create(
-    model="${model}",
-    messages=[{"role": "user", "content": "Hello!"}]
-)`;
+  if (id === 'meta') return '';
+  return openAICompatibleExamples(defaultProviderModel(id).id, providers[id].baseUrl!).python;
 }
 
 export function HomeApiExample({ home, providers, modelCount }: { home: SiteConfig['home']; providers: SiteProviderMap; modelCount: number }) {
-  const homepageProviders = {
-    ...providers,
-    deepseek: { ...homepageOnlyStatus, ...homepageOnlyProviders.deepseek },
-    zhipu: { ...homepageOnlyStatus, ...homepageOnlyProviders.zhipu },
-    moonshot: { ...homepageOnlyStatus, ...homepageOnlyProviders.moonshot },
-    gemini: { ...homepageOnlyStatus, ...homepageOnlyProviders.gemini },
-    minimax: { ...homepageOnlyStatus, ...homepageOnlyProviders.minimax },
-  };
+  const homepageProviders = providers;
   const enabledProviders = allProviders.filter((id) => homepageProviders[id].enabled);
   const providerOrder = enabledProviders.length ? enabledProviders : allProviders;
   const [provider, setProvider] = useState<HomeProviderId>(providerOrder[0]);
@@ -209,7 +158,7 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
         <p className="mt-2 text-xs text-muted-foreground" role="status">{copyError || (copied ? 'Code copied' : '')}</p>
 
         <div className="mx-auto mt-7 grid max-w-3xl grid-cols-2 gap-2 sm:gap-3">
-          <div><strong className="block text-[17px] font-semibold tracking-tight sm:text-2xl">{modelCount} models</strong><span className="text-xs leading-tight text-muted-foreground sm:text-xs">Dated catalog<br className="sm:hidden" /> snapshot</span></div>
+          <div><strong className="block text-[17px] font-semibold tracking-tight sm:text-2xl">{modelCount} models</strong><span className="text-xs leading-tight text-muted-foreground sm:text-xs">Current catalog<br className="sm:hidden" /> snapshot</span></div>
           <div><strong className="block text-[17px] font-semibold tracking-tight sm:text-2xl">57 docs</strong><span className="text-xs leading-tight text-muted-foreground sm:text-xs">Status-marked<br className="sm:hidden" /> references</span></div>
         </div>
       </div>

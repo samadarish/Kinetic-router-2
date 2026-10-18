@@ -22,17 +22,17 @@
     },
     {
       "prefix": "/docs/api/anthropic/",
-      "summary": "This page documents the Anthropic-native protocol shape used by kineticRouter.",
+      "summary": "Anthropic models use the shared OpenAI-compatible /v1 API.",
       "provider": "anthropic"
     },
     {
       "prefix": "/docs/api/grok/",
-      "summary": "This page documents the dedicated Grok protocol shape used by kineticRouter.",
+      "summary": "Grok models use the shared OpenAI-compatible /v1 API.",
       "provider": "grok"
     },
     {
       "prefix": "/docs/integrations/claude-",
-      "summary": "This page documents configuration steps for the available Anthropic-native protocol.",
+      "summary": "Provider setup and compatibility depend on the client. All published base URLs use /v1.",
       "provider": "claude"
     },
     {

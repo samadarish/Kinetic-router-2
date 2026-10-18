@@ -1,2 +1,1 @@
-// Keep the full catalog record out of the client bundle: this is display metadata only.
-export const catalogUpdateNotice = 'Astra and Claude Fable 5.1 references added September 11, 2026.';
+export const catalogUpdateNotice = '36 models across 8 providers. Displayed prices are 90% off official reference rates, checked October 18, 2026.';

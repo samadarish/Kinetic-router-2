@@ -61,8 +61,8 @@ describe('authored customer documentation', () => {
     for (const route of docsRoutes.filter(route => route.startsWith('/docs/integrations/claude-'))) {
       expect(getDocsPage(route).status, route).toMatchObject({ status: 'verified', label: 'Available' });
     }
-    expect(getDocsPage('/docs/api/anthropic/messages').content?.text).toContain('https://api.kineticrouter.com/anthropic');
-    expect(getDocsPage('/docs/api/grok/chat-completions').content?.text).toContain('https://api.kineticrouter.com/grok/v1');
+    expect(getDocsPage('/docs/api/anthropic/messages').content?.text).toContain('https://api.kineticrouter.com/v1');
+    expect(getDocsPage('/docs/api/grok/chat-completions').content?.text).toContain('https://api.kineticrouter.com/v1');
     expect(getDocsPage('/docs/api/openapi/provider-pricing').status.status).toBe('planned');
   });
 

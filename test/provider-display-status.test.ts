@@ -11,9 +11,9 @@ import {
 describe('provider display-status registry', () => {
   it('locks the canonical registry metadata and provider order', () => {
     expect(providerDisplayRegistry.version).toBe(1);
-    expect(providerDisplayRegistry.checkedAt).toBe('2026-10-13');
+    expect(providerDisplayRegistry.checkedAt).toBe('2026-10-18');
     expect(providerDisplayRegistry.displayOnly).toBe(true);
-    expect(providerDisplayIds).toEqual(['openai', 'anthropic', 'grok']);
+    expect(providerDisplayIds).toEqual(['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot', 'gemini', 'minimax', 'meta']);
   });
 
   it('keeps OpenAI available and copyable through its base URL', () => {
@@ -34,8 +34,8 @@ describe('provider display-status registry', () => {
   });
 
   it.each([
-    ['anthropic', 'https://api.kineticrouter.com/anthropic', 'Anthropic native'],
-    ['grok', 'https://api.kineticrouter.com/grok/v1', 'xAI-compatible'],
+    ['anthropic', 'https://api.kineticrouter.com/v1', 'OpenAI-compatible'],
+    ['grok', 'https://api.kineticrouter.com/v1', 'OpenAI-compatible'],
   ] as const)('keeps %s available and copyable through its base URL', (id, endpoint, protocolLabel) => {
     const provider = getProviderDisplayStatus(id);
     expect(provider).toMatchObject({
@@ -51,6 +51,15 @@ describe('provider display-status registry', () => {
     expect(provider.previewBaseUrl).toBeUndefined();
     expect(getProviderDisplayEndpoint(provider)).toBe(endpoint);
     expect(isProviderIntegrationCopyable(provider)).toBe(true);
+  });
+
+  it('keeps Meta planned and prevents copying', () => {
+    const meta = getProviderDisplayStatus('meta');
+    expect(meta).toMatchObject({ modelAccessState: 'planned', apiState: 'planned', badgeLabel: 'Planned', interactionMode: 'reference-only' });
+    expect(meta.baseUrl).toBeUndefined();
+    expect(isProviderIntegrationCopyable(meta)).toBe(false);
+    expect(resolveProviderDisplayId('google')).toBe('gemini');
+    expect(resolveProviderDisplayId('kimi')).toBe('moonshot');
   });
 
   it('resolves aliases without inventing unknown providers', () => {

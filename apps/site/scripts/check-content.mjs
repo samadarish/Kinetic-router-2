@@ -10,7 +10,7 @@ const manifestBytes = await readFile(manifestUrl);
 const manifestJson = manifestBytes.toString('utf8');
 const manifest = JSON.parse(manifestJson);
 const status = JSON.parse(await readFile(statusUrl, 'utf8'));
-const additions = JSON.parse(await readFile(new URL('data/catalog-additions.json', root), 'utf8'));
+const currentCatalog = JSON.parse(await readFile(new URL('../../packages/platform-config/src/model-catalog.json', root), 'utf8'));
 const llms = await readFile(new URL('public/llms.txt', root), 'utf8');
 const llmsFull = await readFile(new URL('public/llms-full.txt', root), 'utf8');
 const homeHero = await readFile(new URL('components/home-hero.tsx', root), 'utf8');
@@ -40,16 +40,17 @@ const activePrices = manifest.modelFixture.models.flatMap((model) => model.price
 expect(activePrices.length === 188, `Expected 188 active price rows, found ${activePrices.length}`);
 expect(unique(activePrices.map((price) => price.id)), 'Duplicate active price IDs found');
 expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked reference snapshot');
-const catalogModels = [...additions.models, ...manifest.modelFixture.models];
-expect(unique(catalogModels.map((model) => model.id)), 'Supplemental model IDs overlap the base snapshot');
-expect(unique(catalogModels.flatMap((model) => model.prices).filter((price) => price.active).map((price) => price.id)), 'Supplemental price IDs overlap the base snapshot');
-for (const model of additions.models) {
-  expect(model.catalogCapturedAt === additions.capturedAt && model.sourceVerifiedAt >= model.date, `${model.id}: supplemental reference dates are inconsistent`);
-  const officialSource = { openai: 'https://developers.openai.com/', anthropic: 'https://platform.claude.com/', grok: 'https://docs.x.ai/' }[model.provider];
-  expect(officialSource && model.sourceUrl?.startsWith(officialSource), `${model.id}: official model source missing`);
-  expect(model.prices.every((price) => price.modelId === model.id && Number.isSafeInteger(price.priceMicroUsd) && price.priceMicroUsd >= 0), `${model.id}: invalid reference price`);
+const catalogModels = currentCatalog.models;
+expect(catalogModels.length === 36, 'The current public catalog must contain 36 models');
+expect(unique(catalogModels.map((model) => `${model.provider}/${model.slug}`)), 'Duplicate current model IDs');
+expect(currentCatalog.sellMultiplier === 0.1, 'Display prices must be 90% off official reference rates');
+for (const model of catalogModels) {
+  const profile = currentCatalog.profiles[model.pricingProfile];
+  expect(Boolean(profile?.sourceUrl?.startsWith('https://')), `${model.slug}: official source missing`);
+  expect(profile?.prices.some((price) => price.component === 'input' && !price.tierLabel) && profile?.prices.some((price) => price.component === 'output' && !price.tierLabel), `${model.slug}: base prices missing`);
+  expect(profile?.prices.every((price) => Number.isFinite(price.usd) && price.usd >= 0), `${model.slug}: invalid reference price`);
   const url = `https://kineticrouter.com/models/${model.provider}/${model.slug}`;
-  expect(llms.includes(url) && llmsFull.includes(url), `${model.id}: supplemental model missing from LLM inventories`);
+  expect(llms.includes(url) && llmsFull.includes(url), `${model.slug}: current model missing from LLM inventories`);
 }
 expect(providerAvailability.version === 1 && providerAvailability.displayOnly === true, 'Provider availability registry metadata is invalid');
 expect(providerAvailability.checkedAt >= manifest.capturedAt, 'Provider availability fact check cannot predate the reference snapshot');
@@ -78,7 +79,7 @@ expect(JSON.stringify(sitemapRoutes) === JSON.stringify(indexableDocs), 'docs-si
 
 const inventories = `${llms}\n${llmsFull}`;
 expect(!/database-driven|live model catalog|live pricing/i.test(inventories), 'LLM exports still claim live/database-driven catalog data');
-expect(!/DeepSeek/i.test(inventories), 'LLM exports list a provider absent from the snapshot');
+expect(/DeepSeek/.test(inventories) && /90% off/.test(inventories), 'LLM exports must describe the current catalog and discount');
 expect(!inventories.includes('/docs/develop/advanced/model-routing'), 'LLM exports contain the removed model-routing path');
 expect((homeHero.match(/<h1\b/g) ?? []).length === 1, 'Landing hero must contain exactly one semantic h1');
 expect(homeHero.includes('{home.title}<span className="home-hero-period">.</span>'), 'Landing hero must render the gradient period as HTML text');
@@ -96,4 +97,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Content checks passed: ${manifest.docsRoutes.length} docs, ${manifest.modelFixture.models.length} models, ${activePrices.length} active prices, ${sha256.slice(0, 12)}…`);
+console.log(`Content checks passed: ${manifest.docsRoutes.length} docs, ${manifest.modelFixture.models.length} archived models, ${catalogModels.length} current models, ${sha256.slice(0, 12)}…`);

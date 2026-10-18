@@ -3,7 +3,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { canonicalUrl, isIndexableRoute, SITE_ORIGIN } from '../apps/site/data/seo-policy.mjs';
-import { documentationRouteStatus } from '../apps/site/scripts/provider-availability.mjs';
+import { documentationRouteStatus, providerAvailability } from '../apps/site/scripts/provider-availability.mjs';
 
 const option = (name) => process.argv.find((arg) => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
 const origin = option('origin') ?? 'http://localhost:3000';
@@ -11,8 +11,8 @@ const requestHost = option('host');
 const production = process.argv.includes('--production');
 const baseline = option('baseline') ? JSON.parse(await readFile(option('baseline'), 'utf8')) : undefined;
 const manifest = JSON.parse(await readFile(new URL('../apps/site/data/reference-manifest.json', import.meta.url), 'utf8'));
-const additions = JSON.parse(await readFile(new URL('../apps/site/data/catalog-additions.json', import.meta.url), 'utf8'));
-manifest.mainRoutes = [...new Set([...manifest.mainRoutes, ...additions.models.map((model) => `/models/${model.provider}/${model.slug}`)])];
+const catalog = JSON.parse(await readFile(new URL('../packages/platform-config/src/model-catalog.json', import.meta.url), 'utf8'));
+manifest.mainRoutes = [...new Set([...manifest.mainRoutes.filter((route) => !route.startsWith('/models/')), '/models/category/chat', ...Object.keys(providerAvailability.providers).filter((id) => catalog.models.some((model) => model.provider === id)).map((id) => `/models/${id}`), ...catalog.models.map((model) => `/models/${model.provider}/${model.slug}`)])];
 const statuses = JSON.parse(await readFile(new URL('../apps/site/data/documentation-status.json', import.meta.url), 'utf8'));
 const routes = [...manifest.mainRoutes.filter((route) => !route.startsWith('/account')), ...manifest.docsRoutes, '/docs/en'];
 const failures = [];
@@ -64,7 +64,7 @@ for (let i = 0; i < routes.length; i += 4) {
       check(titles.length === 1 && (titles[0][1].match(/kineticRouter/g) ?? []).length === 1, `${route}: title/branding mismatch`);
       check(tags.filter((tag) => tag.name === 'description' && tag.content).length === 1, `${route}: description missing/duplicated`);
       check(tags.find((tag) => tag.property === 'og:url')?.content === canonicalUrl(route), `${route}: OG URL mismatch`);
-      const detailed = route.startsWith('/docs') || /^\/models\/(openai|anthropic|grok)\/[^/]+$/.test(route);
+      const detailed = route.startsWith('/docs') || catalog.models.some((model) => route === `/models/${model.provider}/${model.slug}`);
       for (const [attribute, name] of [['property', 'og:image'], ['name', 'twitter:image']]) {
         const images = tags.filter((tag) => tag[attribute] === name).map((tag) => tag.content);
         check(JSON.stringify(images) === JSON.stringify(detailed ? [] : [SITE_ORIGIN + '/og.jpg']), `${route}: ${name} policy changed`);
@@ -114,9 +114,9 @@ for (const route of ['/seo-check-missing-page', '/models/unknown', '/models/open
 }
 // Ordinary browser and Googlebot responses may stream metadata; the complete HTML must still agree.
 for (const agent of ['Mozilla/5.0', 'Googlebot']) {
-  const response = await request('/models/openai/gpt-5.4', agent);
+  const response = await request('/models/openai/gpt-6-astra', agent);
   const html = withoutScripts(response.html);
-  check((html.match(/rel="canonical"/g) ?? []).length === 1 && html.includes(canonicalUrl('/models/openai/gpt-5.4')), `${agent}: streamed canonical mismatch`);
+  check((html.match(/rel="canonical"/g) ?? []).length === 1 && html.includes(canonicalUrl('/models/openai/gpt-6-astra')), `${agent}: streamed canonical mismatch`);
 }
 await mkdir(new URL('../.cache/seo/', import.meta.url), { recursive: true });
 await writeFile(new URL('../.cache/seo/report.json', import.meta.url), JSON.stringify({ origin, pages: routes.length, failures, results }, null, 2));
