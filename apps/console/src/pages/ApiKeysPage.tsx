@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Clipboard, Eye, EyeOff, KeyRound, Plus, Search, ShieldCheck } from 'lucide-react';
-import type { ApiKey, Group, Paginated } from '@kineticrouter/portal-contract';
+import { groupModelCatalogSchema, type ApiKey, type Group, type Paginated } from '@kineticrouter/portal-contract';
+import { ApiKeyGroupSelect } from '../components/ApiKeyGroupSelect';
 import { ConfirmDialog, Modal } from '../components/Modal';
 import { KeyQuota } from '../components/KeyQuota';
 import { RowActionsMenu } from '../components/RowActionsMenu';
@@ -132,6 +133,17 @@ export function ApiKeysPage() {
 }
 
 export function KeyEditor({ open, existing, groups, canWrite, onClose, onSaved }: { open: boolean; existing?: ApiKey; groups: Group[]; canWrite: boolean; onClose(): void; onSaved(): void }) {
+  const { user } = useAuth();
+  const catalog = useQuery({
+    queryKey: ['api-key-group-models', user?.id],
+    queryFn: async ({ signal }) => groupModelCatalogSchema.parse(await portalApi<unknown>('/groups/model-catalog', { signal })),
+    enabled: open && canWrite,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: open ? 30_000 : false,
+    refetchIntervalInBackground: false,
+    retry: false,
+  });
   const [form, setForm] = useState<KeyForm>(() => existing ? {
     ...blankForm, name: existing.name, groupId: existing.groupId ?? '', quota: existing.quota ?? '',
     rateLimit5h: existing.rateLimit5h ?? '', rateLimit1d: existing.rateLimit1d ?? '', rateLimit7d: existing.rateLimit7d ?? '',
@@ -164,7 +176,10 @@ export function KeyEditor({ open, existing, groups, canWrite, onClose, onSaved }
   return <Modal open={open} title={existing ? 'Edit API key' : 'Create API key'} onClose={onClose} footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button disabled={mutation.isPending || !canWrite || !validGroup} onClick={() => document.getElementById('key-editor-submit')?.click()}>{mutation.isPending ? 'Saving…' : existing ? 'Save changes' : 'Create key'}</Button></>}>
     <form className="key-form" onSubmit={submit}>
       <label className="field"><span>Key name</span><input className="field-input" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Production app" required /></label>
-      <label className="field"><span>Group</span><select className="field-select" value={form.groupId} onChange={(event) => update('groupId', event.target.value)} required><option value="" disabled>Select a group</option>{currentGroupUnavailable && existing && <option value={existing.groupId!}>{apiKeyGroupLabel(existing)} (current group)</option>}{groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
+      <ApiKeyGroupSelect value={form.groupId} groups={groups}
+        currentGroup={existing?.groupId ? { id: existing.groupId, name: apiKeyGroupLabel(existing), platform: existing.group?.platform } : undefined}
+        catalog={catalog.isError ? undefined : catalog.data} loading={catalog.isLoading}
+        disabled={!canWrite || mutation.isPending} onChange={value => update('groupId', value)} />
       {!groups.length && !existing?.groupId && <p className="field-hint">No groups are available. Contact support to get access to a group before saving this key.</p>}
       {currentGroupUnavailable && <p className="field-hint">You can keep the current group or select an available group.</p>}
 

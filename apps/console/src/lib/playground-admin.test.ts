@@ -21,10 +21,12 @@ describe('admin save completion identity', () => {
     const client = new QueryClient();
     client.setQueryData(['session'], { authenticated: true, csrfToken: owner.csrfToken, user: { id: '7', role: 'admin', status: 'active' } });
     client.setQueryData(['playground', 'models', '7'], []);
+    client.setQueryData(['api-key-group-models', '7'], { revision: 1, groups: [] });
     expect(applySavedPlaygroundSettings(client, saved, owner)).toBe(true);
     expect(client.getQueryData(playgroundAdminSettingsKey(owner.userId))).toEqual(saved);
     expect(client.getQueryData(playgroundAdminSettingsKey('8'))).toBeUndefined();
-    expect(client.getQueryState(['playground', 'models', '7'])?.isInvalidated).toBe(true); client.clear();
+    expect(client.getQueryState(['playground', 'models', '7'])?.isInvalidated).toBe(true);
+    expect(client.getQueryState(['api-key-group-models', '7'])?.isInvalidated).toBe(true); client.clear();
   });
   it.each([
     undefined, { authenticated: false },
@@ -36,5 +38,16 @@ describe('admin save completion identity', () => {
     expect(applySavedPlaygroundSettings(client, saved, owner)).toBe(false);
     expect(client.getQueryData(['session'])).toEqual(session);
     expect(client.getQueryData(playgroundAdminSettingsKey(owner.userId))).toBeUndefined(); client.clear();
+  });
+  it('cancels an initial preview read so a pre-save model list cannot overwrite the new selection', async () => {
+    const client = new QueryClient();
+    client.setQueryData(['session'], { authenticated: true, csrfToken: owner.csrfToken, user: { id: '7', role: 'admin', status: 'active' } });
+    let finish!: (value: { revision: number; groups: unknown[] }) => void;
+    const pending = client.fetchQuery({ queryKey: ['api-key-group-models', '7'], queryFn: () => new Promise<{ revision: number; groups: unknown[] }>(resolve => { finish = resolve; }) }).catch(() => undefined);
+    expect(applySavedPlaygroundSettings(client, saved, owner)).toBe(true);
+    finish({ revision: 1, groups: [] }); await pending;
+    expect(client.getQueryData(['api-key-group-models', '7'])).toBeUndefined();
+    expect(client.getQueryState(['api-key-group-models', '7'])?.isInvalidated).toBe(true);
+    client.clear();
   });
 });

@@ -14,6 +14,7 @@
     "./theme": { "types": "./dist/theme.d.ts", "import": "./dist/theme.js" },
     "./locale": { "types": "./dist/locale.d.ts", "import": "./dist/locale.js" },
     "./providers": { "types": "./dist/providers.d.ts", "import": "./dist/providers.js" },
+    "./provider-resolution": { "types": "./dist/provider-resolution.d.ts", "import": "./dist/provider-resolution.js" },
     "./models": { "types": "./dist/models.d.ts", "import": "./dist/models.js" }
   },
   "scripts": {

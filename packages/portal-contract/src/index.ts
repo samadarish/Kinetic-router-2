@@ -222,6 +222,16 @@ export type Group = {
     subscriptionType?: string;
 };
 
+export const groupModelCatalogSchema = z.object({
+    revision: z.number().int().nonnegative(),
+    groups: z.array(z.object({
+        groupId: z.string().min(1),
+        provider: z.enum(['openai', 'anthropic', 'grok', 'deepseek', 'zhipu', 'moonshot', 'gemini', 'minimax', 'meta', 'unknown']),
+        models: z.array(z.string().min(1).max(200).refine(value => !/[\x00-\x1f\x7f]/.test(value))).max(500),
+    }).strict()),
+}).strict();
+export type GroupModelCatalog = z.infer<typeof groupModelCatalogSchema>;
+
 export type ApiKeyStatus = 'active' | 'inactive' | 'quota_exhausted' | 'expired';
 
 export type ApiKey = {

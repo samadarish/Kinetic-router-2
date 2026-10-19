@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "고객 #{0}",
+  "Choose the shared models for Playground and API key groups.": "Playground와 API 키 그룹에서 함께 사용할 모델을 선택하세요.",
+  "Model preview unavailable": "모델 미리보기를 사용할 수 없습니다",
+  "Model settings": "모델 설정",
+  "No models selected": "선택된 모델이 없습니다",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "선택한 모델은 Playground와 API 키 그룹 드롭다운의 해당 회사 아래에 표시됩니다. Playground는 고객이 선택한 키의 접근 권한도 확인합니다.",
+  "Subscriptions are not available.": "구독을 사용할 수 없습니다.",
   "% of sessions with a CTA click": "CTA 클릭으로 세션의 %",
   "(current group)": "(현재 그룹)",
   "(min-width: 761px)": "(미나 폭 : 761px)",

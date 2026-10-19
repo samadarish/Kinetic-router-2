@@ -15,7 +15,7 @@ export function PlaygroundSettingsPage() {
   const { user } = useAuth();
   const settings = useQuery({ queryKey: playgroundAdminSettingsKey(user?.id), queryFn: async ({ signal }) => playgroundSettingsSchema.parse(await portalApi<unknown>('/admin/playground/settings', { signal })), staleTime: Infinity, refetchOnWindowFocus: false, retry: false });
   return <>
-    <PageHeader title="Playground settings" description="Choose which models customers can use in Playground." />
+    <PageHeader title="Model settings" description="Choose the shared models for Playground and API key groups." />
     {settings.isLoading ? <LoadingState label="Loading playground settings" /> : settings.data ? <SettingsEditor key={user?.id} settings={settings.data} reload={async () => { const result = await settings.refetch({ throwOnError: true }); return result.data!; }} /> : <ErrorState error={settings.error} retry={() => void settings.refetch()} />}
   </>;
 }
@@ -98,7 +98,7 @@ function SettingsEditor({ settings, reload }: { settings: PlaygroundSettings; re
     setIdentityError(`${field.getAttribute('aria-label') ?? 'Identity'}: enter a complete, valid month and year or clear the field.`);
     field.focus();
   }}>
-    <div className="playground-admin-intro"><p>Enabled models are available only to customers whose API keys can already access them. This setting applies to Playground.</p>{available && <Link to="/playground">Open Playground ↗</Link>}</div>
+    <div className="playground-admin-intro"><p>Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.</p>{available && <Link to="/playground">Open Playground ↗</Link>}</div>
     <div className="playground-global-setting">
       <label className="playground-global-toggle"><input type="checkbox" role="switch" checked={playgroundEnabled} disabled={disabled} onChange={event => setPlaygroundEnabled(event.target.checked)} /><span>Enable Playground</span></label>
       <p>Show Playground and allow new chats for all users. Turning it off keeps saved chats and model settings.</p>

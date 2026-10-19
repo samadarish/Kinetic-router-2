@@ -15,11 +15,16 @@ const ACTIVE_MS = 90_000;
 const TOKEN_MS = 5 * 60_000;
 const visitorCookie = 'kr_analytics_visitor';
 const legacyDisabledCookie = 'kr_analytics_disabled';
-type Identity = { visitorId: string; sessionId: string; tabId: string; origin: string; auth: string; userId?: string; username?: string; device: string; expiresAt: number };
-type Presence = Identity & { surface: AnalyticsSurface; path: string; at: number; eventAt: number; visible: boolean };
+type Identity = { visitorId: string; sessionId: string; tabId: string; origin: string; auth: string; userId?: string; device: string; expiresAt: number };
+type Presence = Identity & { label?: string; surface: AnalyticsSurface; path: string; at: number; eventAt: number; visible: boolean };
 type Observation = { userId: string; at: number };
 type Pending = { events: StoredEvent[]; observations: Observation[]; resolve(): void; reject(error: unknown): void };
 type ServiceOptions = { store?: AnalyticsStore; enabled?: boolean; now?: () => number; identify(cookie: string): Promise<PortalUser | undefined> };
+
+function customerLabel(user: PortalUser | undefined, userId: string) {
+  const username = user?.username.trim();
+  return (username && username.toLowerCase() !== 'user' ? username : user?.email.trim()) || `Customer #${userId}`;
+}
 
 export class AnalyticsService {
   readonly store: AnalyticsStore;
@@ -75,7 +80,7 @@ export class AnalyticsService {
       const acquisition = this.acquisition(input, c.req.header('user-agent') ?? '');
       const session = await this.store.session(visitorId, acquisition, this.now());
       this.health.storageAvailable = true;
-      const identity: Identity = { visitorId, sessionId: session.id, tabId: input.tabId, origin: c.req.header('origin')!, auth: this.authBinding(getCookie(c, config.sessionCookieName)), userId: user?.id, username: user?.username, device: acquisition.device, expiresAt: this.now() + TOKEN_MS };
+      const identity: Identity = { visitorId, sessionId: session.id, tabId: input.tabId, origin: c.req.header('origin')!, auth: this.authBinding(getCookie(c, config.sessionCookieName)), userId: user?.id, device: acquisition.device, expiresAt: this.now() + TOKEN_MS };
       return c.json({ ok: true, data: { enabled: true, token: this.sign(JSON.stringify(identity), 'token'), expiresAt: identity.expiresAt, visitorId, sessionId: session.id, timezone: config.serverTimezone } });
     });
     app.post('/collect', async c => {
@@ -99,13 +104,19 @@ export class AnalyticsService {
         events.push({ ...event, engagementMs: event.name === 'engagement' ? event.engagementMs : undefined, path, day: event.name === 'engagement' ? event.day! : analyticsDay(event.at, config.serverTimezone), surface, visitorId: identity.visitorId, sessionId: identity.sessionId });
       }
       const key = `${identity.visitorId}:${identity.tabId}`;
+      // Resolve labels from the current server session, never from a browser token.
+      const current = identity.userId ? await options.identify(getCookie(c, config.sessionCookieName) ?? '') : undefined;
+      if (current?.id === identity.userId && current?.role === 'admin') {
+        for (const [presenceKey, item] of this.presence) if (item.auth === binding) this.presence.delete(presenceKey);
+        return c.body(null, 204);
+      }
+      const label = identity.userId ? customerLabel(current?.id === identity.userId ? current : undefined, identity.userId) : undefined;
       const previous = this.presence.get(key);
       // A delayed flush must not move the live visitor back to a previous page.
       const eventAt = input.sequence;
-      if ((!previous || eventAt > previous.eventAt) && (this.presence.has(key) || this.presence.size < 10_000)) this.presence.set(key, { ...identity, surface, path: normalizePath(input.path, surface), at: Math.min(now, input.sentAt), eventAt, visible: input.visible });
+      if ((!previous || eventAt > previous.eventAt) && (this.presence.has(key) || this.presence.size < 10_000)) this.presence.set(key, { ...identity, label, surface, path: normalizePath(input.path, surface), at: Math.min(now, input.sentAt), eventAt, visible: input.visible });
       const observations: Observation[] = [];
       if (surface === 'console' && input.visible && identity.userId && now - input.sentAt <= 90_000 && !/bot|crawler|spider|headless|lighthouse/i.test(c.req.header('user-agent') ?? '')) {
-        const current = await options.identify(getCookie(c, config.sessionCookieName) ?? '');
         if (current?.id === identity.userId && current.role === 'user' && current.status === 'active') observations.push({ userId: current.id, at: Math.min(now, input.sentAt) });
       }
       if (events.length || observations.length) await this.enqueue(events, observations);
@@ -203,7 +214,7 @@ export class AnalyticsService {
     }
     const rows = [...groups].map(([id, items]) => {
       const latest = items.sort((a, b) => b.at - a.at)[0]!;
-      return { id, label: latest.username || `Visitor ${latest.visitorId.slice(0, 8)}`, authenticated: Boolean(latest.userId), surface: latest.surface, path: latest.path, device: latest.device, lastSeen: new Date(latest.at).toISOString(), tabs: items.length };
+      return { id, label: latest.label || (latest.userId ? `Customer #${latest.userId}` : `Visitor ${latest.visitorId.slice(0, 8)}`), authenticated: Boolean(latest.userId), surface: latest.surface, path: latest.path, device: latest.device, lastSeen: new Date(latest.at).toISOString(), tabs: items.length };
     }).sort((a, b) => Number(b.authenticated) - Number(a.authenticated) || b.lastSeen.localeCompare(a.lastSeen));
     return { generatedAt: new Date(now).toISOString(), activeWindowSeconds: ACTIVE_MS / 1000, visitors: new Set(active.map(i => i.visitorId)).size, customers: new Set(active.flatMap(i => i.userId ? [i.userId] : [])).size, activeTabs: active.length, items: rows.slice((page - 1) * pageSize, page * pageSize), pages: [...paths.values()].map(items => ({ surface: items[0]!.surface, path: items[0]!.path, visitors: new Set(items.map(i => i.visitorId)).size, tabs: items.length })).sort((a, b) => b.visitors - a.visitors).slice(0, 100), total: rows.length, page, pageSize, health: { ...this.health } };
   }

@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "Клиент №{0}",
+  "Choose the shared models for Playground and API key groups.": "Выберите общие модели для Playground и групп API-ключей.",
+  "Model preview unavailable": "Предпросмотр моделей недоступен",
+  "Model settings": "Настройки моделей",
+  "No models selected": "Модели не выбраны",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "Выбранные модели отображаются в Playground и под названием соответствующей компании в списке групп API-ключей. Playground также проверяет доступ для ключа, выбранного клиентом.",
+  "Subscriptions are not available.": "Подписки недоступны.",
   "% of sessions with a CTA click": "% сеансов с кликом CTA",
   "(current group)": "(Сейчасная группа)",
   "(min-width: 761px)": "(минутная ширина: 761px)",

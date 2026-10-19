@@ -25,7 +25,7 @@ const nav = [
   { to: '/profile', label: 'Profile', icon: UserRound },
   { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
   { to: '/admin/metrics', label: 'Metrics', icon: CircleGauge },
-  { to: '/admin/playground', label: 'Playground settings', icon: Settings },
+  { to: '/admin/playground', label: 'Model settings', icon: Settings },
   { to: '/admin/playground/chats', label: 'Playground chats', icon: MessageSquare },
   { to: '/admin/website', label: 'Website settings', icon: Globe },
 ];

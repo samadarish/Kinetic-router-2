@@ -1,17 +1,29 @@
-import { headers } from 'next/headers';
-import { SOCIAL_PLATFORMS } from '@kineticrouter/portal-contract';
-import { resolvePublicConsoleOrigin } from '@/data/public-console-origin.mjs';
-import { publicRequestOrigin } from '@/data/console';
-import { loadWebsiteSocialLinks } from '@/data/website-settings';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { SOCIAL_PLATFORMS, type SocialLinks } from '@kineticrouter/portal-contract';
+import { loadWebsiteSocialLinks } from '../data/website-settings';
+import { usePublicSession } from './use-public-session';
 import { SocialIcon } from '@kineticrouter/brand-ui';
 
-export async function FooterSocialLinks() {
-  const origin = resolvePublicConsoleOrigin(
-    process.env.KINETICROUTER_CONSOLE_ORIGIN ?? process.env.NEXT_PUBLIC_KINETICROUTER_CONSOLE_ORIGIN,
-    publicRequestOrigin(await headers()), process.env.NODE_ENV === 'development',
-  );
-  const links = await loadWebsiteSocialLinks(origin);
-  // Never resurrect an administrator's removed or replaced links during an outage.
+export function FooterSocialLinks() {
+  const { loaded, session, consoleOrigin } = usePublicSession();
+  if (!loaded || !session?.authenticated || !session.user) return null;
+  // Remount on account changes so a previous account's links cannot reappear.
+  return <SignedInSocialLinks key={`${consoleOrigin}:${session.user.id}`} consoleOrigin={consoleOrigin} />;
+}
+
+function SignedInSocialLinks({ consoleOrigin }: { consoleOrigin: string }) {
+  const [links, setLinks] = useState<SocialLinks | null>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    void loadWebsiteSocialLinks(consoleOrigin, fetch, controller.signal).then(value => {
+      if (active) setLinks(value);
+    });
+    return () => { active = false; controller.abort(); };
+  }, [consoleOrigin]);
+  // Keep removed links hidden if authentication or settings retrieval fails.
   if (!links) return null;
   const visible = SOCIAL_PLATFORMS.filter(({ id }) => links[id]);
   if (!visible.length) return null;

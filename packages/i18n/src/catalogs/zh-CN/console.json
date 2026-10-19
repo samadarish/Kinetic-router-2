@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "客户 #{0}",
+  "Choose the shared models for Playground and API key groups.": "选择 Playground 和 API 密钥分组共用的模型。",
+  "Model preview unavailable": "模型预览不可用",
+  "Model settings": "模型设置",
+  "No models selected": "未选择模型",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "所选模型会显示在 Playground 中，以及 API 密钥分组下拉菜单中对应公司名的下方。Playground 还会检查客户所选密钥的访问权限。",
+  "Subscriptions are not available.": "订阅不可用。",
   "% of sessions with a CTA click": "使用CTA点击的会议 %",
   "(current group)": "(现行组)",
   "(min-width: 761px)": "(小幅: 761px)",

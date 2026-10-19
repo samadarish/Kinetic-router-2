@@ -25,6 +25,7 @@ All existing response envelopes, authentication and CSRF requirements remain in 
 | Method and endpoint | Public contract change |
 | --- | --- |
 | `GET /portal/v1/groups` | Explicit group fields: `id`, `name`, `description`, `platform`, `subscriptionType`. Internal rate fields and unknown additions are omitted. |
+| `GET /portal/v1/groups/model-catalog` | Authenticated group previews from the shared model selection: revision, permitted group IDs, company identifiers, and model names only. No key is needed to preview a group. |
 | `GET /portal/v1/subscriptions` | Explicit subscription fields and sanitized nested group. Limits, usage and validity preserved. |
 | `GET /portal/v1/api-keys` and `GET /portal/v1/api-keys/:id` | Explicit key fields and sanitized nested group. Customer key-management fields, quota windows and actual spend preserved. |
 | `POST /portal/v1/api-keys` and `PATCH /portal/v1/api-keys/:id` | Return an allowlisted key when available; otherwise `{ created: true }` or `{ updated: true }`, replacing the raw upstream fallback. |

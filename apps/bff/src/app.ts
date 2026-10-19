@@ -70,6 +70,7 @@ import {
 import { createSession, createSessionStore, type PortalSession, type SessionStore } from './session-store.js';
 import { AnalyticsService } from './analytics/service.js';
 import { MetricsService, MetricsError } from './metrics/service.js';
+import { groupModelCatalog } from './group-model-catalog.js';
 import { MetricsSourceError } from '@kineticrouter/sub2api-client';
 import { analyticsDay, type AnalyticsStore, type ReportKind } from './analytics/model.js';
 import { installPlaygroundRoutes } from './playground.js';
@@ -174,11 +175,11 @@ export function createApp(
   });
 
   app.options('/portal/v1/public-session', (c) => publicCorsPreflight(c));
-  app.get('/portal/v1/website', async c => {
-    // Public links only; no session or credentials are needed by the public website.
-    c.header('Access-Control-Allow-Origin', '*');
-    const { socialLinks } = await websiteSettings.read();
-    return success(c, publicWebsiteSettingsSchema.parse({ socialLinks }));
+  app.options('/portal/v1/website', c => publicCorsPreflight(c, true));
+  app.use('/portal/v1/website', async (c, next) => {
+    const denied = applyCredentialedPublicCors(c, true);
+    if (denied) return denied;
+    await next();
   });
   app.get('/portal/v1/public-session', async (c) => {
     const denied = applyCredentialedPublicCors(c);
@@ -308,6 +309,11 @@ export function createApp(
     await next();
   });
 
+  app.get('/portal/v1/website', async c => {
+    const { socialLinks } = await websiteSettings.read();
+    return success(c, publicWebsiteSettingsSchema.parse({ socialLinks }));
+  });
+
   app.use('/portal/v1/admin/*', async (c, next) => {
     const session = requireSession(c);
     if (session.user.role !== 'admin' || session.user.status !== 'active') return failure(c, 403, 'ADMIN_REQUIRED', 'Administrator access is required.');
@@ -413,6 +419,14 @@ export function createApp(
   app.get('/portal/v1/groups', async (c) => {
     const raw = await authRequest(c, store, client, (token) => client.request('groups/available', {}, authOptions(token)));
     return success(c, arrayValue(raw).map((value) => publicGroup(mapGroup(value))));
+  });
+
+  app.get('/portal/v1/groups/model-catalog', async (c) => {
+    const [raw, settings] = await Promise.all([
+      authRequest(c, store, client, token => client.request('groups/available', {}, authOptions(token))),
+      playgroundSettings.read(),
+    ]);
+    return success(c, groupModelCatalog(arrayValue(raw).map(value => publicGroup(mapGroup(value))), settings));
   });
 
   app.get('/portal/v1/api-keys', async (c) => {
@@ -659,9 +673,9 @@ function supportNotificationPreflight(c: Context<{ Variables: Variables }>) {
   return c.body(null, 204);
 }
 
-function applyCredentialedPublicCors(c: Context<{ Variables: Variables }>): Response | undefined {
+function applyCredentialedPublicCors(c: Context<{ Variables: Variables }>, allowConsoleOrigin = false): Response | undefined {
   const origin = c.req.header('origin');
-  if (origin && !isPublicSiteOrigin(origin)) return failure(c, 403, 'ORIGIN_INVALID', 'The request origin is not allowed.');
+  if (origin && !isPublicSiteOrigin(origin) && !(allowConsoleOrigin && origin === config.portalOrigin)) return failure(c, 403, 'ORIGIN_INVALID', 'The request origin is not allowed.');
   if (origin) {
     c.header('Access-Control-Allow-Origin', origin);
     c.header('Access-Control-Allow-Credentials', 'true');
@@ -670,8 +684,8 @@ function applyCredentialedPublicCors(c: Context<{ Variables: Variables }>): Resp
   return undefined;
 }
 
-function publicCorsPreflight(c: Context<{ Variables: Variables }>) {
-  const denied = applyCredentialedPublicCors(c);
+function publicCorsPreflight(c: Context<{ Variables: Variables }>, allowConsoleOrigin = false) {
+  const denied = applyCredentialedPublicCors(c, allowConsoleOrigin);
   if (denied) return denied;
   c.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   c.header('Access-Control-Allow-Headers', 'Accept');

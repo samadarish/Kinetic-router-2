@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "Customer #{0}",
+  "Choose the shared models for Playground and API key groups.": "Choose the shared models for Playground and API key groups.",
+  "Model preview unavailable": "Model preview unavailable",
+  "Model settings": "Model settings",
+  "No models selected": "No models selected",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.",
+  "Subscriptions are not available.": "Subscriptions are not available.",
   "% of sessions with a CTA click": "% of sessions with a CTA click",
   "(current group)": "(current group)",
   "(min-width: 761px)": "(min-width: 761px)",

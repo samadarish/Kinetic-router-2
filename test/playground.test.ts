@@ -36,6 +36,7 @@ async function fixture(options: { key?: unknown; status?: number; accountStatus?
     else if (path.endsWith('/settings/public')) data = { model_plaza_enabled: options.pricesEnabled !== false };
     else if (path.endsWith('/user/profile')) data = options.profile ?? { id: 42, username: 'Administrator', email: 'fixture@example.com', role: options.role ?? 'user', status: 'active' };
     else if (path.endsWith('/model-plaza')) data = options.plaza ?? basePlaza();
+    else if (path.endsWith('/groups/available')) data = [{ id: 4, name: 'OpenAI', platform: 'openai', ...sentinels }];
     return Response.json({ code: 0, data });
   });
   const gatewayFetch = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
@@ -66,6 +67,18 @@ function assertNoPrivateProperties(value: unknown) {
 }
 
 describe('playground model administration and discovery', () => {
+  it('uses one admin selection for Playground and API key group previews while preserving per-key access checks', async () => {
+    const fx = await fixture({ role: 'admin', enabled: ['gpt-test', 'gpt-other'], modelRows: [{ id: 'gpt-test' }] });
+    const preview = async () => (await (await fx.app.request('/portal/v1/groups/model-catalog', { headers: fx.headers })).json()).data.groups[0].models;
+    const playground = async () => (await (await fx.app.request('/portal/v1/playground/models?apiKeyId=7', { headers: fx.headers })).json()).data.map((model: { id: string }) => model.id);
+    expect(await preview()).toEqual(['gpt-other', 'gpt-test']);
+    expect(await playground()).toEqual(['gpt-test']);
+
+    const saved = await fx.app.request('/portal/v1/admin/playground/settings', { method: 'PUT', headers: fx.headers, body: JSON.stringify({ revision: 1, enabledModelIds: ['gpt-other'] }) });
+    expect(saved.status).toBe(200);
+    expect(await preview()).toEqual(['gpt-other']);
+    expect(await playground()).toEqual([]);
+  });
   it('starts closed and blocks forged requests without inference', async () => {
     const { app, headers, gatewayFetch } = await fixture({ enabled: [] });
     expect((await (await app.request('/portal/v1/playground/models?apiKeyId=7', { headers })).json()).data).toEqual([]);

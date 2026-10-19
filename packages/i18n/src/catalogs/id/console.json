@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "Pelanggan #{0}",
+  "Choose the shared models for Playground and API key groups.": "Pilih model yang digunakan bersama oleh Playground dan grup kunci API.",
+  "Model preview unavailable": "Pratinjau model tidak tersedia",
+  "Model settings": "Pengaturan model",
+  "No models selected": "Tidak ada model yang dipilih",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "Model yang dipilih muncul di Playground dan di bawah perusahaan yang sesuai dalam menu grup kunci API. Playground juga memeriksa akses untuk kunci yang dipilih pelanggan.",
+  "Subscriptions are not available.": "Langganan tidak tersedia.",
   "% of sessions with a CTA click": "% sesi dengan klik CTA",
   "(current group)": "(Kelompok saat ini)",
   "(min-width: 761px)": "(Lebih dari min: 761px)",

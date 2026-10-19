@@ -14,6 +14,9 @@ export function applySavedPlaygroundSettings(client: QueryClient, result: Playgr
   void client.cancelQueries({ queryKey: ['session'], exact: true });
   client.setQueryData<SessionView>(['session'], current => current ? { ...current, playgroundEnabled: result.playgroundEnabled } : current);
   client.setQueryData(playgroundAdminSettingsKey(owner.userId), result);
+  void client.cancelQueries({ queryKey: ['playground', 'models'] });
   void client.invalidateQueries({ queryKey: ['playground', 'models'] });
+  void client.cancelQueries({ queryKey: ['api-key-group-models'] });
+  void client.invalidateQueries({ queryKey: ['api-key-group-models'] });
   return true;
 }

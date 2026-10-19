@@ -47,7 +47,7 @@ export function PublicHeader({ content }: { content: SiteConfig; compact?: boole
           </div>
           <div className="ml-auto flex shrink-0 items-center lg:ml-0 lg:justify-self-end">
             <LanguageSelector />
-            <button type="button" aria-label="Toggle color theme" onClick={toggleTheme} className="public-theme-toggle grid h-9 w-9 place-items-center text-muted-foreground transition hover:text-foreground">{dark ? <SunIcon className="h-[18px] w-[18px]" /> : <MoonIcon className="h-[18px] w-[18px]" />}</button>
+            <button type="button" aria-label={dark ? 'Light mode' : 'Dark mode'} title={dark ? 'Light mode' : 'Dark mode'} onClick={toggleTheme} className="public-theme-toggle grid h-9 w-9 place-items-center text-muted-foreground transition hover:text-foreground">{dark ? <SunIcon className="h-[18px] w-[18px]" /> : <MoonIcon className="h-[18px] w-[18px]" />}</button>
             <PublicAccountMenu className="ml-1 sm:ml-3" />
             <button type="button" aria-label={menu ? 'Close menu' : 'Open menu'} aria-controls="public-mobile-menu" aria-expanded={menu} onClick={() => setMenu((value) => !value)} className="ml-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg sm:ml-2 lg:hidden">{menu ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}</button>
           </div>

@@ -37,16 +37,17 @@ beforeEach(() => { auth.keyWrites = true; });
 describe('API key group form', () => {
   it.each([undefined, { ...existing, groupId: null }])('requires a real selection for a new or unassigned key', key => {
     const html = renderEditor(key);
-    expect(html).toMatch(/<select\b[^>]*required=""/);
-    expect(html).toMatch(/<option(?=[^>]*value="")(?=[^>]*disabled="")(?=[^>]*selected="")[^>]*>Select a group<\/option>/);
-    expect(html).toContain('value="7"');
+    expect(html).toMatch(/<button(?=[^>]*role="combobox")(?=[^>]*aria-required="true")/);
+    expect(html).toContain('Select a group');
+    expect(html).toMatch(/<input(?=[^>]*name="groupId")(?=[^>]*value="")/);
     expect(html).not.toContain('Default (automatic)');
     expect(saveButton(html)).toContain('disabled=""');
   });
 
   it('keeps an existing group selected when it is absent from available groups', () => {
     const html = renderEditor(existing);
-    expect(html).toMatch(/<option(?=[^>]*value="42")(?=[^>]*selected="")[^>]*>Group #42 \(current group\)<\/option>/);
+    expect(html).toContain('Group #42 (current group)');
+    expect(html).toMatch(/<input(?=[^>]*name="groupId")(?=[^>]*value="42")/);
     expect(html).toContain('You can keep the current group or select an available group.');
     expect(saveButton(html)).toBeTruthy();
     expect(saveButton(html)).not.toContain('disabled');
@@ -60,7 +61,7 @@ describe('API key group form', () => {
 
   it('does not duplicate an existing group that remains available', () => {
     const html = renderEditor({ ...existing, groupId: '7', group: groups[0] });
-    expect(html.match(/<option\b[^>]*value="7"/g)).toHaveLength(1);
+    expect(html.match(/<input(?=[^>]*name="groupId")(?=[^>]*value="7")/g)).toHaveLength(1);
     expect(html).not.toContain('(current group)');
     expect(saveButton(html)).not.toContain('disabled');
   });

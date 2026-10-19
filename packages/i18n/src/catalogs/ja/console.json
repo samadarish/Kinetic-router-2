@@ -1,4 +1,11 @@
 {
+  "Customer #{0}": "顧客 #{0}",
+  "Choose the shared models for Playground and API key groups.": "PlaygroundとAPIキーグループで共通して使用するモデルを選択してください。",
+  "Model preview unavailable": "モデルのプレビューを利用できません",
+  "Model settings": "モデル設定",
+  "No models selected": "モデルが選択されていません",
+  "Selected models appear in Playground and under their matching company in the API key group dropdown. Playground also checks access for the customer's selected key.": "選択したモデルは、PlaygroundとAPIキーグループのドロップダウンで該当する企業の下に表示されます。Playgroundでは、利用者が選択したキーのアクセス権も確認します。",
+  "Subscriptions are not available.": "サブスクリプションは利用できません。",
   "% of sessions with a CTA click": "CTA クリックでセッションの%",
   "(current group)": "(現在のグループ)",
   "(min-width: 761px)": "(min width: 761px)",

@@ -48,15 +48,17 @@ describe('website social link validation', () => {
   });
 });
 
-describe('website settings access and public delivery', () => {
+describe('website settings access and authenticated delivery', () => {
   const path = '/portal/v1/admin/website/settings';
   const update = { revision: 0, socialLinks: { ...DEFAULT_SOCIAL_LINKS, x: 'https://x.com/updated', telegram: '' } };
   it('publishes admin edits without exposing revision or authentication data', async () => {
     const { app, headers, upstream } = await fixture();
-    const before = await app.request('/portal/v1/website', { headers: { origin: 'https://kineticrouter.com' } });
+    const origin = config.publicSiteOrigins[0]!;
+    const before = await app.request('/portal/v1/website', { headers: { cookie: headers.cookie, origin } });
     expect(before.status).toBe(200);
-    expect(before.headers.get('access-control-allow-origin')).toBe('*');
-    expect(before.headers.get('access-control-allow-credentials')).toBeNull();
+    expect(before.headers.get('access-control-allow-origin')).toBe(origin);
+    expect(before.headers.get('access-control-allow-credentials')).toBe('true');
+    expect(before.headers.get('cache-control')).toContain('no-store');
     expect((await before.json()).data).toEqual({ socialLinks: DEFAULT_SOCIAL_LINKS });
     expect(upstream).not.toHaveBeenCalled();
     expect((await app.request(path, { headers })).status).toBe(200);
@@ -64,8 +66,45 @@ describe('website settings access and public delivery', () => {
     expect(saved.status).toBe(200);
     expect((await saved.json()).data).toEqual({ ...update, revision: 1 });
     expect(upstream).toHaveBeenCalledTimes(2); // Admin role rechecked for the write.
-    expect((await (await app.request('/portal/v1/website')).json()).data).toEqual({ socialLinks: update.socialLinks });
+    expect((await (await app.request('/portal/v1/website', { headers })).json()).data).toEqual({ socialLinks: update.socialLinks });
     expect((await app.request(path, { method: 'PUT', headers, body: JSON.stringify(update) })).status).toBe(409);
+  });
+  it('hides URLs from anonymous and expired sessions while allowing all signed-in roles', async () => {
+    for (const role of ['admin', 'user'] as const) {
+      const { app, headers, store, settings } = await fixture(role);
+      const read = vi.spyOn(settings, 'read');
+      for (const cookie of ['', `${config.sessionCookieName}=expired`]) {
+        const response = await app.request('/portal/v1/website', { headers: { cookie, origin: config.publicSiteOrigins[0]! } });
+        expect(response.status).toBe(401);
+        expect(response.headers.get('access-control-allow-origin')).toBe(config.publicSiteOrigins[0]);
+        expect(response.headers.get('access-control-allow-credentials')).toBe('true');
+        expect(await response.text()).not.toContain('https://');
+      }
+      expect(read).not.toHaveBeenCalled();
+      expect((await app.request('/portal/v1/website', { headers })).status).toBe(200);
+      expect((await app.request('/portal/v1/website', { headers: { cookie: headers.cookie } })).status).toBe(200);
+      await store.delete(headers.cookie.split('=')[1]!);
+      expect((await app.request('/portal/v1/website', { headers })).status).toBe(401);
+    }
+  });
+  it('allows credentialed reads and preflights only from configured site and console origins', async () => {
+    const { app, headers } = await fixture('user');
+    for (const origin of [...config.publicSiteOrigins, config.portalOrigin]) {
+      const options = await app.request('/portal/v1/website', { method: 'OPTIONS', headers: { origin, 'access-control-request-method': 'GET' } });
+      expect(options.status).toBe(204);
+      expect(options.headers.get('access-control-allow-origin')).toBe(origin);
+      expect(options.headers.get('access-control-allow-credentials')).toBe('true');
+      expect(options.headers.get('vary')).toBe('Origin');
+      const response = await app.request('/portal/v1/website', { headers: { cookie: headers.cookie, origin } });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('access-control-allow-origin')).toBe(origin);
+    }
+    for (const method of ['OPTIONS', 'GET']) {
+      const response = await app.request('/portal/v1/website', { method, headers: { ...headers, origin: 'https://evil.invalid' } });
+      expect(response.status).toBe(403);
+      expect(response.headers.get('access-control-allow-origin')).toBeNull();
+      expect(await response.text()).not.toContain('socialLinks');
+    }
   });
   it('rejects anonymous, customer, and revoked-admin access', async () => {
     const { app, headers } = await fixture('user');
@@ -85,10 +124,10 @@ describe('website settings access and public delivery', () => {
     expect((await settings.read()).revision).toBe(0);
   });
   it('reports unavailable storage without overwriting or silently returning defaults', async () => {
-    const { app, settings } = await fixture();
+    const { app, settings, headers } = await fixture();
     const { WebsiteSettingsError } = await import('../apps/bff/src/website-settings');
     vi.spyOn(settings, 'read').mockRejectedValue(new WebsiteSettingsError(503));
-    const response = await app.request('/portal/v1/website');
+    const response = await app.request('/portal/v1/website', { headers });
     expect(response.status).toBe(503);
     expect((await response.json()).error.code).toBe('WEBSITE_SETTINGS_UNAVAILABLE');
   });
@@ -112,15 +151,15 @@ describe('website settings persistence', () => {
   });
 });
 
-describe('public website settings loading', () => {
+describe('signed-in website settings loading', () => {
   it('renders saved changes and deliberately empty URLs instead of the original defaults', async () => {
     const socialLinks = { ...DEFAULT_SOCIAL_LINKS, x: 'https://x.com/updated', telegram: '' };
     const fetcher = vi.fn(async () => Response.json({ ok: true, data: { socialLinks } }));
     expect(await loadWebsiteSocialLinks('https://console.example.com', fetcher)).toEqual(socialLinks);
-    expect(fetcher).toHaveBeenCalledWith('https://console.example.com/portal/v1/website', expect.objectContaining({ credentials: 'omit', cache: 'no-store', redirect: 'manual' }));
+    expect(fetcher).toHaveBeenCalledWith('https://console.example.com/portal/v1/website', expect.objectContaining({ credentials: 'include', cache: 'no-store', redirect: 'manual' }));
   });
   it('omits the row on outages or malformed responses without resurrecting removed links', async () => {
-    for (const response of [Response.redirect('https://other.example.com'), Response.json({}, { status: 503 }), Response.json({ ok: true, data: {} }), Response.json({ ok: true, data: { socialLinks: { ...DEFAULT_SOCIAL_LINKS, x: 'javascript:alert(1)' } } })]) {
+    for (const response of [Response.redirect('https://other.example.com'), Response.json({}, { status: 401 }), Response.json({}, { status: 503 }), Response.json({ ok: true, data: {} }), Response.json({ ok: true, data: { socialLinks: { ...DEFAULT_SOCIAL_LINKS, x: 'javascript:alert(1)' } } })]) {
       expect(await loadWebsiteSocialLinks('https://console.example.com', async () => response)).toBeNull();
     }
     expect(await loadWebsiteSocialLinks('https://console.example.com', async () => { throw new Error('Unavailable'); })).toBeNull();

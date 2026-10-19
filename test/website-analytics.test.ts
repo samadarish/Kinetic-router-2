@@ -54,6 +54,7 @@ describe('website analytics security and collection', () => {
     const previous = [...storage.customerHours.values()].map(row => row.lastSeen);
     expect((await collect(instance, first, { ...overrides, sentAt: now + 1000, sequence: 4 })).status).toBe(204);
     expect([...storage.customerHours.values()].map(row => row.lastSeen)).toEqual(previous);
+    expect(instance.analytics.live('all', 1, 25).customers).toBe(0);
   });
   it('never attributes queued anonymous observations, site traffic or delayed heartbeats to customer activity', async () => {
     const storage = new MemoryAnalyticsStore(), instance = fixture({ analyticsStore: storage });
@@ -122,6 +123,47 @@ describe('website analytics security and collection', () => {
     await instance.app.request('/portal/v1/auth/logout', { method: 'POST', headers: { origin: config.portalOrigin, cookie: boot.cookie } });
     expect((await collect(instance, boot, { sequence: 2 })).status).toBe(401);
     expect(instance.analytics.live('all', 1, 25).customers).toBe(0);
+  });
+  it.each([
+    ['  Customer  ', 'email@example.test', 'Customer'],
+    ['日本語の名前', 'email@example.test', '日本語の名前'],
+    ['User', 'email@example.test', 'email@example.test'],
+    [' uSeR ', '  email@example.test  ', 'email@example.test'],
+    ['', 'email@example.test', 'email@example.test'],
+    ['   ', '', 'Customer #42'],
+    ['User', '   ', 'Customer #42'],
+  ])('uses a meaningful live label for username %j and email %j', async (username, email, label) => {
+    const instance = fixture(), account = await authenticate(instance);
+    Object.assign(account.session.user, { username, email });
+    await instance.store.set(account.session);
+    const boot = await bootstrap(instance, { cookie: account.cookie });
+    expect((await collect(instance, boot)).status).toBe(204);
+    expect(instance.analytics.live('all', 1, 25).items).toMatchObject([{ label, authenticated: true }]);
+  });
+  it('refreshes names from the server session without putting names or emails in tokens or history', async () => {
+    const storage = new MemoryAnalyticsStore(), instance = fixture({ analyticsStore: storage });
+    const account = await authenticate(instance);
+    const boot = await bootstrap(instance, { cookie: account.cookie, origin: config.portalOrigin });
+    const token = JSON.parse(Buffer.from(boot.identity!.token!.split('.')[0]!, 'base64url').toString());
+    expect(token).not.toHaveProperty('username');
+    expect(token).not.toHaveProperty('email');
+    await collect(instance, boot, { path: '/dashboard' });
+    Object.assign(account.session.user, { username: ' User ', email: 'current@example.test' });
+    await instance.store.set(account.session);
+    const event = { id: randomUUID(), pageId: randomUUID(), name: 'page_view', path: '/dashboard', at: Date.now() };
+    expect((await collect(instance, boot, { path: '/dashboard', sequence: 2, events: [event] })).status).toBe(204);
+    expect(instance.analytics.live('all', 1, 25).items[0]?.label).toBe('current@example.test');
+    Object.assign(account.session.user, { username: 'New name', email: '' });
+    await instance.store.set(account.session);
+    await collect(instance, boot, { path: '/dashboard', sequence: 3 });
+    expect(instance.analytics.live('all', 1, 25).items[0]?.label).toBe('New name');
+    expect(storage.events.size).toBe(1);
+    expect(storage.customerHours.size).toBe(1);
+    const history = JSON.stringify([...storage.events.values(), ...storage.facts.values(), ...storage.sessions.values(), ...storage.customerHours.values()]);
+    expect(history).not.toMatch(/current@example|New name|Customer/);
+    const anonymous = await bootstrap(instance);
+    await collect(instance, anonymous);
+    expect(instance.analytics.live('all', 1, 25).items.find(item => !item.authenticated)?.label).toMatch(/^Visitor [a-f0-9-]{8}$/);
   });
   it('shares browser/session identity across the website and console while counting tabs separately', async () => {
     const instance = fixture();
