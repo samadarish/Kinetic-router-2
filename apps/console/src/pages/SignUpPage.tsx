@@ -15,6 +15,7 @@ import { Turnstile } from '../components/Turnstile';
 import { AuthSettingsNotice } from '../components/AuthSettingsNotice';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
+import { LanguageSelector } from '@kineticrouter/brand-ui';
 
 export function SignUpPage({ google = false }: { google?: boolean }) {
   const auth = useAuth();
@@ -99,7 +100,7 @@ export function SignUpPage({ google = false }: { google?: boolean }) {
   }
   return <div className="auth-page">
     <div className="auth-orb auth-orb-one" /><div className="auth-orb auth-orb-two" />
-    <button className="auth-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
+    <div className="auth-preferences"><LanguageSelector /><button className="auth-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button></div>
     <main className="auth-panel">
       <a href={publicSiteHref('/')} aria-label="kineticRouter home" className="auth-brand"><Brand className="auth-wordmark" /></a>
       <section className="auth-card">

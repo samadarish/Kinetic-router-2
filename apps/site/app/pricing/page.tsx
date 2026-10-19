@@ -1,5 +1,5 @@
 import { catalogModel } from '@/data/model-utils';
-import { pageMetadata } from '@/data/seo';
+import { localizedPageMetadata } from '@/data/locale';
 import { PricingComparison } from '@/components/pricing-comparison';
 import { SiteFrame } from '@/components/site-frame';
 import { catalogVerifiedAt } from '@kineticrouter/platform-config/models';
@@ -7,7 +7,7 @@ import { catalogUpdateNotice } from '@/data/catalog-summary';
 import { models } from '@/data/content';
 import { providerDisplayStatus } from '@/data/provider-availability';
 
-export const metadata = pageMetadata('/pricing');
+export async function generateMetadata() { return localizedPageMetadata('/pricing'); }
 
 const activePriceRows = models.reduce((count, model) => count + model.prices.filter((price) => price.active).length, 0);
 const metrics = [[String(models.length), 'Reference models'], [String(activePriceRows), 'Reference price components'], [catalogVerifiedAt, 'Official rates checked']];

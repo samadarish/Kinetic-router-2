@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "Une API vérifiée à prix du fournisseur n'est pas publiée par kineticRouter.",
+  "API Reference": "Référence API",
+  "Authentication": "Authentication",
+  "Available now": "Disponible maintenant",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Documentation de finpoint",
+  "Error Responses": "Erreur Responses",
+  "Not published": "Pas publié",
+  "Provider pricing API": "API de prix fournisseur",
+  "Provider pricing API - Contract pending": "API de prix du fournisseur - contrat suspendu",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "La documentation de l'API des prix du fournisseur sera publiée après la vérification de son contrat de point final.",
+  "Real-Time Pricing": "Prix en temps réel",
+  "Request Example": "Exemple de demande",
+  "Response Format": "Format de réponse",
+  "Signature algorithm": "Algorithme de signature",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "La console authentifiée affiche le bilan du compte et l'utilisation réelle de facturation. Le Playground affiche les taux de modèle final vérifiés lorsqu'ils sont disponibles et identifie explicitement les prix non disponibles. Aucune balance publique non vérificée ou URL de prix du fournisseur n'est exposé ici.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "La console client est connectée, mais ce point de fin public n'a pas terminé la vérification de la compatibilité. Le chemin de demande et le schéma de réponse seront publiés après la véricalisation.",
+  "Top-Level Fields": "Champs de haut niveau",
+  "data Fields": "Fields de données",
+  "models[] Fields": "Modèles[] Les champs"
+}

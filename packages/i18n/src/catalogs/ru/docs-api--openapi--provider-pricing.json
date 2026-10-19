@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "Проверенный поставщик цен API не опубликована kineticRouter До сих пор .",
+  "API Reference": "API Референция",
+  "Authentication": "аутентификация",
+  "Available now": "Доступно сейчас",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Endpoint документация поднята",
+  "Error Responses": "Ошибка Responses",
+  "Not published": "Не опубликовано",
+  "Provider pricing API": "Провайдер ценовой API",
+  "Provider pricing API - Contract pending": "API для ценообразования поставщиков - Договоры",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "Документация о ценовом API поставщика будет опубликована после того, как его контракт завершается.",
+  "Real-Time Pricing": "Цены в реальном времени",
+  "Request Example": "Пример просьбы",
+  "Response Format": "Формат ответа",
+  "Signature algorithm": "Алгоритм подписывания",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "Аутентифицированная консоль показывает баланс счета и фактическое использование расчетов. Playground отображает проверенные конечные ставки моделей, когда доступны и явно определяет недоступную цену. Здесь не представлено неопроверженного общественного баланса или URL-адреса по ценам провайдера.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "Консоль клиента подключена, но эта общественная конечная точка не завершила проверку совместимости.Путь запроса и схема ответа будут опубликованы после проверки.",
+  "Top-Level Fields": "Поле высокого уровня",
+  "data Fields": "Поле данных",
+  "models[] Fields": "Модели [] Поле"
+}

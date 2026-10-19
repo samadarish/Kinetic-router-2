@@ -1,9 +1,11 @@
 'use client';
 import { trackDocsCopy } from '@kineticrouter/analytics-client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePublicSession } from './use-public-session';
+import { useTranslations } from '@kineticrouter/i18n/react';
+import { localizeHtml } from '@kineticrouter/i18n';
 
 function selectTab(root: HTMLElement, tab: HTMLElement, focus = false) {
   const tabList = tab.closest<HTMLElement>('[role="tablist"]');
@@ -30,6 +32,8 @@ function selectTab(root: HTMLElement, tab: HTMLElement, focus = false) {
 }
 
 export function DocsArticle({ html }: { html: string }) {
+  const { text: translate } = useTranslations();
+  const renderedHtml = useMemo(() => localizeHtml(html, {}), [html]);
   const { playgroundEnabled } = usePublicSession();
   const rootRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState('');
@@ -66,12 +70,12 @@ export function DocsArticle({ html }: { html: string }) {
 
       const button = target?.closest<HTMLButtonElement>('button');
       if (!button || !root.contains(button)) return;
-      if (button.title === 'Toggle word wrap') {
+      if (button.dataset.docsAction === 'wrap') {
         event.preventDefault();
         button.closest('pre')?.classList.toggle('docs-code-wrapped');
         return;
       }
-      if (button.title !== 'Copy code') return;
+      if (button.dataset.docsAction !== 'copy') return;
       event.preventDefault();
       // Tabbed examples place their copy toolbar above the pre element.
       const codeBlock = button.closest('pre') ?? button.closest('[role="tabpanel"]')?.querySelector('pre');
@@ -84,11 +88,11 @@ export function DocsArticle({ html }: { html: string }) {
         trackDocsCopy();
         setCopyStatus('Code copied');
         const originalTitle = button.title;
-        button.title = 'Copied';
-        button.setAttribute('aria-label', 'Copied');
+        button.title = translate('Copied');
+        button.setAttribute('aria-label', translate('Copied'));
         const timer = setTimeout(() => {
           button.title = originalTitle;
-          button.setAttribute('aria-label', 'Copy code');
+          button.setAttribute('aria-label', translate('Copy code'));
           setCopyStatus('');
           timers.delete(timer);
         }, 1200);
@@ -125,7 +129,7 @@ export function DocsArticle({ html }: { html: string }) {
       root.removeEventListener('click', handleClick);
       root.removeEventListener('keydown', handleKeyDown);
     };
-  }, [html, router]);
+  }, [renderedHtml, router, translate]);
 
-  return <><div ref={rootRef} className="clear-both docs-article" data-playground-enabled={playgroundEnabled} dangerouslySetInnerHTML={{ __html: html }} /><p className="docs-copy-status" role="status">{copyStatus}</p></>;
+  return <><div ref={rootRef} className="clear-both docs-article" data-playground-enabled={playgroundEnabled} dangerouslySetInnerHTML={{ __html: renderedHtml }} /><p className="docs-copy-status" role="status">{copyStatus}</p></>;
 }

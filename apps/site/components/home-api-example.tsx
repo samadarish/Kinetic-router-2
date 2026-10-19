@@ -128,9 +128,9 @@ export function HomeApiExample({ home, providers, modelCount }: { home: SiteConf
           })}
         </div>
 
-        <div className="mx-auto mt-8 grid w-full max-w-sm grid-cols-2 gap-3 sm:gap-4">
-          <SiteLink href={home.primaryCta.href} className="brand-cta inline-flex h-14 min-w-0 items-center justify-center rounded-lg px-3 text-sm font-semibold shadow-lg transition sm:h-[60px] sm:px-8 sm:text-base">{home.primaryCta.label} <ArrowRightIcon className="ml-2 h-5 w-5" /></SiteLink>
-          <SiteLink href={home.secondaryCta.href} className="inline-flex h-14 min-w-0 items-center justify-center rounded-lg border border-primary px-3 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white sm:h-[60px] sm:px-8 sm:text-base">{home.secondaryCta.label}</SiteLink>
+        <div className="mx-auto mt-8 grid w-full max-w-lg grid-cols-2 gap-3 sm:gap-4">
+          <SiteLink href={home.primaryCta.href} className="brand-cta inline-flex min-h-14 min-w-0 items-center justify-center rounded-lg px-3 py-3 text-center text-sm font-semibold leading-snug shadow-lg transition sm:min-h-[60px] sm:px-4 sm:text-base">{home.primaryCta.label} <ArrowRightIcon className="ml-2 h-5 w-5 shrink-0" /></SiteLink>
+          <SiteLink href={home.secondaryCta.href} className="inline-flex min-h-14 min-w-0 items-center justify-center rounded-lg border border-primary px-3 py-3 text-center text-sm font-semibold leading-snug text-primary transition hover:bg-primary hover:text-white sm:min-h-[60px] sm:px-4 sm:text-base">{home.secondaryCta.label}</SiteLink>
         </div>
 
         <div className="mx-auto mt-8 max-w-xl overflow-hidden rounded-lg border border-border bg-[var(--code)] text-left shadow-2xl">

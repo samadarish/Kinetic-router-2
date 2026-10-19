@@ -1,7 +1,7 @@
-import { pageMetadata } from '@/data/seo';
+import { localizedPageMetadata } from '@/data/locale';
 import { LegalPage } from '@/components/legal-page';
 
-export const metadata = pageMetadata('/terms-of-service');
+export async function generateMetadata() { return localizedPageMetadata('/terms-of-service'); }
 const sections = [
   { title: '1. Definitions', paragraphs: ['“kineticRouter,” “we,” and “us” mean kineticRouter. “Services” means the kineticRouter website, API gateway, console, documentation, and related offerings. “Content” includes prompts, files, inputs, and AI-generated outputs.'] },
   { title: '2. Scope of Terms', paragraphs: ['These Terms govern access to and use of the Services. By creating an account, purchasing credits, or using an API key, you agree to these Terms and applicable policies.'] },

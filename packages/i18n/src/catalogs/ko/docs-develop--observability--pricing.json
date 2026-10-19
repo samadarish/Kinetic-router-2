@@ -1,0 +1,22 @@
+{
+  "API Keys": "API 키",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "계좌 균형은 API 키의 지출 금액과 분리됩니다. 계좌를 늘리는 것은 자금을 추가하지 않습니다. 구독 액세스 및 사용 창이 할당되었을 때만 나타납니다. 지불, 종료 또는 재생 행동에 대한 현재 계좌 조건을 검토합니다.",
+  "Balance, quota and subscriptions": "균형, 자금 및 구독",
+  "Check the returned assistant message. An error response is not a successful answer.": "반환된 보조 메시지를 확인하십시오. 오류 응답은 성공적인 답변이 아닙니다.",
+  "Check your model rates": "모델 가격을 확인하십시오.",
+  "Distinguish customer rates, account limits, and reference prices.": "고객 가격, 계좌 제한 및 참조 가격을 구별하십시오.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "모델 및 키 이름으로 요청을 찾아보십시오. Review input/output 그리고 카시 토큰, 연속성 및 실제 청구 비용.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "요청이 중단되거나 종료되면 반복하기 전에 사용을 확인하십시오. Retry는 별도의 요청이며 다른 요금을 부과할 수 있습니다.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "현재 고객 콘솔 및 통합에 대한 지침. 작업 흐름에 의존하기 전에 계정과 모델 액세스 및 프로토콜 지원을 확인하십시오.",
+  "Open Usage": "오픈 사용",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "사용을 열고 요청을 포함한 날짜 범위를 선택합니다. 표시된 시간대를 확인하십시오.",
+  "Playground": "플레이그라운드",
+  "Prices and billed costs": "가격 및 청구 비용",
+  "Public reference prices": "공공 기준 가격",
+  "Reference snapshot": "링크 스냅트",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "요청은 여전히 선택된 키의 정상 계좌 청구를 사용합니다.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "모델 및 가격 페이지는 공식적인 참조 요금으로 90% 할인된 kineticRouter 표시 가격을 보여줍니다. 원본 가져온 아카이브는 분리되어 있습니다. 모델 이용 가능성과 계정 가격은 다를 수 있습니다.",
+  "Usage": "사용량",
+  "Verify the answer and billed usage": "응답 및 청구 사용을 확인하십시오",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground이 활성화되면 키와 모델을 선택하고, 사용할 수 있는 경우 확인된 최종 토큰 가격을 볼 수 있는 시점에서 View 비율을 열어보십시오. 가격은 단위와 관찰 시간을 표시합니다. 최종 비율이 사용할 수 없는 것은 콘솔이 완전한 지원되는 가격 규칙을 얻을 수 없다는 것을 의미하지는 않습니다."
+}

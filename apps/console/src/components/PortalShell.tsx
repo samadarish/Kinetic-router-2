@@ -12,6 +12,7 @@ import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
 import { useSupport } from '../lib/support-context';
+import { LanguageSelector } from '@kineticrouter/brand-ui';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: CircleGauge },
@@ -89,7 +90,7 @@ export function PortalShell() {
     if (item.to === '/analytics' || item.to.startsWith('/admin/')) return user?.role === 'admin' && user.status === 'active';
     if (item.to === '/status') return capabilities?.channelMonitor !== false;
     if (item.to === '/redeem') return user?.runMode !== 'simple';
-    if (item.to === '/subscriptions') return user?.runMode !== 'simple';
+    if (item.to === '/subscriptions') return capabilities?.subscriptions !== false && user?.runMode !== 'simple';
     return true;
   });
   const consoleLinks = [
@@ -116,7 +117,7 @@ export function PortalShell() {
 
       <button className="personal-account" onClick={() => navigate('/profile')} title={sidebarCollapsed ? 'Personal Account' : undefined}>
         <span className="personal-account-icon"><UserRound size={17} /></span>
-        <span className="personal-account-copy"><small>Personal Account</small><strong>{accountName}</strong></span>
+        <span className="personal-account-copy"><small>Personal Account</small><strong translate="no">{accountName}</strong></span>
         <ChevronDown className="personal-account-chevron" size={14} />
       </button>
 
@@ -152,14 +153,15 @@ export function PortalShell() {
             : <a key={item.id} className="console-topnav-link" href={siteLinkHref(item.href)} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined}>{item.label}</a>)}
         </nav>
         <div className="topbar-spacer" />
+        <LanguageSelector />
         <button className="icon-button topbar-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
         <SupportNavLink to={supportHref} {...support} />
         <div className="account-menu-wrap" ref={accountRef}>
           <button className="account-trigger" onClick={() => setAccountOpen((value) => !value)} aria-haspopup="menu" aria-expanded={accountOpen}>
-            <span className="avatar">{initials}</span><span className="account-name">{accountName}</span><ChevronDown size={15} />
+            <span className="avatar" translate="no">{initials}</span><span className="account-name" translate="no">{accountName}</span><ChevronDown size={15} />
           </button>
           {accountOpen && <div className="account-dropdown" role="menu">
-            <div className="account-summary"><strong>{accountName}</strong><span>{user?.email}</span></div>
+            <div className="account-summary" translate="no"><strong>{accountName}</strong><span>{user?.email}</span></div>
             <button role="menuitem" onClick={() => { setAccountOpen(false); navigate('/profile'); }}><Settings size={16} /> Account settings</button>
             <button role="menuitem" disabled={signingOut} onClick={signOut}><LogOut size={16} /> {signingOut ? 'Signing out…' : 'Sign out'}</button>
             {signOutError && <p className="account-menu-error" role="alert">{signOutError}</p>}

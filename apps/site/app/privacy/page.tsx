@@ -1,7 +1,7 @@
-import { pageMetadata } from '@/data/seo';
+import { localizedPageMetadata } from '@/data/locale';
 import { LegalPage } from '@/components/legal-page';
 
-export const metadata = pageMetadata('/privacy');
+export async function generateMetadata() { return localizedPageMetadata('/privacy'); }
 const sections = [
   { title: '1. Scope', paragraphs: ['This Privacy Policy explains how kineticRouter handles information when you use our website, account services, API gateway, documentation, and related services.'] },
   { title: '2. Information We Collect', paragraphs: ['We collect account details you provide, transaction and billing records, API credentials, request metadata, device and browser information, and support communications.'], bullets: ['Account and contact information', 'Usage, latency, model, token, and cost records', 'Payment and credit transaction records', 'Security and diagnostic logs'] },

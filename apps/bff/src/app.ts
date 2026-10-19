@@ -519,6 +519,8 @@ export function createApp(
   });
 
   app.get('/portal/v1/subscriptions', async (c) => {
+    const capabilities = await getCapabilities(client, settingsCache, writeGates);
+    if (!capabilities.subscriptions) return failure(c, 403, 'FEATURE_DISABLED', 'Subscriptions are not available.');
     const raw = await authRequest(c, store, client, (token) => client.request('subscriptions', {}, authOptions(token)));
     const record = asRecord(raw);
     return success(c, arrayValue(record.items ?? raw).map((value) => publicSubscription(mapSubscription(value))));

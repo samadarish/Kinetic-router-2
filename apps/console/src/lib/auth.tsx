@@ -138,7 +138,7 @@ export function useAuth() {
 
 const emptyCapabilities: CapabilityMap = {
   registration: false, passwordReset: false, totp: false, passkeys: false, google: false,
-  payments: false, subscriptionPurchase: false, modelPlaza: false, availableChannels: false,
+  payments: false, subscriptions: true, subscriptionPurchase: false, modelPlaza: false, availableChannels: false,
   channelMonitor: true, channelMonitorMode: 'v1', affiliate: false, usageErrors: false,
   promoCode: true, keyWrites: false, profileWrites: false, redeemWrites: false,
   announcementWrites: false,

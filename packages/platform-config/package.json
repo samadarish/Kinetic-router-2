@@ -12,6 +12,7 @@
     "./origins": { "types": "./dist/origins.d.ts", "import": "./dist/origins.js" },
     "./routes": { "types": "./dist/routes.d.ts", "import": "./dist/routes.js" },
     "./theme": { "types": "./dist/theme.d.ts", "import": "./dist/theme.js" },
+    "./locale": { "types": "./dist/locale.d.ts", "import": "./dist/locale.js" },
     "./providers": { "types": "./dist/providers.d.ts", "import": "./dist/providers.js" },
     "./models": { "types": "./dist/models.d.ts", "import": "./dist/models.js" }
   },

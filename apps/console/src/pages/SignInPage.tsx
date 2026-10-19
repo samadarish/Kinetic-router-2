@@ -11,6 +11,7 @@ import { Button } from '../components/Ui';
 import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
+import { LanguageSelector } from '@kineticrouter/brand-ui';
 import { resolveConsoleReturnPath } from '@kineticrouter/platform-config/routes';
 
 export function SignInPage() {
@@ -63,7 +64,7 @@ export function SignInPage() {
 
   return <div className="auth-page">
     <div className="auth-orb auth-orb-one" /><div className="auth-orb auth-orb-two" />
-    <button className="auth-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
+    <div className="auth-preferences"><LanguageSelector /><button className="auth-theme" aria-label="Toggle color theme" onClick={toggle}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button></div>
     <main className="auth-panel">
       <a href={publicSiteHref('/')} aria-label="kineticRouter home" className="auth-brand"><Brand className="auth-wordmark" /></a>
       <section className="auth-card">

@@ -1,5 +1,6 @@
 import { rebrandHtml } from './brand';
 import type { ResolvedDocsPage } from './content';
+import { localizeHtml } from '@kineticrouter/i18n';
 
 export type DocsPresentation = { html: string; toc: Array<{ id: string; heading: string }> };
 const presentations = new WeakMap<ResolvedDocsPage, DocsPresentation>();
@@ -13,7 +14,7 @@ export function getDocsPresentation(page: ResolvedDocsPage): DocsPresentation | 
   if (!page.meta || !page.content) return undefined;
   const cached = presentations.get(page);
   if (cached) return cached;
-  const presentation = { html: rebrandHtml(page.content.html), toc: pageToc(page.content.html, page.meta.headings) };
+  const presentation = { html: localizeHtml(rebrandHtml(page.content.html), {}), toc: pageToc(page.content.html, page.meta.headings) };
   presentations.set(page, presentation);
   return presentation;
 }

@@ -66,6 +66,15 @@ describe('Sub2API compatibility mapping', () => {
     expect(result).toMatchObject({ channelMonitor: true, promoCode: true, payments: false, keyWrites: true, profileWrites: false });
   });
 
+  it.each([true, false, undefined])('honors subscription visibility (%s) separately from purchase availability', subscription_enabled => {
+    const writes = { keys: false, profile: false, redeem: false };
+    const subscriptions = subscription_enabled !== false;
+    expect(readCapabilities({ subscription_enabled, purchase_subscription_enabled: true }, writes))
+      .toMatchObject({ subscriptions, subscriptionPurchase: subscriptions });
+    expect(readCapabilities({ subscription_enabled, purchase_subscription_enabled: false }, writes))
+      .toMatchObject({ subscriptions, subscriptionPurchase: false });
+  });
+
   it('maps range totals with unambiguous cost fields and the Sub2API cache formula', () => {
     const result = mapUsageRangeStats({
       total_requests: 17,

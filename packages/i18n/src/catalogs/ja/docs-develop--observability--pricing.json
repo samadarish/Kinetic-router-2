@@ -1,0 +1,22 @@
+{
+  "API Keys": "API キー",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "アカウントのバランスはAPIキーの支出額から分離されます. 割引を増やすことは資金が追加されません。サブスクリプションアクセスをおよび使用Windowsを使用するとのみ表示されます.支払い、終了または更新行動について現在のアカウト規約をご覧ください。",
+  "Balance, quota and subscriptions": "バランス、配分およびサブスクリプション",
+  "Check the returned assistant message. An error response is not a successful answer.": "返回されたアシスタントメッセージを確認してください。エラー回答は成功した答えではありません。",
+  "Check your model rates": "モデル価格をチェック",
+  "Distinguish customer rates, account limits, and reference prices.": "顧客価格、アカウント制限および参考価格を区別します。",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "モデルとキー名によって要求を検索します。レビュー input/output そしてキャッシュトークン、遅延と実際の請求費用。",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "要望が中断され、または延期された場合は、繰り返す前に使用を確認してください。リリースは別々の要件であり、別の料金にかかる可能性があります。",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "現在のクライアントコンソールおよび統合に関する指示。ワークフローに頼る前に、アカウントでモデルアクセスとプロトコルサポートを確認してください。",
+  "Open Usage": "オープン使用",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "使用を開いて、要求を含む日付範囲を選択します。表示されたタイムゾーンをご確認ください。",
+  "Playground": "プレイグラウンド",
+  "Prices and billed costs": "価格と請求費用",
+  "Public reference prices": "公共参考価格",
+  "Reference snapshot": "参考スナップショット",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "要請はまだ、選択されたキーの通常のアカウント請求書を使用します。使用は記録されている請求額について有権です。",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "モデルと価格ページを表示する kineticRouter 公式参照率の90%で表示価格、ソース確認日付と共に。オリジナル輸入アーカイブは別々のままです。モデル利用性およびアカウント価格が異なる可能性があります。",
+  "Usage": "使用状況",
+  "Verify the answer and billed usage": "回答と請求書の使用を確認する",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground が有効になると、そこにあるキーとモデルを選択し、確認された最終トークン価格を表示するために View 率を開いてください。価格はそのユニットと観察時間を示します。"
+}

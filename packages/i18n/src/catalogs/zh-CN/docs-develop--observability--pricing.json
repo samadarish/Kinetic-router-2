@@ -1,0 +1,22 @@
+{
+  "API Keys": "API 密钥",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "帐户均衡与API密钥的支出额分开。增加该股票不会添加资金.订阅访问和使用窗口仅在任命并启用时显示,查看现行账户条款支付、终止或更新行为。",
+  "Balance, quota and subscriptions": "平衡、配额和订阅",
+  "Check the returned assistant message. An error response is not a successful answer.": "检查返回的助理消息,错误回答不是成功答案。",
+  "Check your model rates": "查看您的模型价格",
+  "Distinguish customer rates, account limits, and reference prices.": "区分客户价格、账户限制和参考价。",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "根据其模型和关键名称找到请求。 input/output 和存储代币,延迟以及实际账单成本。",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "如果请求被中断或延期,在重复之前检查使用。退出是单独的请求,并且可以收取另一个费用。",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "对当前客户控制台和整合的指示,在依赖工作流之前检查您的帐户模式访问和协议支持。",
+  "Open Usage": "开放使用",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "打开使用并选择包含请求的日期范围。查看显示时区。",
+  "Playground": "试用平台",
+  "Prices and billed costs": "价格和收费成本",
+  "Public reference prices": "公共参考价格",
+  "Reference snapshot": "参考图片",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "请求仍然使用选定的密钥的正常账户发票。",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "模型和价格页面显示 kineticRouter 显示价格在官方参考率90% off,与来源验证日期。原始导入档案保持独立。模型可用性和帐户价格可能不同。",
+  "Usage": "使用情况",
+  "Verify the answer and billed usage": "检查答案和发票使用",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "当 Playground 启用时,请选择您的关键和模型在那里,然后打开视图价格以查看可用的确认的最终代币价格。价格显示其单位和观察时间。终端率不提供意味着控制台无法获得完整支持的价格规则;这并不意味着该模式是免费的。"
+}

@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "Uma API verificada de preço do provedor ainda não foi publicada pela kineticRouter.",
+  "API Reference": "Referência API",
+  "Authentication": "Autenticação",
+  "Available now": "Disponível agora",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Documentação de Endpoint pendente",
+  "Error Responses": "Erro Responses",
+  "Not published": "Não publicado",
+  "Provider pricing API": "API de preços do fornecedor",
+  "Provider pricing API - Contract pending": "API de preços do fornecedor - Contrato pendente",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "A documentação da API de preços do fornecedor será publicada após a verificação do contrato final.",
+  "Real-Time Pricing": "Preços em tempo real",
+  "Request Example": "Exemplo de Pedido",
+  "Response Format": "Formato de resposta",
+  "Signature algorithm": "Algoritmo de assinatura",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "A consola autenticada mostra o balanço da conta e o uso real de faturação.O playground mostra as taxas do modelo final verificadas quando disponível e identifica explícitamente os preços não disponíveis. Nenhuma balança pública não verificada ou URL de preço do provedor é exposta aqui.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "O console do cliente está conectado, mas este ponto final público não completou a verificação de compatibilidade. O caminho de solicitação e o esquema de resposta serão publicados após a verificação.",
+  "Top-Level Fields": "Campos de nível superior",
+  "data Fields": "Campo de dados",
+  "models[] Fields": "Modelos [] Campos"
+}

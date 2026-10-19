@@ -10,6 +10,7 @@ const capabilities: CapabilityMap = {
   passkeys: false,
   google: false,
   payments: false,
+  subscriptions: true,
   subscriptionPurchase: false,
   modelPlaza: false,
   availableChannels: false,
@@ -48,6 +49,23 @@ describe('logged-out query state', () => {
     client.setQueryData(['session'], session); client.setQueryData(['dashboard'], { balance: 1 });
     expect(await reconcileSessionQueries(client, session)).toBe(false);
     expect(client.getQueryData(['dashboard'])).toEqual({ balance: 1 });
+    client.clear();
+  });
+  it('removes cached subscriptions and cancels late reads when the same account loses subscription visibility', async () => {
+    const client = new QueryClient();
+    const session: SessionView = { authenticated: true, playgroundEnabled: true, capabilities, user: { id: '42', role: 'user', status: 'active', username: 'Owner', email: 'owner@example.test', avatarUrl: null, balance: '1', concurrency: 1 } };
+    client.setQueryData(['session'], session);
+    client.setQueryData(['subscriptions'], [{ id: 'old-plan' }]);
+    client.setQueryData(['dashboard'], { balance: 1 });
+    let finish!: (value: { id: string }[]) => void;
+    const pending = client.fetchQuery({ queryKey: ['subscriptions'], queryFn: () => new Promise<{ id: string }[]>(resolve => { finish = resolve; }) }).catch(() => undefined);
+
+    expect(await reconcileSessionQueries(client, { ...session, capabilities: { ...capabilities, subscriptions: false } })).toBe(false);
+    finish([{ id: 'late-plan' }]); await pending;
+
+    expect(client.getQueryCache().findAll({ queryKey: ['subscriptions'] })).toHaveLength(0);
+    expect(client.getQueryData(['dashboard'])).toEqual({ balance: 1 });
+    expect(client.getQueryData(['session'])).toBe(session);
     client.clear();
   });
   it('clears protected metrics after a session role downgrade and cancels late report completion', async () => {

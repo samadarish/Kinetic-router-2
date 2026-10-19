@@ -1,0 +1,22 @@
+{
+  "API Keys": "Claves API",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "El balance de la cuenta está separado de la cuota de gasto de una clave API. Aumentar la cuotas no añade fondos. Las ventanas de acceso de suscripción y uso sólo aparecen cuando asignado y activado. Revisa los términos de la conta actual para el comportamiento de pago, expiración o renovación.",
+  "Balance, quota and subscriptions": "Balance, cuota y suscripciones",
+  "Check the returned assistant message. An error response is not a successful answer.": "Verifique el mensaje de asistente devuelto. Una respuesta de error no es una respuesta exitosa.",
+  "Check your model rates": "Revisa tus tarifas de modelo",
+  "Distinguish customer rates, account limits, and reference prices.": "Diferencia de tarifas de clientes, límites de cuenta y precios de referencia.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "Encontrar la solicitud por su modelo y nombre clave. Revisión input/output y tokens cache, latencia y costos facturados reales.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "Si una solicitud se interrumpe o se retira, consulte Uso antes de repetirla. Una retirada es una solicitación separada y puede incurrir otra carga.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "Instrucciones para la consola y las integraciones actuales del cliente. Verifique el acceso modelo y el soporte de protocolo con su cuenta antes de confiar en un flujo de trabajo.",
+  "Open Usage": "Uso abierto",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "Abra Uso y seleccione un rango de fecha que incluye la solicitud. Consulte el fuso horario que se muestra.",
+  "Playground": "Área de pruebas",
+  "Prices and billed costs": "Precios y costos de facturación",
+  "Public reference prices": "Precios de referencia pública",
+  "Reference snapshot": "Referencia Snapshot",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "Las solicitudes todavía utilizan la facturación normal de la clave seleccionada. El uso es autorizado para los impuestos registrados.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "Las páginas de Modelos y Precios muestran los precios de la exhibición kineticRouter a un 90% de las tasas de referencia oficiales, con la fecha de verificación de la fuente. El archivo original importado permanece separado. Disponibilidad del modelo y precio de la cuenta pueden variar.",
+  "Usage": "Uso",
+  "Verify the answer and billed usage": "Verifique la respuesta y el uso de facturas",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Cuando está activado Playground, seleccione tu clave y modelo allí, luego abra las tasas de vista para ver los precios de token finales verificados cuando están disponibles. Los precios muestran sus unidades y el tiempo de observación. Las tasas finales no están disponibles significa que la consola no puede obtener una regla completa de precio respaldado; esto no significa que el modelo es gratuito."
+}

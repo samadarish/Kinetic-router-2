@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "验证的供应商价格 API 没有发表 kineticRouter 现在。",
+  "API Reference": "API 参考",
+  "Authentication": "身份验证",
+  "Available now": "现在可用",
+  "Endpoint": "终点",
+  "Endpoint documentation pending": "终点文档暂停",
+  "Error Responses": "错误 Responses",
+  "Not published": "未出版",
+  "Provider pricing API": "提供商价格 API",
+  "Provider pricing API - Contract pending": "供应商价格 API - 合同暂停",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "供应商价格API文档将在其终点合同验证后公布。",
+  "Real-Time Pricing": "实时价格",
+  "Request Example": "请求示例",
+  "Response Format": "答案格式",
+  "Signature algorithm": "签名算法",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "验证的控制台显示帐户平衡和实际账单使用。 Playground 在可用时展示已确认的最终模型价格,并明确确定未提供的价格。",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "客户端控制台已连接,但这个公共终点未完成兼容性验证。请求路径和响应方案将在检查后发布。",
+  "Top-Level Fields": "顶级领域",
+  "data Fields": "数据领域",
+  "models[] Fields": "模型 [ ] 分野"
+}

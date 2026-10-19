@@ -94,6 +94,7 @@ async function authenticatedSession() {
       passkeys: false,
       google: false,
       payments: false,
+      subscriptions: true,
       subscriptionPurchase: false,
       modelPlaza: false,
       availableChannels: true,

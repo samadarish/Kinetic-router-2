@@ -13,6 +13,7 @@ import { useSupportImageDraft, SupportImagePicker, SupportMessageImage } from '.
 import { jsonBody, portalApi, PortalApiError, queryString } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useSupport } from '../lib/support-context';
+import { OriginalText } from '@kineticrouter/i18n/react';
 import './support.css';
 
 type SendResult = { ticket: SupportTicket; message: SupportMessage; created: boolean; ownerId: string };
@@ -203,7 +204,7 @@ export function SupportPage({ admin = false }: { admin?: boolean }) {
             const owner = ticket.ownerLabel || ticket.ownerEmail || 'Customer';
             return <li key={ticket.id} className={`support-ticket-row${active ? ' support-ticket-active' : ''}`}>
               <button type="button" className="support-ticket" aria-current={active ? 'page' : undefined} aria-describedby={`support-ticket-status-${ticket.id} support-ticket-count-${ticket.id}${ticket.unreadCount > 0 ? ` support-ticket-unread-${ticket.id}` : ''}`} onClick={() => openTicket(ticket.id)}>
-                <span className="support-ticket-top"><strong>{ticket.subject}</strong><time dateTime={ticket.updatedAt} title={stamp(ticket.updatedAt)}>{stamp(ticket.updatedAt, true)}</time></span>
+                <span className="support-ticket-top"><OriginalText><strong>{ticket.subject}</strong></OriginalText><time dateTime={ticket.updatedAt} title={stamp(ticket.updatedAt)}>{stamp(ticket.updatedAt, true)}</time></span>
                 {admin && <span className="support-ticket-owner"><span>{owner}</span>{ticket.ownerEmail && ticket.ownerEmail.toLowerCase() !== owner.toLowerCase() && <span>{ticket.ownerEmail}</span>}</span>}
                 {active && admin && <span className="support-ticket-language">Preferred language: {SUPPORT_LANGUAGE_LABELS[ticket.preferredLanguage ?? 'en']}</span>}
               </button>

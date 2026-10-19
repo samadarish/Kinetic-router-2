@@ -1,0 +1,22 @@
+{
+  "API Keys": "API Keys",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.",
+  "Balance, quota and subscriptions": "Balance, quota and subscriptions",
+  "Check the returned assistant message. An error response is not a successful answer.": "Check the returned assistant message. An error response is not a successful answer.",
+  "Check your model rates": "Check your model rates",
+  "Distinguish customer rates, account limits, and reference prices.": "Distinguish customer rates, account limits, and reference prices.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.",
+  "Open Usage": "Open Usage",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "Open Usage and select a date range that includes the request. Check the displayed timezone.",
+  "Playground": "Playground",
+  "Prices and billed costs": "Prices and billed costs",
+  "Public reference prices": "Public reference prices",
+  "Reference snapshot": "Reference snapshot",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.",
+  "Usage": "Usage",
+  "Verify the answer and billed usage": "Verify the answer and billed usage",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free."
+}

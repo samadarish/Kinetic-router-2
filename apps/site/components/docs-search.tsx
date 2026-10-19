@@ -5,12 +5,19 @@ import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { decodeDocsSearchIndex, searchDocumentation, searchResultFocusIndex, type DocsSearchEntry } from '@/data/docs-search';
 import { CloseIcon, SearchIcon } from './icons';
+import { useLocale } from '@kineticrouter/i18n/react';
+import type { Locale } from '@kineticrouter/platform-config/locale';
 
-let cachedIndex: DocsSearchEntry[] | undefined;
+const cachedIndexes = new Map<Locale, DocsSearchEntry[]>();
 
 export function DocsSearch({ onClose }: { onClose(): void }) {
+  const { locale } = useLocale();
   const [query, setQuery] = useState('');
-  const [entries, setEntries] = useState(cachedIndex);
+  const [loaded, setLoaded] = useState<{ locale: Locale; entries: DocsSearchEntry[] } | undefined>(() => {
+    const entries = cachedIndexes.get(locale);
+    return entries ? { locale, entries } : undefined;
+  });
+  const entries = loaded?.locale === locale ? loaded.entries : cachedIndexes.get(locale);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const root = useRef<HTMLElement>(null);
@@ -44,16 +51,16 @@ export function DocsSearch({ onClose }: { onClose(): void }) {
   }, []);
 
   useEffect(() => {
-    if (cachedIndex) return;
+    if (cachedIndexes.has(locale)) return;
     const controller = new AbortController();
     const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(10_000)]);
-    fetch('/docs/search-index.json', { signal }).then(async (response) => {
+    fetch(`/docs/search-index.json?locale=${encodeURIComponent(locale)}`, { signal }).then(async (response) => {
       if (!response.ok) throw new Error('Search unavailable');
       const data = decodeDocsSearchIndex(await response.json());
-      if (!signal.aborted) { cachedIndex = data; setEntries(data); }
+      if (!signal.aborted) { cachedIndexes.set(locale, data); setLoaded({ locale, entries: data }); setError(false); }
     }).catch(() => { if (!controller.signal.aborted) setError(true); });
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, locale]);
 
   return createPortal(<div className="docs-search-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <section ref={root} role="dialog" aria-modal="true" aria-label="Search documentation" className="docs-search-dialog">

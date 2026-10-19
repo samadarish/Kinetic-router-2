@@ -378,8 +378,8 @@ textarea:focus-visible {
 .docs-pending-example strong { font-size: .75rem; }
 .docs-pending-example p { margin-top: .4rem; color: var(--muted-foreground); font-size: .72rem; line-height: 1.6; }
 
-.docs-route-planned .docs-article button[title='Copy code'],
-.docs-route-planned .docs-article button[title='Toggle word wrap'] { display: none !important; }
+.docs-route-planned .docs-article button[data-docs-action='copy'],
+.docs-route-planned .docs-article button[data-docs-action='wrap'] { display: none !important; }
 .docs-route-planned .docs-article pre { border-style: dashed; }
 
 .docs-navigation { scrollbar-gutter: stable; }

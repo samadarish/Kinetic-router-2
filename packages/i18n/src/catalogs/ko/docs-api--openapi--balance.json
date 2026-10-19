@@ -1,0 +1,20 @@
+{
+  "A verified customer balance API is not published by kineticRouter yet.": "검증된 고객 균형 API 출판되지 않았습니다 kineticRouter 아직도",
+  "API Reference": "API 참조",
+  "Authentication": "인증",
+  "Available now": "현재 이용 가능",
+  "Balance API": "균형 API",
+  "Balance API - Contract pending": "균형 API - 계약 중지",
+  "Balance API documentation will be published after its endpoint contract is verified.": "균형 API 문서는 끝점 계약이 확인되면 공개됩니다.",
+  "Balance Query": "균형 Query",
+  "Endpoint": "끝점",
+  "Endpoint documentation pending": "Endpoint 문서가 기다리고 있습니다.",
+  "Error Response": "오류 응답",
+  "Not published": "출판하지 않았다",
+  "Request Example": "요청 예제",
+  "Response Fields": "응답 필드",
+  "Response Format": "응답 형식",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "인증된 콘솔은 계좌 균형과 실제 청구 사용을 표시합니다. Playground는 사용할 수 있는 경우 확인된 최종 모델 요금을 보여주고, 사용할 수 없는 가격을 명확하게 식별합니다.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "고객 콘솔이 연결되어 있지만, 이 공공 끝점은 호환성 확인을 완료하지 않았습니다. 요청 경로와 응답 계획은 검증 후에 공개됩니다.",
+  "Third-Party Tool Compatibility": "제3자 도구 호환성"
+}

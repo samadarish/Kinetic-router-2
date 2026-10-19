@@ -205,6 +205,8 @@ export function readCapabilities(settings: JsonRecord, writes: {
   redeem: boolean;
   announcements?: boolean;
 }): CapabilityMap {
+  // Older account services omit this setting and keep subscriptions visible.
+  const subscriptions = settings.subscription_enabled !== false;
   return {
     registration: flag(settings, 'registration_enabled'),
     passwordReset: flag(settings, 'password_reset_enabled'),
@@ -212,7 +214,8 @@ export function readCapabilities(settings: JsonRecord, writes: {
     passkeys: flag(settings, 'passkey_enabled'),
     google: flag(settings, 'google_oauth_enabled') || flag(settings, 'google_login_enabled'),
     payments: flag(settings, 'payment_enabled'),
-    subscriptionPurchase: flag(settings, 'purchase_subscription_enabled'),
+    subscriptions,
+    subscriptionPurchase: subscriptions && flag(settings, 'purchase_subscription_enabled'),
     modelPlaza: flag(settings, 'model_plaza_enabled'),
     availableChannels: flag(settings, 'available_channels_enabled'),
     channelMonitor: settings.channel_monitor_enabled !== false,

@@ -57,7 +57,7 @@ export function PlaygroundHistory({ onOpen, onNewChat, children }: { onOpen(id: 
       {error && <p className="playground-error" role="alert">{error}</p>}
     </Modal>
     <Modal open={Boolean(state.legacy && !state.legacyDismissed)} title="Save your previous chat?" description="This chat is still in this browser tab. Saving adds it to your account history." onClose={() => { if (!working) store.dismissLegacy(); }} footer={<><Button variant="secondary" disabled={working} onClick={() => store.dismissLegacy()}>Keep in this tab</Button><Button disabled={working} onClick={() => void importChat()}>{working ? 'Saving…' : 'Save chat'}</Button></>}>
-      <div className="playground-legacy-preview">{state.legacy?.messages.map(message => <div key={message.id}><strong>{message.role === 'user' ? 'You' : message.model ?? 'Model'}</strong><p>{message.content}</p></div>)}</div>
+      <div className="playground-legacy-preview">{state.legacy?.messages.map(message => <div key={message.id}><strong>{message.role === 'user' ? 'You' : message.model ?? 'Model'}</strong><p translate="no">{message.content}</p></div>)}</div>
       {error && <p className="playground-error" role="alert">{error}</p>}
     </Modal>
   </>;
@@ -67,7 +67,7 @@ const SavedChatRows = memo(function SavedChatRows({ conversations, selectedId, o
   conversations: Conversation[]; selectedId: string; onOpen(id: string): void; onRemove(id: string): void;
 }) {
   return conversations.map(chat => <div key={chat.id} className={`playground-history-row ${chat.id === selectedId ? 'is-selected' : ''}`}>
-    <button type="button" className="playground-history-open" aria-current={chat.id === selectedId ? 'page' : undefined} title={chat.title} onClick={() => onOpen(chat.id)}><span>{chat.title}</span><small>{chat.active ? 'Responding' : new Date(chat.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small></button>
+    <button type="button" className="playground-history-open" aria-current={chat.id === selectedId ? 'page' : undefined} title={chat.title} onClick={() => onOpen(chat.id)}><span translate="no">{chat.title}</span><small>{chat.active ? 'Responding' : new Date(chat.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small></button>
     <RowActionsMenu label={`Actions for ${chat.title}`} items={[{ label: 'Delete', danger: true, onSelect: () => onRemove(chat.id) }]} />
   </div>);
 });

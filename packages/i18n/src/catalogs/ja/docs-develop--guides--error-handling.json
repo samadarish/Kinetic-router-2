@@ -1,0 +1,21 @@
+{
+  "Authentication failed: copy the complete key again, remove extra whitespace, and check its active status and expiry. Custom keys do not necessarily begin with sk-.": "認証失敗:完全なキーを再びコピーし、追加のホイットスペースを取り除き、アクティブ状態と終了することを確認します。カスタムキーは必ずしも sk-で始まらないのです。",
+  "Check credentials, model access, limits, URLs, and interrupted requests.": "認証書、モデルアクセスをチェックする制限、URLと中断された要望。",
+  "Check the returned assistant message. An error response is not a successful answer.": "返回されたアシスタントメッセージを確認してください。エラー回答は成功した答えではありません。",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "モデルとキー名によって要求を検索します。レビュー input/output そしてキャッシュトークン、遅延と実際の請求費用。",
+  "For support, include the time, model, request ID if supplied, and error status. Never send your API key, session cookie, or password. Error details vary by endpoint; use the returned status and message rather than assuming one universal error shape.": "サポートには、時間、モデル、提供された場合のリクエストIDおよびエラー状態を含む。 APIキー、セッション Cookieまたはパスワードをお送りしないでください。エラー詳細はエンドポイントによって異なります;単一の普遍的なエラー形を仮定する代わりに返還したステータスをとるメッセージを使用します。",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "要望が中断され、または延期された場合は、繰り返す前に使用を確認してください。リリースは別々の要件であり、別の料金にかかる可能性があります。",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "現在のクライアントコンソールおよび統合に関する指示。ワークフローに頼る前に、アカウントでモデルアクセスとプロトコルサポートを確認してください。",
+  "Model unavailable or access denied: verify the selected key’s group and available model list. Check IP restrictions and provider route availability.": "モデルが利用できないまたはアクセス拒否:選択されたキーのグループと可用モデルリストを確認してください。IP制限およびプロバイダー路線の有効性をチェックします。",
+  "Open Usage": "オープン使用",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "使用を開いて、要求を含む日付範囲を選択します。表示されたタイムゾーンをご確認ください。",
+  "Playground with an IP-restricted key: the gateway sees the console server’s connection. A key that works from your application may not permit that connection. Keep the restriction unless you intend to change it.": "IP制限キーを持つプレイエリア:ゲートウェイはコンソールサーバーの接続を見ます。アプリから動作する鍵がその接続を許さない場合があります。",
+  "Quota or balance exhausted: inspect the key’s quota and rolling USD limits, then the account balance or subscription usage. Changing a key quota does not fund the account.": "配分またはバランス:キーの配分を確認し、USD制限をローリングしてアカウント・バランスやサブスクリプションを使用します。",
+  "Rate-limited or temporarily unavailable: wait before trying again and check service status. Avoid repeatedly resending a request that may already have been processed.": "料金制限または一時的に利用できない:再試し直前に待ってサービスの状態を確認してください。すでに処理された可能性のあるリクエストを繰り返して回復することを避けましょう。",
+  "Reference snapshot": "参考スナップショット",
+  "Request URL not found: use /v1 as the SDK base URL, and /v1/chat/completions for a direct Chat Completions request. Use the protocol supported by your chosen model.": "検索 URLが見つかりません:使用 /v1 同様に SDK 基本 URL、そして /v1/chat/completions 直接のための Chat Completions 要請:選択したモデルによってサポートされているプロトコルを使用します。",
+  "Stream stopped: keep the partial answer and check Usage. Start another request only when you want to retry.": "ストリームが停止:部分回答を保ち、使用を確認してください。再度リリースしたいときにのみ別の要望を実行します。",
+  "Troubleshoot API requests": "API リクエストの解決",
+  "Troubleshooting": "問題解決",
+  "Verify the answer and billed usage": "回答と請求書の使用を確認する"
+}

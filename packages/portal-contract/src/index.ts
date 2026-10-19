@@ -166,6 +166,7 @@ export type CapabilityMap = {
     passkeys: boolean;
     google: boolean;
     payments: boolean;
+    subscriptions: boolean;
     subscriptionPurchase: boolean;
     modelPlaza: boolean;
     availableChannels: boolean;

@@ -1,0 +1,20 @@
+{
+  "A verified customer balance API is not published by kineticRouter yet.": "Una API de balance del cliente verificada no ha sido publicada por kineticRouter todavía.",
+  "API Reference": "Referencias API",
+  "Authentication": "Autenticación",
+  "Available now": "Disponible ahora",
+  "Balance API": "Equilibrio API",
+  "Balance API - Contract pending": "Balance API - Contrato suspendido",
+  "Balance API documentation will be published after its endpoint contract is verified.": "La documentación de la API Balance se publicará después de que su contrato final sea verificado.",
+  "Balance Query": "Balance Query",
+  "Endpoint": "El final",
+  "Endpoint documentation pending": "Documentación final de punto pendiente",
+  "Error Response": "Respuesta de error",
+  "Not published": "No Publicado",
+  "Request Example": "Ejemplo de solicitud",
+  "Response Fields": "Campos de respuesta",
+  "Response Format": "Formato de respuesta",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "La consola autentificada muestra el balance de la cuenta y el uso real de facturación. El playground muestra las tasas de modelo final verificadas cuando están disponibles y identifica explícitamente los precios no disponibles. No se exponen aquí el balance público no verificado o la URL de precios del proveedor.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "La consola del cliente está conectada, pero este punto final público no ha completado la verificación de compatibilidad.El camino de solicitud y el esquema de respuesta se publicarán después de la verificación.",
+  "Third-Party Tool Compatibility": "Compatibilidad de herramientas de terceros"
+}

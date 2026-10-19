@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "A verified provider-pricing API is not published by kineticRouter yet.",
+  "API Reference": "API Reference",
+  "Authentication": "Authentication",
+  "Available now": "Available now",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Endpoint documentation pending",
+  "Error Responses": "Error Responses",
+  "Not published": "Not published",
+  "Provider pricing API": "Provider pricing API",
+  "Provider pricing API - Contract pending": "Provider pricing API - Contract pending",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "Provider pricing API documentation will be published after its endpoint contract is verified.",
+  "Real-Time Pricing": "Real-Time Pricing",
+  "Request Example": "Request Example",
+  "Response Format": "Response Format",
+  "Signature algorithm": "Signature algorithm",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.",
+  "Top-Level Fields": "Top-Level Fields",
+  "data Fields": "data Fields",
+  "models[] Fields": "models[] Fields"
+}

@@ -4,6 +4,12 @@ import type { CapabilityMap, SessionView } from '@kineticrouter/portal-contract'
 const isAccountQuery = (query: { queryKey: readonly unknown[] }) => query.queryKey[0] !== 'session';
 export async function reconcileSessionQueries(client: QueryClient, next: SessionView, signal?: AbortSignal) {
   const previous = client.getQueryData<SessionView>(['session']);
+  if (next.capabilities.subscriptions === false) {
+    // Clear cached cards and cancel late reads before publishing disabled access.
+    await client.cancelQueries({ queryKey: ['subscriptions'] });
+    signal?.throwIfAborted();
+    client.removeQueries({ queryKey: ['subscriptions'] });
+  }
   if (!previous) return false;
   const identity = (session: SessionView | undefined) => session?.authenticated
     ? `${session.user?.id}:${session.user?.role}:${session.user?.status}` : null;

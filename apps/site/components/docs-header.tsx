@@ -9,7 +9,7 @@ import { CloseIcon, MenuIcon, MoonIcon, SearchIcon, SunIcon } from './icons';
 import { PublicAccountMenu } from './public-account-menu';
 import type { DocsNavigationGroup } from '@/data/docs-navigation';
 import type { SiteConfig, SiteNavigationItem } from '@/data/site-config';
-import { useThemePreference } from '@kineticrouter/brand-ui';
+import { LanguageSelector, useThemePreference } from '@kineticrouter/brand-ui';
 
 function routeActive(route: string, href: string) {
   return href === '/docs' ? route === href : route === href || route.startsWith(`${href}/`);
@@ -65,8 +65,9 @@ export function DocsHeader({ route, navigation, headerLinks, brand }: DocsHeader
           <kbd className="ml-auto shrink-0 rounded border border-border px-1.5 py-0.5 text-xs">⌘ K</kbd>
         </button>
         <button type="button" onClick={() => setSearchOpen(true)} aria-label="Search documentation" className="ml-auto hidden h-9 w-9 shrink-0 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground lg:grid xl:hidden"><SearchIcon className="h-4 w-4" /></button>
-        <PublicAccountMenu className="ml-auto md:ml-2 lg:ml-3" />
+        <LanguageSelector className="ml-auto md:ml-2 lg:ml-3" />
         <button type="button" aria-label="Toggle theme" onClick={toggleTheme} className="ml-1 grid h-9 w-9 shrink-0 place-items-center text-muted-foreground sm:ml-2">{dark ? <SunIcon className="h-[18px] w-[18px]" /> : <MoonIcon className="h-[18px] w-[18px]" />}</button>
+        <PublicAccountMenu className="ml-1 sm:ml-2" />
         <button type="button" aria-label={menuOpen ? 'Close docs menu' : 'Open docs menu'} aria-expanded={menuOpen} aria-controls="docs-mobile-navigation" onClick={() => setMenuOpen((value) => !value)} className="ml-1 grid h-9 w-9 shrink-0 place-items-center lg:hidden">{menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}</button>
       </div>
 

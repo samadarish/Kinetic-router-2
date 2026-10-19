@@ -45,7 +45,7 @@ export function App() {
       <Route path="/admin/website" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <WebsiteSettingsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />
       <Route path="/usage" element={<UsagePage />} />
       <Route path="/status" element={<StatusPage />} />
-      <Route path="/subscriptions" element={<SubscriptionsPage />} />
+      <Route path="/subscriptions" element={auth.capabilities?.subscriptions !== false && auth.user?.runMode !== 'simple' ? <SubscriptionsPage /> : <Navigate to="/dashboard" replace />} />
       <Route path="/redeem" element={<RedeemPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/analytics" element={auth.user?.role === 'admin' && auth.user.status === 'active' ? <AnalyticsPage /> : <ErrorState error={new Error('Administrator access is required.')} />} />

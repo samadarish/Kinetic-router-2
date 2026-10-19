@@ -1,0 +1,22 @@
+{
+  "API Keys": "Ключи API",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "Баланс аккаунта отделен от расходов на ключ API. Повышение квоты не добавляет средств. Доступ и окна использования подписки появляются только при назначении и включении. Проверьте текущие условия учетной записи для оплаты, истечения или поведения обновления.",
+  "Balance, quota and subscriptions": "Баланс, квота и подписки",
+  "Check the returned assistant message. An error response is not a successful answer.": "Проверьте возвращенное сообщение помощника. Ответ ошибки не является успешным ответом.",
+  "Check your model rates": "Проверьте цены на свою модель",
+  "Distinguish customer rates, account limits, and reference prices.": "Различать ставки клиентов, лимиты счета и референтные цены.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "Найдите запрос по его модели и ключевому названию. input/output и кеш токены, задержка и фактические расходы на счета.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "Если запрос прекращается или отменяется, проверьте использование перед повторением его. Отзывы — это отдельное просьба и может нанести дополнительную смену.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "Инструкции для текущей клиентской консоли и интеграций. Проверьте доступ моделей и поддержку протоколов с учетной записью, прежде чем полагаться на рабочий поток.",
+  "Open Usage": "Открытое использование",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "Откройте Использование и выберите диапазон даты, который включает запрос. Проверьте отображаемый часовой пояс.",
+  "Playground": "Песочница",
+  "Prices and billed costs": "Цены и расходы на счета",
+  "Public reference prices": "Публичные референтные цены",
+  "Reference snapshot": "Референтный Snapshot",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "Запросы все еще используют обычный счета выбранного ключа. Использование является авторитетным для записанных сумм счетов.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "Модели и ценовые страницы показывают kineticRouter показать цены на 90% от официальных референтных ставок, с датой проверки источника. оригинальный импортированный архив остается отдельным.",
+  "Usage": "Использование",
+  "Verify the answer and billed usage": "Проверьте ответ и расчет использования",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Когда Playground включен, выберите ключ и модель там, а затем открыть показатели просмотра для того, чтобы увидеть проверенные цены на конечные токены когда доступны. Цены показывают их единицы и время наблюдения. Кренальные ставки недоступны означает, что консоль не может получить полное поддерживаемое правило цен; это не значит, что модель бесплатна."
+}

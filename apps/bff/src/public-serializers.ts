@@ -185,10 +185,12 @@ export function publicDashboardStats(stats: DashboardStats): DashboardStats {
 }
 
 export function publicCapabilities(capabilities: CapabilityMap): CapabilityMap {
+  const subscriptions = capabilities.subscriptions !== false;
   return {
     registration: capabilities.registration, passwordReset: capabilities.passwordReset,
     totp: capabilities.totp, passkeys: capabilities.passkeys, google: capabilities.google,
-    payments: capabilities.payments, subscriptionPurchase: capabilities.subscriptionPurchase,
+    payments: capabilities.payments, subscriptions,
+    subscriptionPurchase: subscriptions && capabilities.subscriptionPurchase,
     modelPlaza: capabilities.modelPlaza, availableChannels: capabilities.availableChannels,
     channelMonitor: capabilities.channelMonitor, channelMonitorMode: capabilities.channelMonitorMode,
     affiliate: capabilities.affiliate, usageErrors: capabilities.usageErrors, promoCode: capabilities.promoCode,

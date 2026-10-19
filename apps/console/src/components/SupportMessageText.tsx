@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { LinkifyIt } from 'linkify-it';
 import tlds from 'tlds';
+import { OriginalText } from '@kineticrouter/i18n/react';
 
 const linkify = new LinkifyIt({ fuzzyLink: true, fuzzyIP: false, tlds });
 
@@ -23,5 +24,5 @@ export function SupportMessageText({ body }: { body: string }) {
     offset = match.lastIndex;
   }
   content.push(body.slice(offset));
-  return <span className="support-message-text">{content}</span>;
+  return <OriginalText><span className="support-message-text">{content}</span></OriginalText>;
 }

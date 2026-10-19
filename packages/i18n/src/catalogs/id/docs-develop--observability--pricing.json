@@ -1,0 +1,22 @@
+{
+  "API Keys": "Kunci API",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "Keseimbangan akun terpisah dari kuota pengeluaran kunci API. Meningkatkan kuota tidak menambah dana. Akses langganan dan jendela penggunaan hanya muncul ketika ditugaskan dan diaktifkan. Periksa kondisi akun saat ini untuk perilaku pembayaran, berakhir, atau pembaharuan.",
+  "Balance, quota and subscriptions": "Keseimbangan, kuota dan langganan",
+  "Check the returned assistant message. An error response is not a successful answer.": "Periksa pesan asisten yang dikembalikan. respons kesalahan bukanlah jawaban yang sukses.",
+  "Check your model rates": "Periksa harga model Anda",
+  "Distinguish customer rates, account limits, and reference prices.": "Membedakan tarif pelanggan, batas akun, dan harga referensi.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "Temukan permintaan dengan model dan nama kunci. Review input/output dan token cache, latensi, dan biaya fakturasi sebenarnya.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "Jika permintaan dihentikan atau outtime, periksa Penggunaan sebelum mengulangi. Return adalah permintaan terpisah dan dapat dikenakan biaya tambahan.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "Instruksi untuk konsol pelanggan saat ini dan integrasi. Periksa akses model dan dukungan protokol dengan akun Anda sebelum bergantung pada alur kerja.",
+  "Open Usage": "Penggunaan terbuka",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "Buka Penggunaan dan pilih rentang tanggal yang mencakup permintaan. Periksa zona waktu yang ditampilkan.",
+  "Playground": "Area uji coba",
+  "Prices and billed costs": "Harga dan biaya yang dihitung",
+  "Public reference prices": "Harga Referensi Publik",
+  "Reference snapshot": "Referensi Snapshot",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "Permintaan masih menggunakan tagihan akun normal kunci yang dipilih. Penggunaan adalah otoriter untuk jumlah faktur tercatat.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "Halaman Model dan Harga menunjukkan kineticRouter menampilkan harga pada 90% off tingkat referensi resmi, dengan tanggal verifikasi sumber. Arsip yang diimpor asli tetap terpisah. Ketersediaan model dan harga akun dapat berbeda.",
+  "Usage": "Penggunaan",
+  "Verify the answer and billed usage": "Periksa jawaban dan penggunaan tagihan",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Ketika Playground diaktifkan, pilih kunci dan model Anda di sana, lalu buka Rate View untuk melihat harga token akhir yang dikonfirmasi saat tersedia. Harga menunjukkan unit dan waktu pengamatan mereka. Rate akhir tidak tersedia berarti konsol tidak dapat mendapatkan aturan harga yang didukung lengkap; itu tidak berarti model gratis."
+}

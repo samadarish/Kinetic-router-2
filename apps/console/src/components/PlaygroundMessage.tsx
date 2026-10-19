@@ -24,7 +24,7 @@ export const PlaygroundMessage = memo(function PlaygroundMessage({ message, user
     <div className="playground-message-heading"><strong>{message.role === 'user' ? userLabel : message.model ?? 'Model'}</strong>
       {message.role === 'assistant' && message.content && <button type="button" onClick={() => void copy()} aria-label={copied ? 'Response copied' : 'Copy response'}>{copied ? <Check size={14} /> : <Copy size={14} />}</button>}
     </div>
-    {message.content ? <div className={`playground-message-text ${message.role === 'assistant' ? 'playground-markdown' : ''}`}>
+    {message.content ? <div translate="no" className={`playground-message-text ${message.role === 'assistant' ? 'playground-markdown' : ''}`}>
       {message.role === 'assistant' ? <Markdown remarkPlugins={plugins} skipHtml components={components}>{message.content}</Markdown> : message.content}
     </div> : message.state ? message.state === 'complete' && <p className="playground-message-meta">No text returned.</p> : <span className="playground-typing" aria-hidden="true"><i /><i /><i /></span>}
     {usage && (usageDisplay === 'details' ? <details className="playground-message-details"><summary>Details <ChevronDown size={12} /></summary>{usage}</details> : usage)}

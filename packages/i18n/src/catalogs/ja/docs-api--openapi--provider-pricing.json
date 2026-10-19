@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "確認されたプロバイダー価格 API 投稿されていない kineticRouter まだ。",
+  "API Reference": "API 参考",
+  "Authentication": "認証",
+  "Available now": "現在利用可能",
+  "Endpoint": "エンドポイント",
+  "Endpoint documentation pending": "エンドポイントドキュメンタリー",
+  "Error Responses": "エラー Responses",
+  "Not published": "投稿されない",
+  "Provider pricing API": "プロバイダー価格 API",
+  "Provider pricing API - Contract pending": "プロバイダー価格 API - 契約期限",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "プロバイダーの価格API文書は、エンドポイント契約が確認された後に公開されます。",
+  "Real-Time Pricing": "リアルタイム価格",
+  "Request Example": "要請例",
+  "Response Format": "応答形式",
+  "Signature algorithm": "署名アルゴリズム",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "認証されたコンソールはアカウントのバランスと実際の請求書使用を表示します。Playgroundは、利用可能なときに確認した最終モデルレートを示し、有効にない価格が明らかに識別されます。",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "クライアントコンソールは接続されているが、この公共のエンドポイントでは互換性確認を完了していない。",
+  "Top-Level Fields": "トップレベルフィールド",
+  "data Fields": "データフィールド",
+  "models[] Fields": "モデル[]フィールド"
+}

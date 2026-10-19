@@ -23,6 +23,7 @@
     "sync:model-inventory": "node scripts/sync-model-inventory.mjs"
   },
   "dependencies": {
+    "@kineticrouter/i18n": "0.1.0",
     "@kineticrouter/analytics-client": "0.1.0",
     "@kineticrouter/brand-ui": "0.1.0",
     "@kineticrouter/platform-config": "0.1.0",

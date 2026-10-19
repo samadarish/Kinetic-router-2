@@ -87,7 +87,7 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
             <img src={avatarUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
           ) : initials(username)}
         </span>
-        <span className="hidden min-w-0 truncate sm:block">{username}</span>
+        <span translate="no" className="hidden min-w-0 truncate sm:block">{username}</span>
         <ChevronDownIcon className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground sm:block" />
       </button>
       {open && (
@@ -100,7 +100,7 @@ export function PublicAccountMenu({ className = '' }: { className?: string }) {
           if (event.key === 'End') { event.preventDefault(); items.at(-1)?.focus(); }
         }} className="public-account-dropdown absolute right-0 top-[calc(100%+7px)] z-[80] w-56 overflow-hidden rounded-xl border border-border bg-elevated p-2 shadow-2xl">
           <div className="border-b border-border px-3 pb-2 pt-1">
-            <span className="block truncate text-xs font-semibold">{username}</span>
+            <span translate="no" className="block truncate text-xs font-semibold">{username}</span>
           </div>
           <a role="menuitem" tabIndex={-1} href={consolePageUrl(consoleOrigin, '/dashboard')} className="mt-1 flex rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">Dashboard</a>
           <a role="menuitem" tabIndex={-1} href={consolePageUrl(consoleOrigin, '/profile')} className="flex rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">Profile</a>

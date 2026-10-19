@@ -1,4 +1,4 @@
-import { pageMetadata } from '@/data/seo';
+import { localizedPageMetadata } from '@/data/locale';
 import { defaultProviderModel, openAICompatibleExamples } from '@kineticrouter/platform-config/models';
 import { getProviderDisplayEndpoint } from '@kineticrouter/platform-config/providers';
 import { ArrowRightIcon, CheckIcon, SparklesIcon } from '@/components/icons';
@@ -7,7 +7,7 @@ import { SiteFrame } from '@/components/site-frame';
 import { providerAvailabilityCheckedAt, providerDisplayStatus } from '@/data/provider-availability';
 import { codexProviderConfig as codex, codexStartCommand } from '@/data/codex-example';
 
-export const metadata = pageMetadata('/vibe-coding');
+export async function generateMetadata() { return localizedPageMetadata('/vibe-coding'); }
 const setup = `export KINETICROUTER_API_KEY="YOUR_KINETICROUTER_API_KEY"`;
 
 export default function VibeCodingPage() {

@@ -1,0 +1,20 @@
+{
+  "A verified customer balance API is not published by kineticRouter yet.": "API keseimbangan pelanggan yang dikonfirmasi belum diterbitkan oleh kineticRouter.",
+  "API Reference": "Referensi API",
+  "Authentication": "Authentikasi",
+  "Available now": "Tersedia sekarang",
+  "Balance API": "Keseimbangan API",
+  "Balance API - Contract pending": "Keseimbangan API - Kontrak Tanggapan",
+  "Balance API documentation will be published after its endpoint contract is verified.": "Dokumentasi API Balance akan diterbitkan setelah kontrak titik akhirnya dikonfirmasi.",
+  "Balance Query": "Keseimbangan Query",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Dokumen Endpoint yang ditangguhkan",
+  "Error Response": "Jawaban kesalahan",
+  "Not published": "Tidak diterbitkan",
+  "Request Example": "Contoh permintaan",
+  "Response Fields": "Lapangan Respon",
+  "Response Format": "Format Respon",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "Konsol yang disetujui menampilkan keseimbangan akun dan penggunaan faktur aktual. Playground menampilkan tingkat model akhir verifikasi saat tersedia dan secara eksplisit mengidentifikasi harga yang tidak tersedia. Tidak ada saldo publik yang tidak disahkan atau URL harga penyedia ditampilkan di sini.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "Konsol pelanggan terhubung, tetapi titik akhir publik ini belum menyelesaikan verifikasi kompatibilitas. jalur permintaan dan skema respons akan diterbitkan setelah verifikasi.",
+  "Third-Party Tool Compatibility": "Kompatibilitas alat pihak ketiga"
+}

@@ -109,7 +109,7 @@ export function ApiKeysPage() {
           <table className="data-table keys-table">
             <thead><tr><th>Name</th><th>API key</th><th>Group</th><th>Status</th><th>Quota</th><th>Last used</th><th aria-label="Actions" /></tr></thead>
             <tbody>{query.data.items.map((key) => <tr key={key.id}>
-              <td><div className="key-name-cell"><span><KeyRound size={15} /></span><div><strong>{key.name}</strong><small>Created {formatDate(key.createdAt)}</small></div></div></td>
+              <td><div className="key-name-cell"><span><KeyRound size={15} /></span><div><strong translate="no">{key.name}</strong><small>Created {formatDate(key.createdAt)}</small></div></div></td>
               <td><div className="secret-cell"><code>{revealed.has(key.id) ? key.key : key.maskedKey}</code><button aria-label={revealed.has(key.id) ? 'Hide API key' : 'Show API key'} onClick={() => toggleReveal(key.id)}>{revealed.has(key.id) ? <EyeOff size={14} /> : <Eye size={14} />}</button><button aria-label="Copy API key" onClick={() => void copy(key)}>{copied === key.id ? <Check size={14} /> : <Clipboard size={14} />}</button></div></td>
               <td>{apiKeyGroupLabel(key)}</td><td><StatusBadge status={key.status} /></td>
               <td><KeyQuota name={key.name} quota={key.quota} used={key.quotaUsed} /></td>
