@@ -9,6 +9,9 @@ export * from './support.js';
 export const idSchema = z.union([z.string(), z.number()]).transform(String);
 export const moneySchema = z.union([z.string(), z.number()]).transform(String);
 export const dateSchema = z.string().nullable().optional();
+export const playgroundIntroductionSchema = z.object({ visited: z.boolean() }).strict();
+export type PlaygroundIntroduction = z.infer<typeof playgroundIntroductionSchema>;
+export const playgroundIntroductionVisitSchema = z.object({}).strict();
 export const loginInputSchema = z.object({
     email: z.string().trim().email().max(254),
     password: z.string().min(1).max(512),

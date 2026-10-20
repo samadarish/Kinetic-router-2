@@ -12,7 +12,9 @@ import { useAuth } from '../lib/auth';
 import { publicSiteHref } from '../lib/public-site';
 import { useTheme } from '../lib/theme';
 import { useSupport } from '../lib/support-context';
+import { usePlaygroundIntroduction } from '../lib/playground-introduction-context';
 import { LanguageSelector } from '@kineticrouter/brand-ui';
+import './playground-introduction.css';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: CircleGauge },
@@ -39,6 +41,7 @@ export function PortalShell() {
   const [signOutError, setSignOutError] = useState<string>();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarPreference);
   const { user, capabilities, logout, playgroundEnabled } = useAuth();
+  const { highlight: highlightPlayground } = usePlaygroundIntroduction();
   const { theme, toggle } = useTheme();
   const support = useSupport();
   const supportHref = user?.role === 'admin' && user.status === 'active' ? '/admin/support' : '/support';
@@ -130,7 +133,7 @@ export function PortalShell() {
           title={sidebarCollapsed ? label : undefined}
           aria-label={sidebarCollapsed ? label : undefined}
           onClick={() => setMenuOpen(false)}
-          className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+          className={({ isActive }) => ['nav-link', isActive && 'active', to === '/playground' && highlightPlayground && 'playground-introduction-highlight'].filter(Boolean).join(' ')}
         ><Icon size={17} strokeWidth={1.9} /><span>{label}</span></NavLink>)}
       </nav>
 
@@ -149,7 +152,7 @@ export function PortalShell() {
         </a>
         <nav className="console-topnav" aria-label="Console links">
           {consoleLinks.map((item) => isPortalRoute(item.href)
-            ? <NavLink key={item.id} to={item.href} className={({ isActive }) => `console-topnav-link ${isActive ? 'active' : ''}`}>{item.label}</NavLink>
+            ? <NavLink key={item.id} to={item.href} className={({ isActive }) => ['console-topnav-link', isActive && 'active', item.id === 'playground' && highlightPlayground && 'playground-introduction-highlight'].filter(Boolean).join(' ')}>{item.label}</NavLink>
             : <a key={item.id} className="console-topnav-link" href={siteLinkHref(item.href)} target={item.external ? '_blank' : undefined} rel={item.external ? 'noreferrer' : undefined}>{item.label}</a>)}
         </nav>
         <div className="topbar-spacer" />

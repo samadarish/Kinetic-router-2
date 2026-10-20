@@ -16,6 +16,7 @@ import {
   analyticsQuerySchema,
   publicWebsiteSettingsSchema,
   websiteSettingsSchema,
+  playgroundIntroductionVisitSchema,
   type CapabilityMap,
   type PortalUser,
   type RedeemResult,
@@ -78,6 +79,7 @@ import { createConversationStore } from './conversations-postgres.js';
 import { ConversationError, type ConversationStore } from './conversations.js';
 import { createPlaygroundSettingsStore, publicPlaygroundEnabled, PlaygroundSettingsError, type PlaygroundSettingsStore } from './playground-settings.js';
 import { createWebsiteSettingsStore, WebsiteSettingsError, type WebsiteSettingsStore } from './website-settings.js';
+import { createPlaygroundIntroductionStore, PlaygroundIntroductionError, type PlaygroundIntroductionStore } from './playground-introduction.js';
 import { SupportError, type SupportStore } from './support-store.js';
 import { createSupportStore } from './support-postgres.js';
 import { SupportRealtimeService, type SupportRealtime } from './support-realtime.js';
@@ -113,13 +115,14 @@ const configuredWriteGates: WriteGates = {
 
 export function createApp(
   store: SessionStore = createSessionStore(),
-  options: { client?: AccountServiceClient; onboardingClient?: OnboardingClient; authFlowStore?: AuthFlowStore; authGates?: AuthGates; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; websiteSettingsStore?: WebsiteSettingsStore; conversationStore?: ConversationStore; supportStore?: SupportStore; supportRealtime?: SupportRealtime; supportValidationIntervalMs?: number; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
+  options: { client?: AccountServiceClient; onboardingClient?: OnboardingClient; authFlowStore?: AuthFlowStore; authGates?: AuthGates; playgroundClient?: PlaygroundGateway; playgroundSettingsStore?: PlaygroundSettingsStore; websiteSettingsStore?: WebsiteSettingsStore; playgroundIntroductionStore?: PlaygroundIntroductionStore; conversationStore?: ConversationStore; supportStore?: SupportStore; supportRealtime?: SupportRealtime; supportValidationIntervalMs?: number; writeGates?: Partial<WriteGates>; analyticsStore?: AnalyticsStore; analyticsEnabled?: boolean; analyticsNow?: () => number } = {},
 ) {
   const client = options.client ?? defaultUpstream;
   const authFlows = options.authFlowStore ?? createAuthFlowStore();
   const conversations = options.conversationStore ?? createConversationStore();
   const playgroundSettings = options.playgroundSettingsStore ?? createPlaygroundSettingsStore();
   const websiteSettings = options.websiteSettingsStore ?? createWebsiteSettingsStore();
+  const playgroundIntroduction = options.playgroundIntroductionStore ?? createPlaygroundIntroductionStore();
   const supportStore = options.supportStore ?? createSupportStore();
   const supportRealtime = options.supportRealtime ?? new SupportRealtimeService();
   const writeGates = { ...configuredWriteGates, ...options.writeGates };
@@ -312,6 +315,13 @@ export function createApp(
   app.get('/portal/v1/website', async c => {
     const { socialLinks } = await websiteSettings.read();
     return success(c, publicWebsiteSettingsSchema.parse({ socialLinks }));
+  });
+
+  app.get('/portal/v1/me/playground-introduction', async c => success(c, { visited: await playgroundIntroduction.visited(requireSession(c).user.id) }));
+  app.post('/portal/v1/me/playground-introduction/visited', async c => {
+    playgroundIntroductionVisitSchema.parse(await c.req.json().catch(() => undefined));
+    await playgroundIntroduction.markVisited(requireSession(c).user.id);
+    return success(c, { visited: true });
   });
 
   app.use('/portal/v1/admin/*', async (c, next) => {
@@ -617,6 +627,7 @@ export function createApp(
     if (error instanceof ConversationError) return failure(c, error.status, error.code, error.message);
     if (error instanceof PlaygroundSettingsError) return failure(c, error.status, error.code, error.message);
     if (error instanceof WebsiteSettingsError) return failure(c, error.status, error.code, error.message);
+    if (error instanceof PlaygroundIntroductionError) return failure(c, 503, 'PLAYGROUND_INTRODUCTION_UNAVAILABLE', error.message);
     if (error instanceof PlaygroundGatewayError) {
       if (error.status >= 500) logger.error({ requestId, upstreamStatus: error.upstreamStatus, failure: error.failure, path: c.req.path }, 'Playground model request failed');
       return failure(c, normalizeStatus(error.status), error.code, error.message);
@@ -633,7 +644,7 @@ export function createApp(
     return failure(c, 500, 'INTERNAL_ERROR', 'The portal could not complete the request.');
   });
 
-  return { app, store, analytics, playgroundSettings, websiteSettings, conversations, authFlows, supportStore, supportRealtime };
+  return { app, store, analytics, playgroundSettings, websiteSettings, playgroundIntroduction, conversations, authFlows, supportStore, supportRealtime };
 }
 
 function isPublicPortalPath(path: string) {

@@ -151,6 +151,10 @@ textarea:focus-visible {
 .public-header-link { height: 100%; font-size: 14px; font-weight: 500; line-height: 1; }
 .public-header-link > span { bottom: 1px; }
 .public-mobile-link[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--primary); text-underline-offset: 6px; }
+.public-header-preferences { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
+.public-theme-toggle { display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--muted-foreground); cursor: pointer; }
+.public-theme-toggle:hover { color: var(--foreground); background: var(--muted); }
+.public-theme-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 @media(min-width:768px) { .public-header, .public-header-spacer { --public-header-height: 56px; } }
 @media(max-width:639px) { .public-theme-toggle { display: none; } }
 

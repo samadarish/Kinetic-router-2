@@ -1,0 +1,13 @@
+# Playground first visit
+
+Both console Playground navigation links receive a 3px green border, subtle fill, and a repeating 1.8-second border-color pulse until the signed-in account opens Playground. The first successful page mount completes the introduction, including a direct URL visit. Per the requested visible blink, reduced-motion preferences use a slower three-second color-only pulse; the controls and their text never move or scale. Completed accounts return to normal navigation styling.
+
+This applies to existing and new customers and administrators. Hidden or disabled Playground links never request or complete the introduction. Failed page loads do not complete it; opening the page does not require creating an API key or sending a model request.
+
+`GET /portal/v1/me/playground-introduction` returns `{ visited: boolean }` in the normal API envelope. `POST /portal/v1/me/playground-introduction/visited` accepts an empty JSON object and permanently records the current session account's visit. The POST requires the console Origin and CSRF token. Both endpoints require authentication and use no-store responses; neither accepts a supplied account ID or reset operation.
+
+Production uses the existing Redis instance and the set `kr:portal:onboarding:playground:visited`, without expiry. Keep the existing persistent Redis volume and backups when deploying. Development stores the same account flags in `.cache/playground-introduction.json` with atomic writes. No sub2api changes or database migration are required. The BFF closes the store during normal shutdown.
+
+The browser shares one account-scoped state between the two links and remembers a pending visit in localStorage under `kineticrouter-playground-introduction:<encoded account ID>`. It marks the visit locally immediately, retries failed saves twice, and retries remaining pending saves on later authenticated mounts, focus, or connectivity restoration. Successful visits are cached locally as visited and synchronized to other tabs through storage events. The server flag covers other browsers and devices. Logout and account changes cancel pending network work; late responses cannot restore a completed highlight or change another account's state. Unknown or failed status reads hide the highlight and retry on focus.
+
+Release the updated BFF before or alongside the console. An older BFF omits the highlight until its endpoint becomes available. The separate main-site update adds an 8px gap between language and theme controls and matches their hover/focus styling; theme tooltips identify the target mode in the selected language.

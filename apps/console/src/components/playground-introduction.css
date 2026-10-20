@@ -1,0 +1,17 @@
+.sidebar-nav .nav-link.playground-introduction-highlight,
+.console-topnav .console-topnav-link.playground-introduction-highlight {
+  background: var(--success-soft);
+  box-shadow: inset 0 0 0 3px var(--success);
+  /* Color-only feedback stays visible without moving or scaling the control. */
+  animation: playground-introduction-pulse 1.8s ease-in-out infinite !important;
+}
+
+@keyframes playground-introduction-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--success) 20%, transparent), 0 0 8px transparent; }
+  50% { box-shadow: inset 0 0 0 3px var(--success), 0 0 8px color-mix(in srgb, var(--success) 20%, transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav .nav-link.playground-introduction-highlight,
+  .console-topnav .console-topnav-link.playground-introduction-highlight { animation-duration: 3s !important; }
+}

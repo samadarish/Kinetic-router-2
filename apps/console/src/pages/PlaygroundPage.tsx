@@ -9,6 +9,7 @@ import { PlaygroundMessage } from '../components/PlaygroundMessage';
 import { portalApi, queryString } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { usePlayground } from '../lib/playground-context';
+import { usePlaygroundIntroduction } from '../lib/playground-introduction-context';
 import { usePlaygroundKeys } from '../lib/playground-queries';
 import { reportedModelStatus } from '../lib/playground-status';
 import './playground.css';
@@ -17,6 +18,8 @@ import './playground.css';
 export function PlaygroundPage() {
   const { capabilities, user } = useAuth();
   const { state, store } = usePlayground();
+  const { visit } = usePlaygroundIntroduction();
+  useEffect(() => { visit(); }, [visit]);
   const { selectedKey, selectedModel, messages, draft, activity, timing, error, persistenceNotice } = state;
   const [params, setParams] = useSearchParams();
   const [olderLoading, setOlderLoading] = useState(false);
