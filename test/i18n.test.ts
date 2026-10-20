@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { createTranslator, localizeHtml, translateText } from '@kineticrouter/i18n';
+import { createTranslator, loadCatalog, localizeHtml, translateText } from '@kineticrouter/i18n';
 
 describe('translation runtime', () => {
+  it('loads reviewed Vietnamese account actions and retains dynamic values', async () => {
+    const catalog = await loadCatalog('vi', 'console');
+    const translator = createTranslator(catalog, 'vi');
+    expect(translator.text('Cancel')).toBe('Hủy');
+    expect(translator.text('Sign in')).toBe('Đăng nhập');
+    expect(translator.text('Sign out')).toBe('Đăng xuất');
+    expect(translator.text('Customer #123')).toBe('Khách hàng #123');
+    expect(translator.text('Quota limit (USD)')).toBe('Hạn mức (USD)');
+  });
+
   it('preserves surrounding whitespace, substitutes dynamic values, and falls back to English', () => {
     const catalog = { Home: 'Inicio', '{0} results': '{0} resultados', 'Actions for {0}': 'Acciones para {0}' };
     expect(translateText(' Home ', catalog)).toBe(' Inicio ');

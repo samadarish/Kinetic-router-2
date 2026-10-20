@@ -1,15 +1,20 @@
 # Website and console languages
 
 The header selector uses one browser preference across the public site and
-console. English is the default, independent of browser language. The cookie
+console. Without a saved preference, the browser's primary language is selected
+automatically; unsupported languages fall back to English. Regional variants
+such as `fr-CA`, `pt-BR`, and `vi-VN` select the corresponding language.
+Simplified Chinese variants select `zh-CN`; Traditional Chinese falls back to
+English. The cookie
 `kineticrouter-language` is shared with `kineticrouter.com` subdomains; local
 storage is a fallback. Visible windows reconcile the cookie once a second and
 on focus, visibility changes, and page restoration. No account or authentication
-cookie is changed.
+cookie is changed. Manual choices override browser detection on later visits.
+Existing valid preferences, including English, are retained.
 
 The display order is English, Español, Português, Bahasa Indonesia, Deutsch,
-Français, Русский, 한국어, 日本語, and 简体中文. Codes are `en`,
-`es`, `pt`, `id`, `de`, `fr`, `ru`, `ko`, `ja`, and `zh-CN`.
+Français, Русский, 한국어, 日本語, 简体中文, and Tiếng Việt. Codes are `en`,
+`es`, `pt`, `id`, `de`, `fr`, `ru`, `ko`, `ja`, `zh-CN`, and `vi`.
 
 ## Rendering and catalogs
 
@@ -36,8 +41,10 @@ the catalog key. Existing translations fall back to the original English when a
 new key is unavailable. `npm run check:translations` identifies missing entries
 and damaged interpolation parameters before release.
 
-The public layout reads the locale cookie for each request and seeds the client
-provider with that same locale. Cookie-dependent HTML/RSC responses are dynamic;
+The public layout reads the locale cookie for each request, or the primary
+`Accept-Language` preference when no valid cookie exists, and seeds the client
+provider with that locale. The initial browser script and console startup use
+the same language matcher. Preference-dependent HTML/RSC responses are dynamic;
 content caches are keyed by locale and route. URLs and canonical links stay
 unchanged. Documentation search explicitly requests
 `/docs/search-index.json?locale=<code>`, so its public cache cannot mix languages.
@@ -64,6 +71,7 @@ and are not shipped with the website.
    CUDA installations may add `--device cuda`. Model checksums are verified
    before inference. Interpolation parameters, endpoint URLs, and technical
    identifiers are protected. OpenCC ensures Simplified Chinese output.
+   Use `--locales vi` to generate only Vietnamese without rewriting other languages.
 5. Review the resulting machine translations, particularly legal and technical
    wording. Existing catalog edits take precedence when rerunning generation.
 6. Run `npm run check:translations`, relevant tests, type checks, and both builds.

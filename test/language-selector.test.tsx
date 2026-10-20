@@ -6,6 +6,7 @@ import { LanguageSelector } from '@kineticrouter/brand-ui';
 import { LocaleProvider } from '@kineticrouter/i18n/react';
 import { Fragment, jsx, jsxs } from '@kineticrouter/i18n/jsx-runtime';
 import { LOCALE_STORAGE_KEY, setBrowserLocale } from '@kineticrouter/platform-config/locale';
+import { loadCatalog } from '@kineticrouter/i18n';
 
 let host: HTMLDivElement;
 let root: Root;
@@ -17,16 +18,35 @@ beforeEach(() => {
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.unstubAllGlobals(); });
 
 describe('language selector', () => {
+  it.each(['site', 'console'] as const)('loads Vietnamese in the %s interface and preserves its native menu label', async namespace => {
+    const catalog = await loadCatalog('vi', namespace);
+    expect(catalog['Sign out']).toBe('Đăng xuất');
+    const content = jsxs('div', { children: [createElement(LanguageSelector), jsx('p', { 'data-testid': 'home', children: 'Home' }), jsx('button', { 'data-testid': 'sign-out', children: 'Sign out' })] });
+    await act(async () => root.render(createElement(LocaleProvider, { namespace, children: content })));
+    await act(async () => host.querySelector<HTMLButtonElement>('.language-trigger')!.click());
+    const vietnamese = host.querySelector<HTMLButtonElement>('[lang="vi"]')!;
+    expect(vietnamese.textContent).toBe('Tiếng Việt');
+    await act(async () => vietnamese.click());
+    expect(document.documentElement.lang).toBe('vi');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('vi');
+    expect(host.querySelector('[data-testid="home"]')!.textContent).toBe('Trang chủ');
+    expect(host.querySelector('[data-testid="sign-out"]')!.textContent).toBe('Đăng xuất');
+    expect(host.querySelector('.language-trigger')!.getAttribute('title')).toBe('Chọn ngôn ngữ');
+    await act(async () => host.querySelector<HTMLButtonElement>('.language-trigger')!.click());
+    expect(host.querySelector('[lang="vi"]')!.getAttribute('aria-checked')).toBe('true');
+    expect(host.querySelector('[lang="vi"]')!.textContent).toBe('Tiếng Việt✓');
+  });
+
   it('opens the ordered, checked menu and supports keyboard selection, Escape, and outside dismissal', async () => {
     await act(async () => root.render(createElement(LocaleProvider, { namespace: 'site', children: createElement(LanguageSelector) })));
     const trigger = host.querySelector<HTMLButtonElement>('.language-trigger')!;
     await act(async () => trigger.click());
     const options = [...host.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]')];
-    expect(options.map(option => option.textContent?.replace('✓', ''))).toEqual(['English', 'Español', 'Português', 'Bahasa Indonesia', 'Deutsch', 'Français', 'Русский', '한국어', '日本語', '简体中文']);
+    expect(options.map(option => option.textContent?.replace('✓', ''))).toEqual(['English', 'Español', 'Português', 'Bahasa Indonesia', 'Deutsch', 'Français', 'Русский', '한국어', '日本語', '简体中文', 'Tiếng Việt']);
     expect(options[0]?.getAttribute('aria-checked')).toBe('true');
     expect(document.activeElement).toBe(options[0]);
     await act(async () => options[0]!.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true })));
-    expect(document.activeElement).toBe(options[9]);
+    expect(document.activeElement).toBe(options.at(-1));
     await act(async () => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(trigger);

@@ -252,7 +252,7 @@ describe('playground model identity boundary', () => {
     expect(text).not.toMatch(/modelIdentities|knowledgeCutoff|systemPrompt|Example|year-month/);
     const sends = fx.gatewayFetch.mock.calls.filter(([url]) => String(url).endsWith('/chat/completions'));
     expect(sends).toHaveLength(1);
-    expect(JSON.parse(String(sends[0]![1]!.body))).toEqual({ model: 'gpt-test', messages: [{ role: 'system', content: instruction }, ...messages], stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192 });
+    expect(JSON.parse(String(sends[0]![1]!.body))).toEqual({ model: 'gpt-test', messages: [{ role: 'system', content: instruction }, ...messages], stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192, reasoning_effort: 'low' });
     expect(fx.accountFetch.mock.calls.filter(([url]) => new URL(String(url)).pathname.endsWith('/keys/7'))).toHaveLength(2);
   });
 
@@ -365,7 +365,42 @@ describe('authenticated playground BFF', () => {
     const init = sends[0]![1]!;
     expect(new Headers(init.headers).get('authorization')).toBe('Bearer sk-customer-fixture');
     expect(init.redirect).toBe('manual');
-    expect(JSON.parse(String(init.body))).toEqual({ model: 'gpt-test', messages: initialMessages, stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192 });
+    expect(JSON.parse(String(init.body))).toEqual({ model: 'gpt-test', messages: initialMessages, stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192, reasoning_effort: 'low' });
+  });
+
+  it('keeps a low-reasoning compatibility fallback in one conversation turn with one final usage record', async () => {
+    let attempts = 0;
+    const fx = await fixture({ identities: [{ modelId: 'gpt-test', name: 'Fixture' }], chatResponse: () => ++attempts === 1
+      ? Response.json({ error: { param: 'reasoning_effort', code: 'unsupported_value', message: 'PRIVATE_UPSTREAM_ERROR' } }, { status: 422 })
+      : new Response(completeStream(), { headers: { 'content-type': 'text/event-stream' } }) });
+    const response = await fx.app.request('/portal/v1/playground/chat', { method: 'POST', headers: fx.headers, body: JSON.stringify(input) });
+    const text = await response.text();
+    const events = text.split('\n').filter(line => line.startsWith('data: ')).map(line => JSON.parse(line.slice(6)));
+    for (const type of ['turn_started', 'usage', 'done']) expect(events.filter(event => event.type === type)).toHaveLength(1);
+    expect(text).not.toMatch(/PRIVATE_|reasoning|sk-customer/);
+    const sends = fx.gatewayFetch.mock.calls.filter(([url]) => String(url).endsWith('/chat/completions'));
+    expect(sends).toHaveLength(2);
+    const { reasoning_effort, ...defaultBody } = JSON.parse(String(sends[0]![1]!.body));
+    expect(reasoning_effort).toBe('low');
+    expect(defaultBody.messages[0]).toMatchObject({ role: 'system', content: expect.stringContaining('Fixture') });
+    expect(sends[1]![1]).toEqual({ ...sends[0]![1], body: JSON.stringify(defaultBody) });
+    const saved = await fx.history.detail('42', input.conversationId);
+    expect(saved.conversation.active).toBe(false);
+    expect(saved.turns).toHaveLength(1);
+    expect(saved.turns[0]).toMatchObject({ userText: input.message, assistantText: 'Hello 🌍', state: 'complete', usage: { inputTokens: 17, outputTokens: 23, totalTokens: 40 } });
+    expect(JSON.stringify(saved)).not.toMatch(/PRIVATE_|reasoning_effort/);
+  });
+
+  it('saves one failed turn when the default reasoning attempt also fails, with no further retry', async () => {
+    const fx = await fixture({ chatResponse: () => Response.json({ error: { param: 'reasoning_effort', code: 'unsupported_parameter', message: 'PRIVATE_UPSTREAM_ERROR' } }, { status: 400 }) });
+    const response = await fx.app.request('/portal/v1/playground/chat', { method: 'POST', headers: fx.headers, body: JSON.stringify(input) });
+    expect(response.status).toBe(400);
+    expect(await response.text()).not.toMatch(/PRIVATE_|reasoning_effort/);
+    expect(fx.gatewayFetch.mock.calls.filter(([url]) => String(url).endsWith('/chat/completions'))).toHaveLength(2);
+    const saved = await fx.history.detail('42', input.conversationId);
+    expect(saved.conversation.active).toBe(false);
+    expect(saved.turns).toHaveLength(1);
+    expect(saved.turns[0]).toMatchObject({ state: 'failed', assistantText: '', usage: null });
   });
 
   it('does not retry failed billable requests or forward upstream errors', async () => {
@@ -430,7 +465,7 @@ describe('authenticated playground BFF', () => {
 
   it('rejects malformed conversations and models not listed for the selected key', async () => {
     const { app, headers, gatewayFetch } = await fixture();
-    for (const body of [{ ...input, message: '' }, { ...input, message: 'x'.repeat(32001) }, { ...input, revision: -1 }, { ...input, conversationId: 'invalid' }, { ...input, reasoning_effort: 'xhigh' }, { ...input, apiKeyId: '../7' }]) {
+    for (const body of [{ ...input, message: '' }, { ...input, message: 'x'.repeat(32001) }, { ...input, revision: -1 }, { ...input, conversationId: 'invalid' }, { ...input, reasoning_effort: 'xhigh' }, { ...input, reasoning_effort: 'low' }, { ...input, reasoning: { effort: 'high' } }, { ...input, apiKeyId: '../7' }]) {
       expect((await app.request('/portal/v1/playground/chat', { method: 'POST', headers, body: JSON.stringify(body) })).status).toBe(400);
     }
     expect(gatewayFetch).not.toHaveBeenCalled();

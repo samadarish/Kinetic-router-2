@@ -54,6 +54,57 @@ export class PlaygroundGatewayError extends Error {
 
 const gatewayError = (status: number, failure: GatewayFailure = 'response') => new PlaygroundGatewayError(status, failure);
 
+function explicitlyRejectsLowReasoning(value: unknown): boolean {
+  const root = asRecord(value);
+  const error = root.error === undefined ? root : asRecord(root.error);
+  if (error.param != null && error.param !== 'reasoning_effort') return false;
+  if (error.param === 'reasoning_effort' && ['unsupported_parameter', 'unknown_parameter', 'unrecognized_parameter', 'unsupported_value'].includes(String(error.code))) return true;
+  const message = typeof error.message === 'string' ? error.message.toLowerCase().replace(/["'`]/g, '').replace(/\s+/g, ' ') : '';
+  return /\b(?:unsupported|unknown|unrecognized) (?:request )?(?:parameter|argument|field)(?: supplied)?[: ]+reasoning_effort\b/.test(message)
+    || /\breasoning_effort (?:parameter )?(?:is )?(?:not supported|unsupported|not recognized)\b/.test(message)
+    || /\bdoes not support (?:the )?(?:parameter )?reasoning_effort\b/.test(message)
+    || /\breasoning_effort does not support (?:the value )?low\b/.test(message)
+    || /\bunsupported value[: ]+low for (?:the )?(?:parameter )?reasoning_effort\b/.test(message)
+    || /\breasoning_effort[: ]+low (?:is )?(?:not supported|unsupported)\b/.test(message)
+    || (error.param === 'reasoning_effort' && /\b(?:unsupported value[: ]+low|low (?:is )?(?:not supported|unsupported))\b/.test(message));
+}
+
+/** Inspect a validation rejection privately, without buffering arbitrary upstream bodies. */
+async function lowReasoningUnsupported(response: Response, signal: AbortSignal): Promise<boolean> {
+  const maximum = 8 * 1024;
+  if (!response.body || response.body.locked || Number(response.headers.get('content-length')) > maximum) {
+    if (!response.body?.locked) void response.body?.cancel().catch(() => {});
+    signal.throwIfAborted();
+    return false;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  const cancel = () => { void reader.cancel(signal.reason).catch(() => {}); };
+  signal.addEventListener('abort', cancel, { once: true });
+  let size = 0;
+  let text = '';
+  try {
+    signal.throwIfAborted();
+    while (true) {
+      const chunk = await reader.read();
+      signal.throwIfAborted();
+      if (chunk.done) break;
+      size += chunk.value.byteLength;
+      if (size > maximum) return false;
+      text += decoder.decode(chunk.value, { stream: true });
+    }
+    return explicitlyRejectsLowReasoning(JSON.parse(text + decoder.decode()));
+  } catch {
+    signal.throwIfAborted();
+    return false;
+  } finally {
+    signal.removeEventListener('abort', cancel);
+    // Cancellation must not extend the shared request deadline, even for a broken body.
+    void reader.cancel().catch(() => {});
+    reader.releaseLock();
+  }
+}
+
 export class PlaygroundClient implements PlaygroundGateway {
   private readonly baseUrl: string;
   constructor(baseUrl: string, private readonly fetcher: typeof fetch = fetch) {
@@ -62,19 +113,26 @@ export class PlaygroundClient implements PlaygroundGateway {
     this.baseUrl = baseUrl.replace(/\/+$/, '');
   }
 
-  private async request(path: string, key: string, init: RequestInit, signal?: AbortSignal): Promise<Response> {
+  private async fetchResponse(path: string, key: string, init: RequestInit, signal?: AbortSignal): Promise<Response> {
+    signal?.throwIfAborted();
     try {
       const response = await this.fetcher(`${this.baseUrl}/${path}`, {
         ...init, headers: { Authorization: `Bearer ${key}`, Accept: path === 'chat/completions' ? 'text/event-stream' : 'application/json', ...(init.body ? { 'Content-Type': 'application/json' } : {}) },
         redirect: 'manual', signal: signal ?? AbortSignal.timeout(12_000),
       });
-      if (!response.ok) { await response.body?.cancel().catch(() => {}); throw gatewayError(response.status, 'http'); }
+      if (signal?.aborted) { void response.body?.cancel().catch(() => {}); signal.throwIfAborted(); }
       return response;
     } catch (error) {
       if (signal?.aborted) throw error;
       if (error instanceof PlaygroundGatewayError) throw error;
       throw gatewayError(502, 'network');
     }
+  }
+
+  private async request(path: string, key: string, init: RequestInit, signal?: AbortSignal): Promise<Response> {
+    const response = await this.fetchResponse(path, key, init, signal);
+    if (!response.ok) { await response.body?.cancel().catch(() => {}); throw gatewayError(response.status, 'http'); }
+    return response;
   }
 
   async models(key: string, signal?: AbortSignal): Promise<PlaygroundModel[]> {
@@ -102,9 +160,20 @@ export class PlaygroundClient implements PlaygroundGateway {
       ...(options?.systemPrompt ? [{ role: 'system', content: options.systemPrompt }] : []),
       ...input.messages.map(message => ({ role: message.role, content: message.content })),
     ];
-    const response = await this.request('chat/completions', key, {
-      method: 'POST', body: JSON.stringify({ model: input.model, messages, stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192 }),
+    const body = { model: input.model, messages, stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192 };
+    let response = await this.fetchResponse('chat/completions', key, {
+      method: 'POST', body: JSON.stringify({ ...body, reasoning_effort: 'low' }),
     }, signal);
+    if (!response.ok) {
+      const validationRejection = response.status === 400 || response.status === 422;
+      const useDefault = validationRejection && await lowReasoningUnsupported(response, signal);
+      if (!useDefault) {
+        if (!validationRejection) await response.body?.cancel().catch(() => {});
+        throw gatewayError(response.status, 'http');
+      }
+      // One compatibility retry, before any stream is accepted, with the same deadline.
+      response = await this.request('chat/completions', key, { method: 'POST', body: JSON.stringify(body) }, signal);
+    }
     if (!response.headers.get('content-type')?.includes('text/event-stream') || !response.body) {
       await response.body?.cancel().catch(() => {}); throw gatewayError(502);
     }

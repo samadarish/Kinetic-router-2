@@ -9,6 +9,7 @@ export const SUPPORTED_LOCALES = [
   { code: 'ko', label: '한국어' },
   { code: 'ja', label: '日本語' },
   { code: 'zh-CN', label: '简体中文' },
+  { code: 'vi', label: 'Tiếng Việt' },
 ] as const;
 
 export type Locale = typeof SUPPORTED_LOCALES[number]['code'];
@@ -21,6 +22,38 @@ const memory = new WeakMap<object, Locale>();
 
 export function parseLocale(value: unknown): Locale | undefined {
   return SUPPORTED_LOCALES.find(locale => locale.code === value)?.code;
+}
+
+const localeCodes = SUPPORTED_LOCALES.map(locale => locale.code);
+
+/** Self-contained so the initial browser script can use the identical matcher. */
+function matchLanguage(value: unknown, supported: readonly string[]): Locale | undefined {
+  if (typeof value !== 'string') return undefined;
+  try {
+    const locale = new Intl.Locale(value.trim());
+    const language = locale.language === 'zh' ? locale.maximize().script === 'Hans' ? 'zh-CN' : '' : locale.language;
+    return supported.includes(language) ? language as Locale : undefined;
+  } catch { return undefined; }
+}
+
+export function detectLanguage(value: unknown): Locale {
+  return matchLanguage(value, localeCodes) ?? DEFAULT_LOCALE;
+}
+
+/** Saved choices win; an unsupported primary preference does not select a secondary language. */
+export function resolveRequestLocale(saved: unknown, acceptLanguage: string | null = null): Locale {
+  const preference = parseLocale(saved);
+  if (preference) return preference;
+  let primary: string | undefined;
+  let highestQuality = 0;
+  for (const entry of (acceptLanguage ?? '').split(',')) {
+    const [language, ...parameters] = entry.split(';');
+    if (!language?.trim()) continue;
+    const quality = parameters.find(parameter => /^\s*q=/i.test(parameter));
+    const weight = quality === undefined ? 1 : Number(/^q=(0(?:\.\d{0,3})?|1(?:\.0{0,3})?)$/i.exec(quality.trim())?.[1] ?? 0);
+    if (weight > highestQuality) { primary = language.trim(); highestQuality = weight; }
+  }
+  return detectLanguage(primary);
 }
 
 export function readLocaleCookie(cookie: string): Locale | undefined {
@@ -37,7 +70,7 @@ export function localeCookie(locale: Locale, location: Pick<Location, 'hostname'
   return `${LOCALE_COOKIE_NAME}=${locale}; Path=/; Max-Age=${LOCALE_COOKIE_MAX_AGE}; SameSite=Lax${domain}${location.protocol === 'https:' ? '; Secure' : ''}`;
 }
 
-type LocaleBrowser = Pick<Window, 'document' | 'location' | 'localStorage'>;
+type LocaleBrowser = Pick<Window, 'document' | 'location' | 'localStorage' | 'navigator'>;
 
 export function readBrowserLocale(browser: LocaleBrowser | undefined = typeof window === 'undefined' ? undefined : window): Locale {
   if (!browser) return DEFAULT_LOCALE;
@@ -45,7 +78,10 @@ export function readBrowserLocale(browser: LocaleBrowser | undefined = typeof wi
   try { locale = readLocaleCookie(browser.document.cookie); } catch { /* Restricted cookies. */ }
   if (!locale) {
     try { locale = parseLocale(browser.localStorage.getItem(LOCALE_STORAGE_KEY)); } catch { /* Restricted storage. */ }
-    locale ??= memory.get(browser) ?? DEFAULT_LOCALE;
+    locale ??= memory.get(browser);
+    if (!locale) {
+      try { locale = detectLanguage(browser.navigator.languages?.[0] ?? browser.navigator.language); } catch { locale = DEFAULT_LOCALE; }
+    }
     try { browser.document.cookie = localeCookie(locale, browser.location); } catch { /* Retain this tab's choice. */ }
   }
   memory.set(browser, locale);
@@ -98,11 +134,13 @@ export function subscribeLocale(change: () => void, browser: Window = window) {
 }
 
 export const LOCALE_BOOTSTRAP_SCRIPT = `(() => {
-  const key = '${LOCALE_STORAGE_KEY}', valid = value => ${JSON.stringify(SUPPORTED_LOCALES.map(locale => locale.code))}.includes(value);
+  const key = '${LOCALE_STORAGE_KEY}', codes = ${JSON.stringify(localeCodes)}, valid = value => codes.includes(value);
+  const matchLanguage = ${matchLanguage.toString()};
   let locale;
   try { for (const part of document.cookie.split(';')) { const [name, value] = part.trim().split('='); if (name === key && valid(value)) { locale = value; break; } } } catch {}
   if (!locale) {
     try { const stored = localStorage.getItem(key); if (valid(stored)) locale = stored; } catch {}
+    try { locale = locale || matchLanguage(navigator.languages?.[0] ?? navigator.language, codes); } catch {}
     locale = locale || '${DEFAULT_LOCALE}';
     try { const host = location.hostname.toLowerCase(); document.cookie = key + '=' + locale + '; Path=/; Max-Age=${LOCALE_COOKIE_MAX_AGE}; SameSite=Lax' + (host === 'kineticrouter.com' || host.endsWith('.kineticrouter.com') ? '; Domain=kineticrouter.com' : '') + (location.protocol === 'https:' ? '; Secure' : ''); } catch {}
   }

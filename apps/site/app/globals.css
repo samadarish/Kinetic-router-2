@@ -69,6 +69,7 @@
 }
 
 * { box-sizing: border-box; border-color: var(--border); }
+.price-discount { border-color: color-mix(in oklab, currentColor 25%, transparent); }
 
 html { background: var(--background); scroll-behavior: smooth; }
 

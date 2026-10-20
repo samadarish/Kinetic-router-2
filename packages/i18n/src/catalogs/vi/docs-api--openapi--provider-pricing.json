@@ -1,0 +1,22 @@
+{
+  "A verified provider-pricing API is not published by kineticRouter yet.": "Một API giá nhà cung cấp được xác minh chưa được xuất bản bởi kineticRouter.",
+  "API Reference": "Tài liệu tham khảo API",
+  "Authentication": "Xác thực",
+  "Available now": "Hiện có sẵn",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Endpoint Documentation đang chờ đợi",
+  "Error Responses": "Lỗi Responses",
+  "Not published": "Không xuất bản",
+  "Provider pricing API": "API giá cả nhà cung cấp",
+  "Provider pricing API - Contract pending": "API giá nhà cung cấp - Hợp đồng chờ đợi",
+  "Provider pricing API documentation will be published after its endpoint contract is verified.": "Tài liệu API giá của nhà cung cấp sẽ được công bố sau khi hợp đồng điểm kết thúc của nó được xác minh.",
+  "Real-Time Pricing": "Giá thực thời gian",
+  "Request Example": "Yêu cầu ví dụ",
+  "Response Format": "Formate trả lời",
+  "Signature algorithm": "Algorithm chữ ký",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "Console được xác nhận hiển thị cân bằng tài khoản và sử dụng hóa đơn thực tế. Playground hiển thị tỷ lệ mô hình cuối cùng được xác minh khi có sẵn và xác định rõ giá không có sẵn. Không có cân bằng công cộng chưa xác minh hoặc URL giá nhà cung cấp được phơi bày ở đây.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "Console khách hàng được kết nối, nhưng điểm cuối công khai này chưa hoàn thành xác minh tương thích. Đường lối yêu cầu và kế hoạch phản hồi sẽ được công bố sau khi xác minh.",
+  "Top-Level Fields": "Các lĩnh vực Top-level",
+  "data Fields": "Data Fields",
+  "models[] Fields": "Các mô hình[] Fields"
+}

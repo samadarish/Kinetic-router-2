@@ -1,11 +1,14 @@
 import { cache } from 'react';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import type { Metadata } from 'next';
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, parseLocale, type Locale } from '@kineticrouter/platform-config/locale';
+import { LOCALE_COOKIE_NAME, parseLocale, resolveRequestLocale, type Locale } from '@kineticrouter/platform-config/locale';
 import { createTranslator, loadCatalog, type Catalog } from '@kineticrouter/i18n';
 import { pageMetadata } from './seo';
 
-export const getRequestLocale = cache(async (): Promise<Locale> => parseLocale((await cookies()).get(LOCALE_COOKIE_NAME)?.value) ?? DEFAULT_LOCALE);
+export const getRequestLocale = cache(async (): Promise<Locale> => {
+  const saved = parseLocale((await cookies()).get(LOCALE_COOKIE_NAME)?.value);
+  return saved ?? resolveRequestLocale(undefined, (await headers()).get('accept-language'));
+});
 
 /** Only human-readable metadata fields are translated; URLs and identifiers stay exact. */
 export function translateMetadata(metadata: Metadata, catalog: Catalog, locale: Locale): Metadata {

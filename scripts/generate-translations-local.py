@@ -22,6 +22,8 @@ parser.add_argument('--model', type=Path, required=True)
 parser.add_argument('--sources', type=Path, default=Path('.cache/translation-sources.json'))
 parser.add_argument('--device', choices=['cpu', 'cuda'], default='cpu')
 parser.add_argument('--batch-size', type=int, default=32)
+supported_locales = ['es', 'pt', 'id', 'de', 'fr', 'ru', 'ko', 'ja', 'zh-CN', 'vi']
+parser.add_argument('--locales', nargs='+', choices=supported_locales, default=supported_locales)
 parser.add_argument('--smoke', action='store_true')
 args = parser.parse_args()
 
@@ -102,7 +104,7 @@ def needs_fallback(source, translation):
     if parameters(source) != parameters(translation): return True
     return any(token not in translation for token in protected.findall(source))
 
-for locale in ['es', 'pt', 'id', 'de', 'fr', 'ru', 'ko', 'ja', 'zh-CN']:
+for locale in args.locales:
     language = 'zh' if locale == 'zh-CN' else locale
     completed = memory.setdefault(locale, {})
     # Existing catalog edits take precedence over newly generated copy.

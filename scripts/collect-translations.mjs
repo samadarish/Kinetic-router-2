@@ -8,12 +8,13 @@ import { parseFragment } from 'parse5';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const catalogRoot = path.join(root, 'packages/i18n/src/catalogs');
-export const locales = ['en', 'es', 'pt', 'id', 'de', 'fr', 'ru', 'ko', 'ja', 'zh-CN'];
+export const locales = ['en', 'es', 'pt', 'id', 'de', 'fr', 'ru', 'ko', 'ja', 'zh-CN', 'vi'];
 const normalize = value => value.replace(/\s+/g, ' ').trim();
 const protectedNames = new Set(['English', 'Español', 'Português', 'Bahasa Indonesia', 'Deutsch', 'Français', 'Russian', 'Korean', 'Japanese', 'Simplified Chinese', 'OpenAI', 'Anthropic', 'Grok', 'DeepSeek', 'Zhipu', 'Moonshot', 'Gemini', 'MiniMax', 'Meta', 'Claude', 'Google', 'GitHub', 'Discord', 'Telegram', 'Reddit', 'YouTube', 'X', 'LinkedIn', 'Instagram', 'Facebook', 'Bluesky', 'TikTok', 'Python', 'Node.js', 'JavaScript', 'TypeScript', 'JSON', 'cURL', 'HTTP', 'HTTPS', 'WebSocket', 'SSE', 'OAuth', 'TOTP', 'UTC', 'USD', 'kineticRouter', 'kineticrouter.com', 'API', 'ID', 'IP', 'POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'Escape', 'Enter', 'ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab']);
 // Home is also a navigation label; keyboard comparisons are excluded below.
 protectedNames.delete('Home');
 protectedNames.add('NFKC'); // Unicode normalization form, not user-facing copy.
+protectedNames.add('Tiếng Việt');
 
 function human(value) {
   const text = normalize(value);

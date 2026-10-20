@@ -1,0 +1,20 @@
+{
+  "A verified customer balance API is not published by kineticRouter yet.": "Một API cân bằng khách hàng được xác minh chưa được xuất bản bởi kineticRouter.",
+  "API Reference": "Tài liệu tham khảo API",
+  "Authentication": "Xác thực",
+  "Available now": "Hiện có sẵn",
+  "Balance API": "cân bằng API",
+  "Balance API - Contract pending": "API Balance - Hợp đồng trễ",
+  "Balance API documentation will be published after its endpoint contract is verified.": "Tài liệu API Balance sẽ được công bố sau khi hợp đồng điểm kết thúc của nó được xác minh.",
+  "Balance Query": "Balance Query",
+  "Endpoint": "Endpoint",
+  "Endpoint documentation pending": "Endpoint Documentation đang chờ đợi",
+  "Error Response": "Câu trả lời sai lầm",
+  "Not published": "Không xuất bản",
+  "Request Example": "Yêu cầu ví dụ",
+  "Response Fields": "Phản hồi Fields",
+  "Response Format": "Formate trả lời",
+  "The authenticated console shows account balance and actual billed usage. Playground shows verified final model rates when available and explicitly identifies unavailable pricing. No unverified public balance or provider-pricing URL is exposed here.": "Console được xác nhận hiển thị cân bằng tài khoản và sử dụng hóa đơn thực tế. Playground hiển thị tỷ lệ mô hình cuối cùng được xác minh khi có sẵn và xác định rõ giá không có sẵn. Không có cân bằng công cộng chưa xác minh hoặc URL giá nhà cung cấp được phơi bày ở đây.",
+  "The customer console is connected, but this public endpoint has not completed compatibility verification. The request path and response schema will be published after verification.": "Console khách hàng được kết nối, nhưng điểm cuối công khai này chưa hoàn thành xác minh tương thích. Đường lối yêu cầu và kế hoạch phản hồi sẽ được công bố sau khi xác minh.",
+  "Third-Party Tool Compatibility": "Công cụ tương thích bên thứ ba"
+}

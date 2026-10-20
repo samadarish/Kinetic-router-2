@@ -1,5 +1,4 @@
 {
-  "% off": "% off",
   "%s — kineticRouter": "%s — kineticRouter",
   "1. Definitions": "1. Definitions",
   "1. Scope": "1. Scope",
@@ -520,7 +519,6 @@
   "This policy should be read together with the kineticRouter Terms of Service and any additional terms presented for a specific feature.": "This policy should be read together with the kineticRouter Terms of Service and any additional terms presented for a specific feature.",
   "Together, they let Codex connect to kineticRouter through the recommended path.": "Together, they let Codex connect to kineticRouter through the recommended path.",
   "Together, they request the Responses format and WebSocket transport. Confirm both behaviors with your account before relying on them.": "Together, they request the Responses format and WebSocket transport. Confirm both behaviors with your account before relying on them.",
-  "Toggle color theme": "Toggle color theme",
   "Toggle theme": "Toggle theme",
   "Troubleshoot API requests": "Troubleshoot API requests",
   "Troubleshooting": "Troubleshooting",

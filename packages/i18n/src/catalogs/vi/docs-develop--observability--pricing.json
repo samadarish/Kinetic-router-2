@@ -1,0 +1,22 @@
+{
+  "API Keys": "Khóa API",
+  "Account balance is separate from an API key’s spend quota. Raising the quota does not add funds. Subscription access and usage windows appear only when assigned and enabled. Review the current account terms for payment, expiry, or renewal behavior.": "Tài khoản cân bằng được tách ra khỏi chi phí của một khóa API. Tăng số tiền không thêm quỹ. Truy cập đăng ký và cửa sổ sử dụng chỉ xuất hiện khi đã được gán và bật. Xem các điều khoản tài khoản hiện tại cho hành vi thanh toán, hết hạn hoặc gia hạn.",
+  "Balance, quota and subscriptions": "cân bằng, quota và đăng ký",
+  "Check the returned assistant message. An error response is not a successful answer.": "Kiểm tra thông điệp trợ lý trả lại. Một câu trả lời lỗi không phải là một câu trả tiền thành công.",
+  "Check your model rates": "Kiểm tra giá mô hình của bạn",
+  "Distinguish customer rates, account limits, and reference prices.": "Phân biệt tỷ lệ khách hàng, giới hạn tài khoản và giá tham chiếu.",
+  "Find the request by its model and key name. Review input/output and cache tokens, latency, and actual billed cost.": "Tìm yêu cầu theo mô hình và tên chìa khóa. Review input/output và token cache, latency, và chi phí hóa đơn thực tế.",
+  "If a request is interrupted or times out, check Usage before repeating it. A retry is a separate request and can incur another charge.": "Nếu một yêu cầu bị gián đoạn hoặc thời gian hết hạn, hãy kiểm tra Sử dụng trước khi lặp lại nó. Một rút tiền là một yêu sách riêng biệt và có thể đòi hỏi thêm phí.",
+  "Instructions for the current customer console and integrations. Verify model access and protocol support with your account before relying on a workflow.": "Hướng dẫn cho console khách hàng hiện tại và tích hợp. Kiểm tra truy cập mô hình và hỗ trợ giao thức với tài khoản của bạn trước khi dựa vào một dòng công việc.",
+  "Open Usage": "Mở sử dụng",
+  "Open Usage and select a date range that includes the request. Check the displayed timezone.": "Mở Sử dụng và chọn một phạm vi ngày bao gồm yêu cầu. Kiểm tra múi giờ hiển thị.",
+  "Playground": "Thử nghiệm",
+  "Prices and billed costs": "Giá và chi phí tính toán",
+  "Public reference prices": "Giá tham chiếu công cộng",
+  "Reference snapshot": "Bản mẫu Snapshot",
+  "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "Yêu cầu vẫn sử dụng hóa đơn tài khoản bình thường của chìa khóa được chọn. Sử dụng là ủy quyền cho số tiền hóa đơn đã ghi lại.",
+  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "Các trang mô hình và giá hiển thị kineticRouter hiển thị giá ở mức 90% giảm tỷ lệ tham chiếu chính thức, với ngày xác minh nguồn. Lưu trữ nhập khẩu ban đầu vẫn tách biệt. tính sẵn dùng mô hình, giá tài khoản có thể khác nhau.",
+  "Usage": "Mức sử dụng",
+  "Verify the answer and billed usage": "Kiểm tra câu trả lời và sử dụng hóa đơn",
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Khi Playground được bật, hãy chọn chìa khóa và mô hình của bạn ở đó, sau đó mở tỷ lệ xem để xem giá mã cuối cùng xác minh khi có sẵn. Giá hiển thị các đơn vị và thời gian quan sát của họ. Giá cuối cùng không có sẵn nghĩa là console không thể nhận được một quy tắc giá hỗ trợ đầy đủ; điều đó không có nghĩa là mô hình là miễn phí."
+}
