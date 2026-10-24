@@ -1,6 +1,7 @@
 import type { Conversation, ConversationDetail, ConversationPage, PlaygroundEvent, PlaygroundTurnInput } from '@kineticrouter/portal-contract';
 import { PortalApiError } from './api';
 import { createPlaygroundStore, type PlaygroundStore, type PlaygroundSnapshot } from './playground-store';
+import { playgroundTurnMessageIds } from './playground-state';
 import { emptyPlayground, readPlayground, clearPlaygroundStorage, type PlaygroundStorage, type SavedPlayground } from './playground-storage';
 import { CHAT_DRAFTS_KEY } from './playground-browser-storage';
 export { CHAT_DRAFTS_KEY } from './playground-browser-storage';
@@ -16,10 +17,13 @@ export type HistoryApi = {
 type Options = { userId: string; storage?: PlaygroundStorage; isOwner(): boolean; isEnabled?(): boolean; api: HistoryApi; stream(input: PlaygroundTurnInput, onEvent: (event: PlaygroundEvent) => void, signal: AbortSignal): Promise<void>; settled(): void; unavailable(kind: 'keys' | 'models', keyId: string): void };
 export type HistorySnapshot = PlaygroundSnapshot & { historyReady: boolean; chatId: string; conversations: Conversation[]; listLoading: boolean; listError: string; nextCursor: string | null; loading: boolean; activeChatId: string | null; older: number | null; omittedTurns: number; legacy: SavedPlayground | null; legacyDismissed: boolean };
 export function conversationMessages(detail: ConversationDetail): SavedPlayground['messages'] {
-  return detail.turns.flatMap(turn => [
-    { id: turn.sequence * 2, role: 'user' as const, content: turn.userText },
-    { id: turn.sequence * 2 + 1, role: 'assistant' as const, content: turn.assistantText, model: turn.model ?? undefined, state: turn.state === 'receiving' ? undefined : turn.state, usage: turn.usage ?? undefined, limited: turn.limited },
-  ]);
+  return detail.turns.flatMap(turn => {
+    const ids = playgroundTurnMessageIds(turn.sequence);
+    return [
+      { id: ids.user, role: 'user' as const, content: turn.userText },
+      { id: ids.assistant, role: 'assistant' as const, content: turn.assistantText, model: turn.model ?? undefined, state: turn.state === 'receiving' ? undefined : turn.state, usage: turn.usage ?? undefined, limited: turn.limited, durationMs: turn.state === 'receiving' ? undefined : turn.durationMs ?? undefined },
+    ];
+  });
 }
 export function createConversationController(options: Options) {
   const locals = new Map<string, LocalDraft>();
@@ -175,7 +179,7 @@ export function createConversationController(options: Options) {
       // Keep loaded history only when it joins the latest server page without a
       // gap. An evicted transcript must restart pagination from that page.
       const retained = first !== undefined && (current.messages.at(-1)?.id ?? -Infinity) >= first - 1
-        ? current.messages.filter(message => message.id < first) : [];
+        ? current.messages.filter(message => message.id >= 2 && message.id < first) : [];
       const previousBefore = cursors.get(id);
       const nextBefore = retained.length && previousBefore !== undefined ? previousBefore : detail.nextBefore;
       cursors.set(id, nextBefore); ready.add(id);

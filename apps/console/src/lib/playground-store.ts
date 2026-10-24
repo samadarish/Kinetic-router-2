@@ -1,7 +1,7 @@
 import type { PlaygroundChatInput, PlaygroundEvent } from '@kineticrouter/portal-contract';
 import { PortalApiError } from './api';
 import { createPlaygroundBuffer } from './playground-buffer';
-import { appendPlaygroundTurn, playgroundHistory } from './playground-state';
+import { appendPlaygroundTurn, playgroundHistory, playgroundTurnMessageIds } from './playground-state';
 import { clearPlaygroundStorage, emptyPlayground, persistenceNotice, readPlayground, writePlayground, type PlaygroundStorage, type SavedPlayground } from './playground-storage';
 
 type Options = {
@@ -20,7 +20,9 @@ export function createPlaygroundStore(options: Options) {
     : readPlayground(options.storage, options.userId);
   let snapshot: PlaygroundSnapshot = { ...(options.initial ?? restored.saved), error: '', persistenceNotice: options.remote ? '' : restored.notice };
   let discard = restored.discard;
-  let nextId = Math.max(0, ...snapshot.messages.map(message => message.id)) + 1;
+  const firstId = options.remote ? playgroundTurnMessageIds(1).user : 1;
+  const nextMessageId = (messages: SavedPlayground['messages']) => Math.max(firstId - 1, ...messages.map(message => message.id)) + 1;
+  let nextId = nextMessageId(snapshot.messages);
   const listeners = new Set<() => void>();
   let pendingSave: ReturnType<typeof setTimeout> | undefined;
   let controller: AbortController | undefined;
@@ -52,7 +54,8 @@ export function createPlaygroundStore(options: Options) {
     // Invalidate immediately: a queued terminal event must not turn Stop into Complete.
     generation++;
     controller = undefined; buffer?.dispose(); buffer = undefined;
-    update({ messages: snapshot.messages.map(message => message.role === 'assistant' && !message.state ? { ...message, state: 'stopped' } : message), activity: 'Stopped', timing: { ...snapshot.timing, model: snapshot.selectedModel ?? undefined, elapsed: startedAt === undefined ? undefined : performance.now() - startedAt } }, true);
+    const elapsed = startedAt === undefined ? undefined : performance.now() - startedAt;
+    update({ messages: snapshot.messages.map(message => message.role === 'assistant' && !message.state ? { ...message, state: 'stopped', durationMs: elapsed } : message), activity: 'Stopped', timing: { ...snapshot.timing, model: snapshot.selectedModel ?? undefined, elapsed } }, true);
   }
   function clear() {
     if (cleared) return;
@@ -66,7 +69,7 @@ export function createPlaygroundStore(options: Options) {
     if (cleared || !options.isOwner()) return;
     generation++; controller?.abort(); controller = undefined; buffer?.dispose(); buffer = undefined;
     if (pendingSave !== undefined) clearTimeout(pendingSave);
-    pendingSave = undefined; nextId = 1;
+    pendingSave = undefined; nextId = firstId;
     clearPlaygroundStorage(options.storage);
     update({ ...emptyPlayground(), selectedKey: snapshot.selectedKey, selectedModel: snapshot.selectedModel, error: '', persistenceNotice: '' }, true);
   }
@@ -81,12 +84,13 @@ export function createPlaygroundStore(options: Options) {
     const request = new AbortController();
     const current = ++generation;
     controller = request;
-    const responseId = nextId + 1;
+    let promptId = nextId, responseId = nextId + 1;
     const messages = appendPlaygroundTurn(snapshot.messages, snapshot.draft, modelId, nextId); nextId += 2;
     update({ messages, draft: '', error: '', activity: 'Sending', timing: {} }, true);
     let completed = false;
     let failed = false;
     let firstText: number | undefined;
+    let endedAt: number | undefined;
     const started = performance.now();
     startedAt = started;
     const ownsRequest = () => !cleared && options.isOwner() && generation === current && controller === request;
@@ -98,17 +102,23 @@ export function createPlaygroundStore(options: Options) {
     try {
       await options.stream(input, event => {
         if (!ownsRequest() || request.signal.aborted) return;
+        if (options.remote && event.type === 'turn_started') {
+          const ids = playgroundTurnMessageIds(event.sequence);
+          const previousPrompt = promptId, previousResponse = responseId;
+          promptId = ids.user; responseId = ids.assistant; nextId = responseId + 1;
+          update({ messages: snapshot.messages.map(message => message.id === previousPrompt ? { ...message, id: promptId } : message.id === previousResponse ? { ...message, id: responseId } : message) });
+        }
         if (event.type === 'text_delta') {
           if (firstText === undefined && event.text) { firstText = performance.now() - started; update({ timing: { firstText, model: modelId }, activity: 'Receiving' }); }
           pending.push(event.text);
         }
         if (event.type === 'usage') changeResponse({ usage: event.usage });
-        if (event.type === 'done') { pending.flush(); completed = true; changeResponse({ state: 'complete', limited: event.finishReason === 'length' }); }
-        if (event.type === 'error') { pending.flush(); failed = true; update({ error: event.message }); }
+        if (event.type === 'done') { pending.flush(); endedAt = performance.now(); completed = true; changeResponse({ state: 'complete', limited: event.finishReason === 'length', durationMs: endedAt - started }); }
+        if (event.type === 'error') { pending.flush(); endedAt = performance.now(); failed = true; update({ error: event.message }); }
       }, request.signal);
     } catch (reason) {
       if (ownsRequest() && !request.signal.aborted) {
-        failed = true; update({ error: reason instanceof Error ? reason.message : 'The request could not be completed. Check Usage for any billed cost.' });
+        endedAt = performance.now(); failed = true; update({ error: reason instanceof Error ? reason.message : 'The request could not be completed. Check Usage for any billed cost.' });
         if (reason instanceof PortalApiError) {
           if (reason.code === 'MODEL_UNAVAILABLE') options.unavailable('models', keyId);
           if (['KEY_UNAVAILABLE', 'KEY_NOT_FOUND', 'PLAYGROUND_KEY_REJECTED'].includes(reason.code)) options.unavailable('keys', keyId);
@@ -117,9 +127,10 @@ export function createPlaygroundStore(options: Options) {
     } finally {
       pending.flush(); pending.dispose();
       if (ownsRequest()) {
-        changeResponse({ state: completed ? 'complete' : failed ? 'failed' : 'stopped' });
+        const elapsed = (endedAt ?? performance.now()) - started;
+        changeResponse({ state: completed ? 'complete' : failed ? 'failed' : 'stopped', durationMs: elapsed });
         controller = undefined; buffer = undefined;
-        update({ activity: completed ? 'Complete' : failed ? 'Failed' : 'Stopped', timing: { firstText, elapsed: performance.now() - started, model: modelId } }, true);
+        update({ activity: completed ? 'Complete' : failed ? 'Failed' : 'Stopped', timing: { firstText, elapsed, model: modelId } }, true);
       }
       if (options.isOwner()) options.settled();
     }
@@ -127,7 +138,7 @@ export function createPlaygroundStore(options: Options) {
   return {
     hydrate: (saved: SavedPlayground, error = snapshot.error) => {
       if (controller || cleared || !options.isOwner()) return;
-      nextId = Math.max(0, ...saved.messages.map(message => message.id)) + 1;
+      nextId = nextMessageId(saved.messages);
       update({ ...saved, error }, true);
     },
     prepend: (messages: SavedPlayground['messages']) => {

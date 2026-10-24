@@ -27,6 +27,7 @@ export const PlaygroundMessage = memo(function PlaygroundMessage({ message, user
     {message.content ? <div translate="no" className={`playground-message-text ${message.role === 'assistant' ? 'playground-markdown' : ''}`}>
       {message.role === 'assistant' ? <Markdown remarkPlugins={plugins} skipHtml components={components}>{message.content}</Markdown> : message.content}
     </div> : message.state ? message.state === 'complete' && <p className="playground-message-meta">No text returned.</p> : <span className="playground-typing" aria-hidden="true"><i /><i /><i /></span>}
+    {message.role === 'assistant' && message.state && message.durationMs !== undefined && Number.isFinite(message.durationMs) && message.durationMs >= 0 && <p className="playground-message-meta">{message.state === 'complete' ? 'Generated in' : message.state === 'stopped' ? 'Stopped after' : 'Interrupted after'} {(message.durationMs / 1000).toFixed(2)} s</p>}
     {usage && (usageDisplay === 'details' ? <details className="playground-message-details"><summary>Details <ChevronDown size={12} /></summary>{usage}</details> : usage)}
     {message.state === 'stopped' && <p className="playground-message-meta">Stopped</p>}
     {message.state === 'failed' && <p className="playground-message-meta">{message.content ? 'Response interrupted' : 'Request failed before a reply was received'}</p>}

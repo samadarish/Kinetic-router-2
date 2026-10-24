@@ -3,8 +3,12 @@ import type { QueryClient } from '@tanstack/react-query';
 
 export type ConversationMessage = PlaygroundMessage & {
   id: number; model?: string; usage?: PlaygroundUsage;
-  state?: 'complete' | 'stopped' | 'failed'; limited?: boolean;
+  state?: 'complete' | 'stopped' | 'failed'; limited?: boolean; durationMs?: number;
 };
+
+export function playgroundTurnMessageIds(sequence: number) {
+  return { user: sequence * 2, assistant: sequence * 2 + 1 };
+}
 
 export function appendPlaygroundTurn(messages: ConversationMessage[], content: string, model: string, id: number): ConversationMessage[] {
   return [...messages, { id, role: 'user', content }, { id: id + 1, role: 'assistant', model, content: '' }];

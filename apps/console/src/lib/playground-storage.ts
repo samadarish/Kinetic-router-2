@@ -38,6 +38,7 @@ export function readPlayground(storage: PlaygroundStorage | undefined, userId: s
       if (item.model !== undefined && !playgroundModelSchema.safeParse(item.model).success) throw new Error('Invalid model');
       if (item.state !== undefined && (typeof item.state !== 'string' || !['complete', 'stopped', 'failed'].includes(item.state))) throw new Error('Invalid state');
       if (item.limited !== undefined && typeof item.limited !== 'boolean') throw new Error('Invalid output flag');
+      if (item.durationMs !== undefined && (typeof item.durationMs !== 'number' || !Number.isFinite(item.durationMs) || item.durationMs < 0)) throw new Error('Invalid duration');
       let usage: PlaygroundUsage | undefined;
       if (item.usage !== undefined) {
         if (!record(item.usage) || !['inputTokens', 'outputTokens', 'totalTokens'].every(key => Number.isSafeInteger(item.usage && (item.usage as Record<string, unknown>)[key]) && Number((item.usage as Record<string, unknown>)[key]) >= 0)) throw new Error('Invalid usage');
@@ -47,6 +48,7 @@ export function readPlayground(storage: PlaygroundStorage | undefined, userId: s
         ...(typeof item.model === 'string' ? { model: item.model } : {}), ...(usage ? { usage } : {}),
         ...(item.role === 'assistant' ? { state: item.state as ConversationMessage['state'] ?? 'stopped' } : {}),
         ...(typeof item.limited === 'boolean' ? { limited: item.limited } : {}),
+        ...(typeof item.durationMs === 'number' ? { durationMs: item.durationMs } : {}),
       };
     });
     if (typeof chat.activity !== 'string' || !['Ready', 'Sending', 'Receiving', 'Complete', 'Stopped', 'Failed'].includes(chat.activity) || !record(chat.timing)) throw new Error('Invalid activity');
@@ -71,7 +73,7 @@ export function writePlayground(storage: PlaygroundStorage | undefined, userId: 
       selectedKey: chat.selectedKey, selectedModel: chat.selectedModel, draft: chat.draft, activity: chat.activity,
       timing: { firstText: chat.timing.firstText, elapsed: chat.timing.elapsed, model: chat.timing.model },
       messages: chat.messages.map(message => ({ id: message.id, role: message.role, content: message.content, model: message.model,
-        state: message.state, limited: message.limited,
+        state: message.state, limited: message.limited, durationMs: message.durationMs,
         usage: message.usage ? { inputTokens: message.usage.inputTokens, outputTokens: message.usage.outputTokens, totalTokens: message.usage.totalTokens } : undefined,
       })),
     } });

@@ -1,7 +1,7 @@
 import type { Context, Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { playgroundTurnSchema, playgroundKeyIdSchema, playgroundModelSchema, playgroundSettingsUpdateSchema, type PlaygroundEvent, type PlaygroundSettings } from '@kineticrouter/portal-contract';
-import { asRecord, mapPaginated, publicModelPrice, readOwnedPlaygroundKey, unavailableModelPrice, Sub2ApiError, type PlaygroundGateway } from '@kineticrouter/sub2api-client';
+import { asRecord, mapPaginated, publicModelPrice, readOwnedPlaygroundKey, unavailableModelPrice, Sub2ApiError, PlaygroundGatewayError, type PlaygroundGateway } from '@kineticrouter/sub2api-client';
 import { PlaygroundCatalog } from './playground-catalog.js';
 import type { PlaygroundSettingsStore } from './playground-settings.js';
 import { playgroundIdentityInstruction } from './playground-identity.js';
@@ -99,8 +99,8 @@ export function installPlaygroundRoutes(app: Hono<any>, options: PlaygroundRoute
     const settings = c.get('playgroundSettings') as PlaygroundSettings;
     if (!settings.enabledModelIds.includes(input.model)) throw new Sub2ApiError({ status: 400, code: 'MODEL_UNAVAILABLE', message: 'This model is not enabled for Playground. Choose another model.' });
     const controller = new AbortController();
-    const signal = AbortSignal.any([controller.signal, c.req.raw.signal, AbortSignal.timeout(120_000)]);
-    const models = await catalog.models(options.getUserId(c), key, signal);
+    const signal = AbortSignal.any([controller.signal, c.req.raw.signal]);
+    const models = await catalog.models(options.getUserId(c), key, discoverySignal(c));
     if (!models.some(model => model.id === input.model)) throw new Sub2ApiError({ status: 400, code: 'MODEL_UNAVAILABLE', message: 'Choose a model available to this API key.' });
     const systemPrompt = playgroundIdentityInstruction(settings.modelIdentities.find(identity => identity.modelId === input.model));
     recentContext([], input, systemPrompt);
@@ -115,7 +115,7 @@ export function installPlaygroundRoutes(app: Hono<any>, options: PlaygroundRoute
     const storageError = () => ({ type: 'error', code: 'HISTORY_UNAVAILABLE', message: 'The response could not be fully saved. Reload the conversation before trying again.' });
     const persist = async () => {
       if (pending) await pending;
-      const snapshot = { ...progress, usage: progress.usage ? { ...progress.usage } : null, durationMs: Math.round(performance.now() - began) };
+      const snapshot = { ...progress, usage: progress.usage ? { ...progress.usage } : null, durationMs: progress.durationMs ?? Math.round(performance.now() - began) };
       const writingVersion = version;
       const write = options.history.write(started.turn, snapshot); pending = write;
       try { const kept = await write; savedVersion = writingVersion; savedAt = performance.now(); if (!kept) controller.abort(); return kept; }
@@ -129,12 +129,14 @@ export function installPlaygroundRoutes(app: Hono<any>, options: PlaygroundRoute
     try { events = await options.client.chat(key.key, context.input, signal, systemPrompt ? { systemPrompt } : undefined); }
     catch (error) {
       clearInterval(checkpoint); progress.state = signal.aborted ? 'stopped' : 'failed';
+      progress.durationMs = Math.round(performance.now() - began);
       try { await persist(); } finally { if (active.get(input.conversationId) === controller) active.delete(input.conversationId); controller.abort(); }
       throw error;
     }
     c.header('X-Accel-Buffering', 'no');
     const response = streamSSE(c, async stream => {
       let disconnected = false, finished = false;
+      let failure: unknown;
       stream.onAbort(() => { disconnected = true; controller.abort(); });
       const keepalive = setInterval(() => { void stream.write(': keepalive\n\n').catch(() => controller.abort()); }, 15_000);
       try {
@@ -151,6 +153,7 @@ export function installPlaygroundRoutes(app: Hono<any>, options: PlaygroundRoute
           if (event.type === 'error' || event.type === 'turn_started') throw new Error('Interrupted upstream response');
           if (event.type === 'done') {
             progress.state = 'complete'; progress.limited = event.finishReason === 'length';
+            progress.durationMs = Math.round(performance.now() - began);
             clearInterval(checkpoint);
             if (!await persist()) break;
             finished = true;
@@ -158,19 +161,18 @@ export function installPlaygroundRoutes(app: Hono<any>, options: PlaygroundRoute
           await stream.writeSSE({ event: event.type, data: JSON.stringify(publicStreamEvent(event)) });
           if (finished) break;
         }
-        if (!finished && !disconnected && !c.req.raw.signal.aborted) {
-          progress.state = 'failed';
-          await stream.writeSSE({ event: 'error', data: JSON.stringify(saveFailed ? storageError() : interruptedEvent()) });
-        }
-      } catch {
-        progress.state = 'failed';
-        if (!disconnected && !c.req.raw.signal.aborted) await stream.writeSSE({ event: 'error', data: JSON.stringify(saveFailed ? storageError() : interruptedEvent()) }).catch(() => {});
+      } catch (error) {
+        failure = error;
       } finally {
-        clearInterval(keepalive); clearInterval(checkpoint); controller.abort();
+        clearInterval(checkpoint);
         if (!finished) {
-          if (disconnected || c.req.raw.signal.aborted || progress.state === 'receiving') progress.state = 'stopped';
+          progress.state = disconnected || c.req.raw.signal.aborted ? 'stopped' : 'failed';
+          progress.durationMs ??= Math.round(performance.now() - began);
+          // Commit the terminal state before the browser cancels its terminal-event reader.
           await persist().catch(() => {});
+          if (!disconnected && !c.req.raw.signal.aborted) await stream.writeSSE({ event: 'error', data: JSON.stringify(saveFailed ? storageError() : interruptedEvent(failure)) }).catch(() => {});
         }
+        clearInterval(keepalive); controller.abort();
         if (active.get(input.conversationId) === controller) active.delete(input.conversationId);
       }
     });
@@ -185,7 +187,8 @@ function pagination(value: string | undefined, fallback: number, max: number) {
   return Number(value);
 }
 
-function interruptedEvent(): PlaygroundEvent {
+function interruptedEvent(error?: unknown): PlaygroundEvent {
+  if (error instanceof PlaygroundGatewayError && error.code === 'STREAM_IDLE_TIMEOUT') return { type: 'error', code: error.code, message: error.message };
   return { type: 'error', code: 'STREAM_INTERRUPTED', message: 'The response was interrupted. Any billed usage remains available in Usage.' };
 }
 

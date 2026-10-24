@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { PlaygroundMessage } from './PlaygroundMessage';
 
 describe('playground Markdown rendering', () => {
+  it.each([
+    { state: 'complete' as const, label: 'Generated in' },
+    { state: 'stopped' as const, label: 'Stopped after' },
+    { state: 'failed' as const, label: 'Interrupted after' },
+  ])('shows $state timing outside collapsed usage details', ({ state, label }) => {
+    const html = renderToStaticMarkup(<PlaygroundMessage usageDisplay="details" message={{ id: 3, role: 'assistant', content: 'Reply', state, durationMs: 12_345, usage: { inputTokens: 7, outputTokens: 13, totalTokens: 20 } }} />);
+    expect(html.replace(/<details\b[^>]*>[\s\S]*?<\/details>/g, '')).toContain(`${label} 12.35 s`);
+  });
+
+  it.each([undefined, -1, NaN, Infinity])('omits unavailable or invalid timing: %s', durationMs => {
+    const html = renderToStaticMarkup(<PlaygroundMessage message={{ id: 3, role: 'assistant', content: 'Reply', state: 'complete', durationMs }} />);
+    expect(html).not.toContain('Generated in');
+  });
+
   it('collapses exact token counts into native details when requested', () => {
     const message = { id: 1, role: 'assistant' as const, content: 'Reply', usage: { inputTokens: 125, outputTokens: 34, totalTokens: 159 } };
     const html = renderToStaticMarkup(<PlaygroundMessage message={message} usageDisplay="details" />);

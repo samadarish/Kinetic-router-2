@@ -1,4 +1,4 @@
-import type { ModelPrice, PlaygroundChatInput, PlaygroundEvent, PlaygroundModel } from '@kineticrouter/portal-contract';
+import { createStreamIdleTimeout, type ModelPrice, type PlaygroundChatInput, type PlaygroundEvent, type PlaygroundModel } from '@kineticrouter/portal-contract';
 import { Sub2ApiError, asRecord, arrayValue } from './index.js';
 
 export type OwnedPlaygroundKey = { id: string; key: string; groupId: string };
@@ -25,7 +25,7 @@ export function readOwnedPlaygroundKey(value: unknown, userId: string, requested
   return { id: requestedId, key: raw.key, groupId: String(raw.group_id) };
 }
 
-type GatewayFailure = 'http' | 'network' | 'response';
+type GatewayFailure = 'http' | 'network' | 'response' | 'timeout';
 
 /** Only locally authored messages and diagnostic categories, never upstream bodies. */
 export class PlaygroundGatewayError extends Error {
@@ -40,13 +40,14 @@ export class PlaygroundGatewayError extends Error {
       402: 'This key has insufficient credit for the request.', 403: 'This request is not allowed for the selected key. Check its access and IP restrictions.',
       404: 'This model or endpoint is unavailable.', 429: 'The selected key or model is at its request limit. Try again later.',
     };
-    super(failure === 'network' ? 'The model service could not be reached. Try again shortly.'
+    super(failure === 'timeout' ? 'The model stopped sending data for two minutes. Reload chat to recover saved text. Check Usage before retrying.'
+      : failure === 'network' ? 'The model service could not be reached. Try again shortly.'
       : failure === 'response' ? 'The model service returned an unreadable response. Try again or choose another model.'
       : messages[status] ?? 'The model service could not complete this request. Try again shortly or choose another model.');
     this.name = 'PlaygroundGatewayError';
     // A gateway API-key rejection is separate from the console login session.
-    this.status = status === 401 ? 403 : status >= 400 && status < 500 ? status : 502;
-    this.code = status === 401 ? 'PLAYGROUND_KEY_REJECTED' : 'PLAYGROUND_REQUEST_FAILED';
+    this.status = failure === 'timeout' ? 504 : status === 401 ? 403 : status >= 400 && status < 500 ? status : 502;
+    this.code = failure === 'timeout' ? 'STREAM_IDLE_TIMEOUT' : status === 401 ? 'PLAYGROUND_KEY_REJECTED' : 'PLAYGROUND_REQUEST_FAILED';
     this.upstreamStatus = failure === 'http' ? status : undefined;
     this.failure = failure;
   }
@@ -70,7 +71,7 @@ function explicitlyRejectsLowReasoning(value: unknown): boolean {
 }
 
 /** Inspect a validation rejection privately, without buffering arbitrary upstream bodies. */
-async function lowReasoningUnsupported(response: Response, signal: AbortSignal): Promise<boolean> {
+async function lowReasoningUnsupported(response: Response, signal: AbortSignal, onActivity: () => void): Promise<boolean> {
   const maximum = 8 * 1024;
   if (!response.body || response.body.locked || Number(response.headers.get('content-length')) > maximum) {
     if (!response.body?.locked) void response.body?.cancel().catch(() => {});
@@ -89,6 +90,7 @@ async function lowReasoningUnsupported(response: Response, signal: AbortSignal):
       const chunk = await reader.read();
       signal.throwIfAborted();
       if (chunk.done) break;
+      if (chunk.value.byteLength) onActivity();
       size += chunk.value.byteLength;
       if (size > maximum) return false;
       text += decoder.decode(chunk.value, { stream: true });
@@ -161,27 +163,41 @@ export class PlaygroundClient implements PlaygroundGateway {
       ...input.messages.map(message => ({ role: message.role, content: message.content })),
     ];
     const body = { model: input.model, messages, stream: true, stream_options: { include_usage: true }, max_completion_tokens: 8192 };
-    let response = await this.fetchResponse('chat/completions', key, {
-      method: 'POST', body: JSON.stringify({ ...body, reasoning_effort: 'low' }),
-    }, signal);
-    if (!response.ok) {
-      const validationRejection = response.status === 400 || response.status === 422;
-      const useDefault = validationRejection && await lowReasoningUnsupported(response, signal);
-      if (!useDefault) {
-        if (!validationRejection) await response.body?.cancel().catch(() => {});
-        throw gatewayError(response.status, 'http');
+    const idle = createStreamIdleTimeout(signal, 120_000, gatewayError(504, 'timeout'));
+    try {
+      let response = await this.fetchResponse('chat/completions', key, {
+        method: 'POST', body: JSON.stringify({ ...body, reasoning_effort: 'low' }),
+      }, idle.signal);
+      idle.signal.throwIfAborted();
+      idle.touch();
+      if (!response.ok) {
+        const validationRejection = response.status === 400 || response.status === 422;
+        const useDefault = validationRejection && await lowReasoningUnsupported(response, idle.signal, idle.touch);
+        if (!useDefault) {
+          if (!validationRejection) await response.body?.cancel().catch(() => {});
+          throw gatewayError(response.status, 'http');
+        }
+        // One compatibility retry before streaming, sharing cancellation and the idle watchdog.
+        response = await this.request('chat/completions', key, { method: 'POST', body: JSON.stringify(body) }, idle.signal);
+        idle.touch();
       }
-      // One compatibility retry, before any stream is accepted, with the same deadline.
-      response = await this.request('chat/completions', key, { method: 'POST', body: JSON.stringify(body) }, signal);
+      if (!response.headers.get('content-type')?.includes('text/event-stream') || !response.body) {
+        await response.body?.cancel().catch(() => {}); throw gatewayError(502);
+      }
+      const events = publicChatEvents(response.body, idle.signal, idle.touch);
+      return (async function* () {
+        try { yield* events; }
+        finally { idle.dispose(); }
+      })();
+    } catch (error) {
+      idle.dispose();
+      idle.signal.throwIfAborted();
+      throw error;
     }
-    if (!response.headers.get('content-type')?.includes('text/event-stream') || !response.body) {
-      await response.body?.cancel().catch(() => {}); throw gatewayError(502);
-    }
-    return publicChatEvents(response.body, signal);
   }
 }
 
-async function* sseData(body: ReadableStream<Uint8Array>, signal: AbortSignal): AsyncGenerator<string> {
+async function* sseData(body: ReadableStream<Uint8Array>, signal: AbortSignal, onActivity: () => void): AsyncGenerator<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -194,6 +210,7 @@ async function* sseData(body: ReadableStream<Uint8Array>, signal: AbortSignal): 
       if (signal.aborted) throw signal.reason;
       const chunk = await reader.read();
       signal.throwIfAborted();
+      if (chunk.value?.byteLength) onActivity();
       buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
       let newline: number;
       while ((newline = buffer.indexOf('\n')) !== -1) {
@@ -211,12 +228,12 @@ async function* sseData(body: ReadableStream<Uint8Array>, signal: AbortSignal): 
       if (buffer.length > 256 * 1024) throw gatewayError(502);
       if (chunk.done) return; // Unterminated frames are never presented as complete.
     }
-  } finally { signal.removeEventListener('abort', cancel); await reader.cancel().catch(() => {}); reader.releaseLock(); }
+  } finally { signal.removeEventListener('abort', cancel); void reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
-export async function* publicChatEvents(body: ReadableStream<Uint8Array>, signal: AbortSignal): AsyncGenerator<PlaygroundEvent> {
+export async function* publicChatEvents(body: ReadableStream<Uint8Array>, signal: AbortSignal, onActivity: () => void = () => {}): AsyncGenerator<PlaygroundEvent> {
   let finishReason: 'stop' | 'length' | 'content_filter' | 'other' | undefined;
-  for await (const data of sseData(body, signal)) {
+  for await (const data of sseData(body, signal, onActivity)) {
     if (data === '[DONE]') {
       if (!finishReason) throw gatewayError(502);
       yield { type: 'done', finishReason };

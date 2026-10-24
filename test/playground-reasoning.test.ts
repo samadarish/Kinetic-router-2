@@ -40,7 +40,7 @@ describe('Playground low reasoning policy', () => {
     expect(fx.fetcher).toHaveBeenCalledTimes(1);
     const [url, init] = fx.fetcher.mock.calls[0]!;
     expect(url).toBe('https://gateway.invalid/v1/chat/completions');
-    expect(init).toMatchObject({ method: 'POST', redirect: 'manual', signal: fx.signal });
+    expect(init).toMatchObject({ method: 'POST', redirect: 'manual', signal: expect.any(AbortSignal) });
     expect(new Headers(init!.headers).get('authorization')).toBe('Bearer sk-fixture');
     expect(JSON.parse(String(init!.body))).toEqual({
       model: input.model, messages: [{ role: 'system', content: systemPrompt }, ...input.messages],
@@ -68,7 +68,7 @@ describe('Playground low reasoning policy', () => {
     expect(reasoning_effort).toBe('low');
     expect(secondUrl).toBe(firstUrl);
     expect(second).toEqual({ ...first, body: JSON.stringify(defaultBody) });
-    expect(second!.signal).toBe(fx.signal);
+    expect(second!.signal).toBe(first!.signal);
   });
 
   it.each([

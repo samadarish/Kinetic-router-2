@@ -24,6 +24,36 @@ function fixture(storage?: PlaygroundStorage) {
 afterEach(() => { vi.useRealTimers(); });
 
 describe('tab conversation store', () => {
+  it('reconciles optimistic IDs with the admitted server sequence before appending text', async () => {
+    vi.useFakeTimers();
+    let emit!: (event: PlaygroundEvent) => void, finish!: () => void;
+    const store = createPlaygroundStore({
+      remote: true, initial: emptyPlayground(), userId: '7', isOwner: () => true,
+      stream: (_input, onEvent) => { emit = onEvent; return new Promise<void>(resolve => { finish = resolve; }); },
+      settled: vi.fn(), unavailable: vi.fn(),
+    });
+    store.selectKey('2'); store.selectModel('chat'); store.setDraft('Question');
+    const sending = store.send(true);
+    emit({ type: 'turn_started', conversationId: crypto.randomUUID(), turnId: crypto.randomUUID(), sequence: 7, revision: 7, includedTurns: 0, omittedTurns: 6 });
+    emit({ type: 'text_delta', text: 'First ' }); emit({ type: 'text_delta', text: 'last' });
+    emit({ type: 'done', finishReason: 'stop' }); finish(); await sending;
+    expect(store.getSnapshot().messages.map(({ id, role, content }) => ({ id, role, content }))).toEqual([
+      { id: 14, role: 'user', content: 'Question' }, { id: 15, role: 'assistant', content: 'First last' },
+    ]);
+    store.detach(); expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each(['complete', 'failed', 'stopped'] as const)('records and restores elapsed time for a %s reply', async state => {
+    const fx = fixture(); fx.store.setDraft('Question'); const sending = fx.store.send(true);
+    vi.advanceTimersByTime(12_345); fx.emit({ type: 'text_delta', text: 'Reply' });
+    if (state === 'complete') fx.emit({ type: 'done', finishReason: 'stop' });
+    else if (state === 'failed') fx.emit({ type: 'error', code: 'STREAM_INTERRUPTED', message: 'Interrupted' });
+    else fx.store.stop();
+    fx.finish(); await sending;
+    expect(fx.store.getSnapshot().messages[1]).toMatchObject({ state, durationMs: 12_345 });
+    expect(fx.make().getSnapshot().messages[1]).toMatchObject({ state, durationMs: 12_345 });
+  });
+
   it('does not read legacy storage or schedule persistence for authoritative remote state', () => {
     vi.useFakeTimers();
     const storage = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() };

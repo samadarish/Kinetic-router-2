@@ -7,6 +7,7 @@ import { createSession, type SessionStore } from '../apps/bff/src/session-store'
 import { config } from '../apps/bff/src/config';
 import type { PlaygroundTurnInput, PlaygroundEvent, PlaygroundModelIdentity } from '@kineticrouter/portal-contract';
 import { MemoryPlaygroundSettingsStore, PlaygroundSettingsError, type PlaygroundSettingsStore } from '../apps/bff/src/playground-settings';
+import { consumePlaygroundStream } from '../apps/console/src/lib/playground-stream';
 
 const forbidden = ['rateMultiplier', 'rate_multiplier', 'userRateMultiplier', 'user_rate_multiplier', 'resolvedRateMultiplier', 'resolved_rate_multiplier', 'effectiveRateMultiplier', 'effective_rate_multiplier'];
 const sentinels = Object.fromEntries(forbidden.map(key => [key, 'INTERNAL_SENTINEL']));
@@ -24,7 +25,7 @@ function byteStream(value: string, split = 5) {
   return new ReadableStream<Uint8Array>({ start(controller) { for (let i = 0; i < bytes.length; i += split) controller.enqueue(bytes.slice(i, i + split)); controller.close(); } });
 }
 const stores: SessionStore[] = [];
-afterEach(async () => { await Promise.all(stores.splice(0).map(store => store.close())); });
+afterEach(async () => { vi.useRealTimers(); await Promise.all(stores.splice(0).map(store => store.close())); });
 
 async function fixture(options: { key?: unknown; status?: number; accountStatus?: number; chatResponse?: () => Response; modelStatus?: number; stream?: string; source?: ReadableStream<Uint8Array>; plaza?: unknown; billing?: unknown; modelRows?: unknown[]; enabled?: string[]; role?: 'admin' | 'user'; profile?: Record<string, unknown>; keyPage?: unknown; pricesEnabled?: boolean; settingsStore?: PlaygroundSettingsStore; identities?: PlaygroundModelIdentity[] } = {}) {
   const accountFetch = vi.fn(async (url: string | URL | Request) => {
@@ -480,6 +481,53 @@ describe('authenticated playground BFF', () => {
     const text = await response.text();
     expect(text).toContain('Partial'); expect(text).toContain('STREAM_INTERRUPTED');
     expect(text).not.toContain('event: done'); expect(text).not.toContain('PRIVATE_UPSTREAM_ERROR');
+  });
+
+  it('continues a six-minute reply, renews its history lease, and saves exact text and duration', async () => {
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const cancelled = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ start(controller) { source = controller; }, cancel: cancelled });
+    const fx = await fixture({ source: body }); vi.useFakeTimers();
+    const response = await fx.app.request('/portal/v1/playground/chat', { method: 'POST', headers: fx.headers, body: JSON.stringify(input) });
+    const received: PlaygroundEvent[] = [];
+    const reading = consumePlaygroundStream(response.body!, event => received.push(event), new AbortController().signal);
+    await vi.advanceTimersByTimeAsync(0);
+    source.enqueue(new TextEncoder().encode(frame({ choices: [{ index: 0, delta: { content: 'First ' } }] })));
+    await vi.advanceTimersByTimeAsync(0);
+    for (let index = 0; index < 6; index++) {
+      await vi.advanceTimersByTimeAsync(60_000);
+      source.enqueue(new TextEncoder().encode(frame({ choices: [{ index: 0, delta: { reasoning_content: 'PRIVATE_REASONING' } }] })));
+      await vi.advanceTimersByTimeAsync(0);
+      expect((await fx.history.detail('42', input.conversationId)).conversation.active).toBe(true);
+    }
+    source.enqueue(new TextEncoder().encode(frame({ choices: [{ index: 0, delta: { content: 'last' }, finish_reason: 'stop' }], usage: { prompt_tokens: 7, completion_tokens: 13, total_tokens: 20 } }) + frame('[DONE]')));
+    await reading; await vi.advanceTimersByTimeAsync(0);
+    expect(received.at(-1)).toEqual({ type: 'done', finishReason: 'stop' });
+    expect(JSON.stringify(received)).not.toContain('PRIVATE_REASONING');
+    const saved = await fx.history.detail('42', input.conversationId);
+    expect(saved.conversation.active).toBe(false);
+    expect(saved.turns[0]).toMatchObject({ assistantText: 'First last', state: 'complete', durationMs: 360_000, usage: { inputTokens: 7, outputTokens: 13, totalTokens: 20 } });
+    expect(fx.gatewayFetch.mock.calls.filter(([url]) => String(url).endsWith('/chat/completions'))).toHaveLength(1);
+    expect(cancelled).toHaveBeenCalledOnce(); expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('persists an inactive reply as failed before reporting timeout despite browser keepalives', async () => {
+    const cancelled = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode(frame({ choices: [{ index: 0, delta: { content: 'Partial' } }] }))); }, cancel: cancelled });
+    const fx = await fixture({ source: body }); vi.useFakeTimers();
+    const response = await fx.app.request('/portal/v1/playground/chat', { method: 'POST', headers: fx.headers, body: JSON.stringify(input) });
+    const received: PlaygroundEvent[] = [];
+    let savedAtError: ReturnType<typeof fx.history.detail> | undefined;
+    const reading = consumePlaygroundStream(response.body!, event => {
+      received.push(event);
+      if (event.type === 'error') savedAtError = fx.history.detail('42', input.conversationId);
+    }, new AbortController().signal);
+    await vi.advanceTimersByTimeAsync(120_000); await reading; await vi.advanceTimersByTimeAsync(0);
+    expect(received.at(-1)).toMatchObject({ type: 'error', code: 'STREAM_IDLE_TIMEOUT' });
+    expect(received.some(event => event.type === 'done')).toBe(false);
+    expect((await savedAtError)?.turns[0]).toMatchObject({ assistantText: 'Partial', state: 'failed', durationMs: 120_000 });
+    expect((await fx.history.detail('42', input.conversationId)).conversation.active).toBe(false);
+    expect(cancelled).toHaveBeenCalledOnce(); expect(vi.getTimerCount()).toBe(0);
   });
 
   it.each([{ identities: [] }, { identities: [{ modelId: 'gpt-test', name: 'Example' }] }])('propagates browser cancellation with or without model identity', async ({ identities }) => {

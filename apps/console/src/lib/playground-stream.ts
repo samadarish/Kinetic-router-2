@@ -1,6 +1,6 @@
 import { playgroundEventSchema, type PlaygroundEvent } from '@kineticrouter/portal-contract';
 
-export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, onEvent: (event: PlaygroundEvent) => void, signal: AbortSignal) {
+export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, onEvent: (event: PlaygroundEvent) => void, signal: AbortSignal, onActivity: () => void = () => {}) {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
@@ -13,6 +13,7 @@ export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, 
       signal.throwIfAborted();
       const chunk = await reader.read();
       signal.throwIfAborted();
+      if (chunk.value?.byteLength) onActivity();
       buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
       let newline: number;
       while ((newline = buffer.indexOf('\n')) !== -1) {
@@ -40,7 +41,7 @@ export async function consumePlaygroundStream(body: ReadableStream<Uint8Array>, 
     }
   } finally {
     signal.removeEventListener('abort', cancel);
-    await reader.cancel().catch(() => {});
+    void reader.cancel().catch(() => {});
     reader.releaseLock();
   }
 }

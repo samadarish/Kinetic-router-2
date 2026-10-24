@@ -26,7 +26,7 @@ async function fixture() {
     onEvent({ type: 'turn_started', conversationId: input.conversationId, turnId: begun.turn.id, revision: begun.chat.revision, sequence: begun.turn.sequence, includedTurns: begun.history.length, omittedTurns: 0 });
     let text = '';
     signal.addEventListener('abort', () => { void db.write(begun.turn, { ...terminal, assistantText: text, state: 'stopped' }).then(() => completed.resolve()); }, { once: true });
-    streams.push({ input, signal, chunk(delta) { text += delta; onEvent({ type: 'text_delta', text: delta }); }, async finish() { await db.write(begun.turn, { ...terminal, assistantText: text }); onEvent({ type: 'usage', usage }); onEvent({ type: 'done' }); completed.resolve(); } });
+    streams.push({ input, signal, chunk(delta) { text += delta; onEvent({ type: 'text_delta', text: delta }); }, async finish() { await db.write(begun.turn, { ...terminal, assistantText: text }); onEvent({ type: 'usage', usage }); onEvent({ type: 'done', finishReason: 'stop' }); completed.resolve(); } });
     await completed.promise;
   });
   function controller() { const value = createConversationController({ userId: owner.id, storage, isOwner: () => owns, isEnabled: () => enabled, api, stream, settled: vi.fn(), unavailable: vi.fn() }); cleanup.push(value); return value; }
@@ -39,6 +39,41 @@ async function fixture() {
 }
 
 describe('account-backed conversation controller', () => {
+  it('keeps the first prompt singular through settlement, repeat prompts, refresh and reopening', async () => {
+    const fx = await fixture(); fx.prepare('hi');
+    const sending = fx.store.send(true);
+    await fx.store.send(true);
+    await vi.waitFor(() => expect(fx.streams).toHaveLength(1));
+    expect(fx.store.getSnapshot().messages.map(message => message.id)).toEqual([2, 3]);
+    fx.streams[0]!.chunk('First reply'); await fx.streams[0]!.finish(); await sending;
+    await vi.waitFor(() => expect(fx.store.getSnapshot().historyReady).toBe(true));
+    expect(fx.store.getSnapshot().messages.map(({ id, role, content }) => ({ id, role, content }))).toEqual([
+      { id: 2, role: 'user', content: 'hi' }, { id: 3, role: 'assistant', content: 'First reply' },
+    ]);
+    expect(fx.store.getSnapshot().messages[1]?.durationMs).toBe(terminal.durationMs);
+    fx.store.setDraft('hi'); const repeated = fx.store.send(true);
+    await vi.waitFor(() => expect(fx.streams).toHaveLength(2));
+    fx.streams[1]!.chunk('Second reply'); await fx.streams[1]!.finish(); await repeated;
+    await vi.waitFor(() => expect(fx.store.getSnapshot().historyReady).toBe(true));
+    fx.store.refresh(); fx.store.flush();
+    const restored = fx.controller(); restored.refresh();
+    await vi.waitFor(() => expect(restored.getSnapshot().historyReady).toBe(true));
+    expect(restored.getSnapshot().messages.map(message => message.content)).toEqual(['hi', 'First reply', 'hi', 'Second reply']);
+    expect(restored.getSnapshot().messages.map(message => message.id)).toEqual([2, 3, 4, 5]);
+    expect((await fx.db.detail(fx.owner.id, restored.getSnapshot().chatId)).turns).toHaveLength(2);
+    expect(fx.stream).toHaveBeenCalledTimes(2);
+  });
+
+  it('uses canonical IDs after loading an empty saved conversation', async () => {
+    const fx = await fixture(), id = randomUUID(); await fx.db.create(fx.owner, id); await fx.store.open(id);
+    fx.prepare('First saved prompt'); const sending = fx.store.send(true);
+    await vi.waitFor(() => expect(fx.streams).toHaveLength(1));
+    fx.streams[0]!.chunk('Reply'); await fx.streams[0]!.finish(); await sending;
+    await vi.waitFor(() => expect(fx.store.getSnapshot().historyReady).toBe(true));
+    expect(fx.store.getSnapshot().messages.map(message => message.id)).toEqual([2, 3]);
+    expect(fx.store.getSnapshot().messages.map(message => message.content)).toEqual(['First saved prompt', 'Reply']);
+  });
+
   it('preserves loaded older pages and an exhausted cursor across focus refreshes', async () => {
     const fx = await fixture(), id = await fx.seed('First question');
     for (let revision = 1; revision < 65; revision++) {
