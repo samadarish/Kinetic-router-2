@@ -4,7 +4,7 @@ When enabled, the website header includes Playground for everyone. An authentica
 
 ## Show or hide Playground
 
-1. Sign in as an active administrator and open **Playground settings** (`/admin/playground`).
+1. Sign in as an active administrator and open **Model settings** (`/admin/playground`).
 2. Turn **Enable Playground** on or off, then choose **Save settings**. The switch starts on for both new installations and existing settings records.
 3. Turning it off hides Playground in the website header, console navigation and related shortcuts. Direct console visits return to the dashboard; customer `/portal/v1/playground/*` endpoints reject requests with `403 PLAYGROUND_DISABLED`. This also applies to administrators using the customer Playground.
 4. Saved chats, enabled model IDs and identity settings remain intact. Replies already admitted may finish and save; new requests are blocked. Turn the switch back on and save to restore access.
@@ -14,24 +14,24 @@ The saving admin sees the navigation change immediately. Other open foreground p
 ## Enable models as an administrator
 
 1. Sign in to the Kinetic console with an active administrator account.
-2. Open **Playground settings** in the sidebar, or `/admin/playground`.
-3. Choose one of your active API keys as a source. This loads the complete catalog available to that key, including image and review models. It does not enumerate other customers' keys.
-4. Select the models customers should be able to test. Switching source keys retains discovered choices. Add an exact, case-sensitive model ID manually when needed; up to 500 IDs can be enabled.
+2. Open **Model settings** in the sidebar, or `/admin/playground`.
+3. In **Key models**, choose one of your active API keys as a source. The list shows only that key's catalog, including image and review models. Switching keys replaces the visible catalog and clears search without losing pending selections or applied identity edits. It does not enumerate other customers' keys.
+4. Select the models customers should be able to test. **Saved models** lists enabled models, models with identity settings, and rows edited during this session until save or reload. It remains available without an active source key. For manual entry, expand **Advanced** in that tab and add an exact, case-sensitive model ID; up to 500 IDs can be enabled.
 5. Choose **Save settings**. No models are enabled initially. Saving an empty selection disables new Playground sends.
 6. Open Playground and choose a key. Its model list contains only enabled models that the key can access. Image or review IDs can be enabled, but the playground itself sends text chat requests; the model must support that protocol.
 
-The settings page only controls Kinetic Playground. It does not alter the public inference API, upstream routing, billing, balances, or key permissions. Existing streams may finish after a model is disabled; new sends are checked against the latest settings.
+Enabled model IDs are shared globally by Playground and API key group previews; choosing a source key only filters the catalog shown in the editor. The settings do not alter the public inference API, upstream routing, billing, balances, or key permissions. Existing streams may finish after a model is disabled; new sends are checked against the latest settings.
 
 If another administrator saves first, reload saved settings and reapply your changes. A failed or timed-out save must be reloaded before retrying because its outcome may be uncertain. Reload failures preserve your current selections.
 
 ## Set a model's identity
 
-1. In **Playground settings**, expand **Identity** beneath the exact model ID.
+1. In **Model settings**, choose **Configure** beside the exact model ID in **Key models** or **Saved models**.
 2. Optionally enter an **Identity name** (up to 80 characters on one line) and a **Knowledge cutoff** month and year. Either field can be used alone. Both start blank; the console does not guess these values from the model ID.
 3. Use verified information for the selected route. These details guide how the model introduces itself; they do not change or establish its underlying model version, training, or actual knowledge.
-4. Choose **Save settings**. Search and source-key changes preserve unsaved identity edits. Identity details can be edited while a model is disabled and remain saved when it is enabled again.
+4. Choose **Apply** to stage the edit and close the dialog, then **Save settings** to persist it together with pending model selections. **Cancel**, Escape, or clicking the backdrop discards edits made since opening the dialog. Search, tab, and source-key changes preserve applied edits. Identity details can be edited while a model is disabled and remain saved when it is enabled again.
 5. Open Playground and start a **New chat** to test the identity with a clean history. A saved edit takes effect on the next send; active streams and earlier replies stay unchanged.
-6. To remove the instruction, choose **Clear identity** (or empty both fields), then **Save settings**. Removing just one field retains the other. **Reload saved** discards unsaved identity and enablement edits after a successful reload.
+6. To remove the instruction, open **Configure**, choose **Clear identity** (or empty both fields), then **Apply** and **Save settings**. Removing just one field retains the other. **Reload saved** discards unsaved identity and enablement edits after a successful reload.
 
 For a configured model, the BFF adds one fixed system instruction using its saved name and/or cutoff before the visible conversation. It instructs the model to answer only the identity detail requested and mention its knowledge cutoff only when specifically asked. Administrators cannot enter arbitrary system prompts here. Unconfigured models receive the original conversation without an added instruction. Customer chat requests cannot override these settings, and model catalogs and stream metadata do not expose the stored configuration.
 
