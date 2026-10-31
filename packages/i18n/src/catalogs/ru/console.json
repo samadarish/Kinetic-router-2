@@ -1605,5 +1605,7 @@
   "Unsaved changes": "Несохранённые изменения",
   "s": "s",
   "{0} available for this key": "{0} доступно для этого ключа",
-  "{0} enabled overall": "{0} включено всего"
+  "{0} enabled overall": "{0} включено всего",
+  "Deprecated": "Устарело",
+  "Unknown model lifecycle: {0}": "Неизвестное состояние жизненного цикла модели: {0}"
 }

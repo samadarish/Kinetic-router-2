@@ -35,7 +35,7 @@ export function ModelCatalog({ models, initialProvider }: { models: CatalogModel
 
   return (
     <div className="page-container py-10 md:py-14">
-      <div className="mb-7"><p className="text-xs font-semibold text-primary">MODEL CATALOG</p><h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Models & pricing</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground">Explore 36 models across 8 providers. Every displayed kineticRouter price is 90% off the official reference rate.</p></div>
+      <div className="mb-7"><p className="text-xs font-semibold text-primary">MODEL CATALOG</p><h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">Models & pricing</h1><p className="mt-3 max-w-2xl text-sm text-muted-foreground">{`Explore ${models.length} models across ${activeProviderIds.length} providers. Discounts vary by provider.`}</p></div>
       <div className="flex gap-7">
         <aside className="hidden w-[250px] shrink-0 border-r border-border pr-6 lg:block">{filters}</aside>
         <div className="min-w-0 flex-1">

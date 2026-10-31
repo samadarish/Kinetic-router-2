@@ -1,4 +1,5 @@
 import type { ActiveProviderId } from '@kineticrouter/platform-config/providers';
+import type { ModelLifecycle } from '@kineticrouter/platform-config/models';
 
 export type ModelPrice = {
   id: number; modelId: string; role: 'official' | 'sell'; billingMode: string; component: string; unit: string; tierLabel: string; priceMicroUsd: number; source: string; sourceRef?: string; version: number; active: boolean;
@@ -6,6 +7,7 @@ export type ModelPrice = {
 export type ModelFaq = { q: string; a: string; kind: string };
 export type CodeExample = { language: string; label: string; code: string; source: string };
 export type Model = {
+  lifecycle?: ModelLifecycle;
   id: string; slug: string; provider: ActiveProviderId; upstreamModelId?: string; aliases: string[]; name: string; category: string; contextWindow: number; supportsFast: boolean; billingMode: string; prices: ModelPrice[]; tags: string[]; free: boolean; enabled: boolean; tagline: string; introMd: string; capabilities: string[]; faq: ModelFaq[]; codeExamples: CodeExample[]; maxOutput: number; date: string; compatIcons: string[]; toolTags: string[]; hostedOn: string; hostedOnOptions: string[]; family: string; capabilityFlags: string[]; inputModalities: string[]; outputModalities: string[];
   pricingNote?: string; upstreamContextWindow?: number; upstreamMaxOutput?: number; gatewayMaxInput?: number; gatewayMaxOutput?: number; sourceUrl?: string; sourceVerifiedAt?: string; catalogCapturedAt?: string; availability?: 'reference' | 'partial' | 'planned' | 'verified';
 };
@@ -23,9 +25,9 @@ export function formatUsd(value: number | undefined) {
 export function formatTokens(value: number) { if (!value) return '\u2014'; if (value >= 1_000_000) return `${Math.round(value / 10_000) / 100}M`; if (value >= 1_000) return `${Math.round(value / 1_000)}K`; return String(value); }
 export function displayContextWindow(model: Pick<Model, 'upstreamContextWindow' | 'contextWindow'>) { return model.upstreamContextWindow ?? model.contextWindow; }
 
-export type CatalogModel = Pick<Model, 'id' | 'slug' | 'provider' | 'name' | 'tagline' | 'date' | 'capabilityFlags' | 'contextWindow' | 'upstreamContextWindow' | 'prices'>;
+export type CatalogModel = Pick<Model, 'id' | 'slug' | 'provider' | 'name' | 'tagline' | 'date' | 'capabilityFlags' | 'contextWindow' | 'upstreamContextWindow' | 'prices' | 'lifecycle'>;
 export function catalogModel(model: Model): CatalogModel {
-  const { id, slug, provider, name, tagline, date, capabilityFlags, contextWindow, upstreamContextWindow } = model;
+  const { id, slug, provider, name, tagline, date, capabilityFlags, contextWindow, upstreamContextWindow, lifecycle } = model;
   const prices = (['sell', 'official'] as const).flatMap((role) => ['input', 'output'].flatMap((component) => { const price = priceFor(model, role, component); return price ? [price] : []; }));
-  return { id, slug, provider, name, tagline, date, capabilityFlags, contextWindow, upstreamContextWindow, prices };
+  return { id, slug, provider, name, tagline, date, capabilityFlags, contextWindow, upstreamContextWindow, prices, lifecycle };
 }

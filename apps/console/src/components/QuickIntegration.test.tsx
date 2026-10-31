@@ -63,10 +63,10 @@ afterEach(async () => {
 });
 
 describe('dashboard quick integration', () => {
-  it('offers all 36 models grouped by company with provider icons', async () => {
+  it('offers all 38 models grouped by company with provider icons', async () => {
     expect(code()).toContain('openai/gpt-6-astra');
     await click('.integration-model-trigger');
-    expect(host.querySelectorAll('[role="option"]')).toHaveLength(36);
+    expect(host.querySelectorAll('[role="option"]')).toHaveLength(38);
     expect(host.querySelectorAll('[role="group"][aria-labelledby]')).toHaveLength(8);
     expect(host.querySelectorAll('.integration-model-group [data-provider-icon="unknown"]')).toHaveLength(0);
     await act(async () => element('[role="combobox"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
@@ -75,6 +75,21 @@ describe('dashboard quick integration', () => {
       expect(code()).toContain(model.id);
       expect(code()).toContain('https://api.kineticrouter.com/v1');
     }
+  });
+
+  it('marks the deprecated Kimi model in its option and selected state without disabling it', async () => {
+    await click('.integration-model-trigger');
+    const option = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]')).find((item) => item.textContent?.includes('moonshot/kimi-k2.7-code'))!;
+    expect(option.querySelector('.model-deprecated')?.textContent).toBe('Deprecated');
+    await act(async () => option.click());
+    expect(element('.integration-model-trigger .model-deprecated').textContent).toBe('Deprecated');
+    expect(element('.integration-model-trigger').textContent).not.toContain('Available');
+    expect(code()).toContain('moonshot/kimi-k2.7-code');
+    await selectModel('moonshot/kimi-k3.1-pro');
+    expect(host.querySelector('.integration-model-trigger .model-deprecated')).toBeNull();
+    expect(code()).toContain('moonshot/kimi-k3.1-pro');
+    await selectModel('zhipu/glm-5.3-flash');
+    expect(code()).toContain('zhipu/glm-5.3-flash');
   });
 
   it('updates all code formats and retains the selected route across provider changes', async () => {

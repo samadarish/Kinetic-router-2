@@ -1605,5 +1605,7 @@
   "Unsaved changes": "未保存的更改",
   "s": "s",
   "{0} available for this key": "此密钥可用：{0}",
-  "{0} enabled overall": "共启用 {0} 个"
+  "{0} enabled overall": "共启用 {0} 个",
+  "Deprecated": "已弃用",
+  "Unknown model lifecycle: {0}": "未知的模型生命周期状态：{0}"
 }

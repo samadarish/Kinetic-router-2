@@ -41,9 +41,12 @@ expect(activePrices.length === 188, `Expected 188 active price rows, found ${act
 expect(unique(activePrices.map((price) => price.id)), 'Duplicate active price IDs found');
 expect(status.snapshot.modelCount === 20 && status.snapshot.docsRouteCount === 57, 'Status snapshot counts do not match the locked reference snapshot');
 const catalogModels = currentCatalog.models;
-expect(catalogModels.length === 36, 'The current public catalog must contain 36 models');
+expect(catalogModels.length === 38, 'The current public catalog must contain 38 listed models');
 expect(unique(catalogModels.map((model) => `${model.provider}/${model.slug}`)), 'Duplicate current model IDs');
-expect(currentCatalog.sellMultiplier === 0.1, 'Display prices must be 90% off official reference rates');
+expect(currentCatalog.sellMultiplier === 0.1, 'The default display multiplier must remain 0.1');
+const expectedMultipliers = { openai: 0.2, anthropic: 0.15, moonshot: 0.2, deepseek: 0.2, zhipu: 0.2, gemini: 0.5, grok: 0.1, minimax: 0.1 };
+for (const [provider, multiplier] of Object.entries(expectedMultipliers)) expect((currentCatalog.providerSellMultipliers[provider] ?? currentCatalog.sellMultiplier) === multiplier, `${provider}: incorrect display multiplier`);
+expect(catalogModels.filter((model) => model.lifecycle === 'deprecated').length === 1 && catalogModels.find((model) => model.slug === 'kimi-k2.7-code')?.lifecycle === 'deprecated', 'Kimi K2.7 Code must be the single deprecated model');
 for (const model of catalogModels) {
   const profile = currentCatalog.profiles[model.pricingProfile];
   expect(Boolean(profile?.sourceUrl?.startsWith('https://')), `${model.slug}: official source missing`);
@@ -79,7 +82,8 @@ expect(JSON.stringify(sitemapRoutes) === JSON.stringify(indexableDocs), 'docs-si
 
 const inventories = `${llms}\n${llmsFull}`;
 expect(!/database-driven|live model catalog|live pricing/i.test(inventories), 'LLM exports still claim live/database-driven catalog data');
-expect(/DeepSeek/.test(inventories) && /90% off/.test(inventories), 'LLM exports must describe the current catalog and discount');
+expect(/DeepSeek/.test(inventories) && ['85% off', '80% off', '50% off', '90% off'].every((discount) => inventories.includes(discount)), 'LLM exports must describe the current provider discounts');
+expect(inventories.includes('Kimi K2.7 Code (Deprecated)'), 'LLM exports must identify deprecated models');
 expect(!inventories.includes('/docs/develop/advanced/model-routing'), 'LLM exports contain the removed model-routing path');
 expect((homeHero.match(/<h1\b/g) ?? []).length === 1, 'Landing hero must contain exactly one semantic h1');
 expect(homeHero.includes('{home.title}<span className="home-hero-period">.</span>'), 'Landing hero must render the gradient period as HTML text');

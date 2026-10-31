@@ -6,8 +6,8 @@ import { canonicalPath, canonicalUrl, isIndexableRoute, SITE_ORIGIN } from './se
 
 const pages: Record<string, { title: string; description: string }> = {
   '/': { title: 'AI API Access & Model Reference', description: 'Access leading AI models through one OpenAI-compatible /v1 API. Explore model reference pricing, API documentation, and coding-agent setup guides.' },
-  '/models': { title: 'AI Models & API Pricing Reference', description: 'Browse 36 models from OpenAI, Anthropic, Gemini, DeepSeek, Zhipu, Moonshot, Grok, and MiniMax. Compare reference pricing, context limits, and capabilities with kineticRouter provider availability.' },
-  '/pricing': { title: 'AI API Pricing Comparison', description: 'Compare kineticRouter prices at 90% off official reference rates across eight AI providers. Check the customer console for actual billed rates.' },
+  '/models': { title: 'AI Models & API Pricing Reference', description: `Browse ${models.length} models from OpenAI, Anthropic, Gemini, DeepSeek, Zhipu, Moonshot, Grok, and MiniMax. Compare reference pricing, context limits, and capabilities with kineticRouter provider availability.` },
+  '/pricing': { title: 'AI API Pricing Comparison', description: 'Compare kineticRouter prices and provider-specific discounts against official reference rates across eight AI providers. Check the customer console for actual billed rates.' },
   '/vibe-coding': { title: 'Codex & Claude Code Integration', description: 'Connect Codex and Claude Code to kineticRouter with the shared OpenAI-compatible /v1 route. Follow the setup guides with your API key.' },
   '/privacy': { title: 'Privacy Policy', description: 'Read how kineticRouter handles account information, API requests, usage data, payments, security, and privacy choices.' },
   '/terms-of-service': { title: 'Terms of Service', description: 'Read the kineticRouter terms for accounts, AI API access, usage, payments, content, service availability, and support.' },
@@ -35,7 +35,10 @@ export function routeSeo(requestedRoute: string) {
   const model = models.find((item) => `/models/${item.provider}/${item.slug}` === route);
   if (model) {
     const status = providerDisplayStatus(model.provider);
-    details = { title: `${model.name.replace(/^[^:]+:\s*/, '')} API & Reference Pricing`, description: `${model.name.replace(/^[^:]+:\s*/, '')} reference pricing, context limits, capabilities, and route availability. ${status.label} model access on kineticRouter is ${status.modelAccessState}; confirm actual rates in your console.` };
+    const name = model.name.replace(/^[^:]+:\s*/, '');
+    details = model.lifecycle === 'deprecated'
+      ? { title: `${name} - Deprecated`, description: `${name} is deprecated on kineticRouter. View reference pricing and model details, or explore newer Kimi models in the catalog.` }
+      : { title: `${name} API & Reference Pricing`, description: `${name} reference pricing, context limits, capabilities, and route availability. ${status.label} model access on kineticRouter is ${status.modelAccessState}; confirm actual rates in your console.` };
   }
   if (!details) return undefined;
   // Some imported titles already include branding. Apply it exactly once.

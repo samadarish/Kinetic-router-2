@@ -1605,5 +1605,7 @@
   "Unsaved changes": "Perubahan belum disimpan",
   "s": "s",
   "{0} available for this key": "{0} tersedia untuk kunci ini",
-  "{0} enabled overall": "{0} diaktifkan secara keseluruhan"
+  "{0} enabled overall": "{0} diaktifkan secara keseluruhan",
+  "Deprecated": "Tidak direkomendasikan",
+  "Unknown model lifecycle: {0}": "Status siklus hidup model tidak dikenal: {0}"
 }

@@ -55,7 +55,7 @@ export function IntegrationModelSelect({ value, onChange }: { value: string; onC
         setActive(Math.max(0, filtered.findIndex((model) => model.id === value))); setOpen(!open); setQuery('');
       }} onKeyDown={(event) => { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setActive(Math.max(0, filtered.findIndex((model) => model.id === value))); setOpen(true); } }}>
       <ProviderIcon provider={selected.provider} size={19} /><span id={`${id}-value`}><strong>{selected.name}</strong><small>{selected.id}</small></span>
-      <span className="provider-availability verified">Available</span><ChevronDown size={17} />
+      {selected.lifecycle === 'deprecated' ? <span className="provider-availability model-deprecated">Deprecated</span> : <span className="provider-availability verified">Available</span>}<ChevronDown size={17} />
     </button>
     {open && <div className="integration-model-menu">
       <label className="integration-model-search"><Search size={16} /><input ref={input} value={query} role="combobox" aria-label="Search models"
@@ -72,7 +72,7 @@ export function IntegrationModelSelect({ value, onChange }: { value: string; onC
               const index = filtered.indexOf(model);
               return <div key={model.id} id={`${id}-option-${index}`} role="option" aria-selected={value === model.id} data-active={active === index}
                 className="integration-model-option" onMouseDown={(event) => event.preventDefault()} onMouseMove={() => setActive(index)} onClick={() => choose(model.id)}>
-                <span><strong>{model.name}</strong><small>{model.id}</small></span>{value === model.id && <Check size={16} />}
+                <span><strong>{model.name}</strong><small>{model.id}</small></span>{model.lifecycle === 'deprecated' && <span className="provider-availability model-deprecated">Deprecated</span>}{value === model.id && <Check size={16} />}
               </div>;
             })}
           </div>;

@@ -1,13 +1,27 @@
 # Catalog updates
 
-## Current public catalog - October 18, 2026
+## Current public catalog - October 30, 2026
 
-The active public offer contains 36 unique models across OpenAI, Anthropic, Grok,
+The public catalog contains 38 unique models across OpenAI, Anthropic, Grok,
 DeepSeek, Zhipu, Moonshot, Gemini, and MiniMax. Meta is planned and has no active
-models. The roster and official price profiles are maintained in
-`packages/platform-config/src/model-catalog.json`; the website adapter derives
-all displayed offer prices at exactly 0.1 times the matching official component.
+models. The roster, lifecycle status, official price profiles, and provider
+discounts are maintained in `packages/platform-config/src/model-catalog.json`.
+The website adapter applies the provider multiplier to every matching official
+component: Anthropic 0.15 (85% off); OpenAI, Moonshot, DeepSeek, and Zhipu 0.2
+(80% off); Gemini 0.5 (50% off); Grok and MiniMax 0.1 (90% off).
 Actual gateway billing is unchanged.
+
+Added `moonshot/kimi-k3.1-pro` and `zhipu/glm-5.3-flash` using official price
+and model metadata verified October 30, 2026. The other reference profiles retain
+their October 18 verification date. Kimi K3.1 Pro is the default Moonshot choice;
+the global default remains GPT-6 Astra. Only source-verified pricing components
+are included; Kimi K3.1 Pro's maximum output remains unspecified.
+
+Kimi K2.7 Code remains listed and selectable, with its existing URL and price
+table. It is marked **Deprecated** throughout public model views and the shared
+integration picker, using a red pill instead of a percentage-off badge. Its
+prices follow the Moonshot multiplier. The catalog contains 37 active models
+and one deprecated model.
 
 Every active provider uses the OpenAI-compatible direct or CDN `/v1` base URL.
 The dashboard selects exact provider/model IDs from the same shared inventory.

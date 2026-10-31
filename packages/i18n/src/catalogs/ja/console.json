@@ -1605,5 +1605,7 @@
   "Unsaved changes": "未保存の変更",
   "s": "s",
   "{0} available for this key": "このキーで利用可能: {0}",
-  "{0} enabled overall": "有効なモデルの合計: {0}"
+  "{0} enabled overall": "有効なモデルの合計: {0}",
+  "Deprecated": "非推奨",
+  "Unknown model lifecycle: {0}": "不明なモデルのライフサイクル状態: {0}"
 }

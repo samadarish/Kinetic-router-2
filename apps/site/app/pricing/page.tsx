@@ -25,7 +25,7 @@ export default function PricingPage() {
     </section>
     <section className="border-y border-border bg-muted/20 py-12 md:py-16"><div className="page-container"><div className="grid gap-3 md:grid-cols-3">{[
       ['Exact values', 'No rounded-away micro-prices', 'Prices display up to six decimal places so small token rates remain visible.'],
-      ['90% off', 'One tenth of official rates', 'Every displayed kineticRouter component is calculated from the matching official reference rate.'],
+      ['Pricing reference', 'Discounts vary by provider.', 'Every displayed kineticRouter component is calculated from the matching official reference rate.'],
       ['Availability', 'Routes are status-marked', `${openAi.label}, ${anthropic.label}, ${grok.label}, and five more providers share one OpenAI-compatible /v1 API.`],
     ].map(([lead, title, copy]) => <article key={lead} className="surface p-6"><p className="text-[10px] font-semibold uppercase tracking-wider text-primary">{lead}</p><h2 className="mt-3 text-lg font-semibold">{title}</h2><p className="mt-3 text-xs leading-6 text-muted-foreground">{copy}</p></article>)}</div></div></section>
     <PricingComparison models={models.map(catalogModel)} />

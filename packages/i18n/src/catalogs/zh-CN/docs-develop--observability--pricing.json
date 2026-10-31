@@ -15,8 +15,8 @@
   "Public reference prices": "公共参考价格",
   "Reference snapshot": "参考图片",
   "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "请求仍然使用选定的密钥的正常账户发票。",
-  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "模型和价格页面显示 kineticRouter 显示价格在官方参考率90% off,与来源验证日期。原始导入档案保持独立。模型可用性和帐户价格可能不同。",
   "Usage": "使用情况",
   "Verify the answer and billed usage": "检查答案和发票使用",
-  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "当 Playground 启用时,请选择您的关键和模型在那里,然后打开视图价格以查看可用的确认的最终代币价格。价格显示其单位和观察时间。终端率不提供意味着控制台无法获得完整支持的价格规则;这并不意味着该模式是免费的。"
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "当 Playground 启用时,请选择您的关键和模型在那里,然后打开视图价格以查看可用的确认的最终代币价格。价格显示其单位和观察时间。终端率不提供意味着控制台无法获得完整支持的价格规则;这并不意味着该模式是免费的。",
+  "The Models and Pricing pages compare kineticRouter display prices with official reference rates, with the source verification date. Discounts vary by provider and apply to all listed price components. Deprecated models are marked explicitly. The original imported archive remains separate. Model availability and account pricing can differ.": "模型和价格页面将 kineticRouter 显示价格与官方参考费率进行比较，并注明来源核实日期。折扣因提供商而异，适用于列出的所有价格项目。已弃用的模型会明确标记。最初导入的存档仍单独保留。模型可用性和各账户的价格可能有所不同。"
 }

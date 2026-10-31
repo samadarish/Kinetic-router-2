@@ -1605,5 +1605,7 @@
   "Unsaved changes": "Alterações não salvas",
   "s": "s",
   "{0} available for this key": "{0} disponíveis com esta chave",
-  "{0} enabled overall": "{0} habilitados no total"
+  "{0} enabled overall": "{0} habilitados no total",
+  "Deprecated": "Obsoleto",
+  "Unknown model lifecycle: {0}": "Estado de ciclo de vida do modelo desconhecido: {0}"
 }

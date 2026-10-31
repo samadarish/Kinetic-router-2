@@ -7,9 +7,12 @@ const registry = JSON.parse(await readFile(new URL('../../packages/platform-conf
 const manifest = JSON.parse(await readFile(new URL('data/reference-manifest.json', root), 'utf8'));
 const status = JSON.parse(await readFile(new URL('data/documentation-status.json', root), 'utf8'));
 const origin = 'https://kineticrouter.com';
-const modelLines = catalog.models.map((model) => `- ${registry.providers[model.provider].label}: ${model.name} — ${origin}/models/${model.provider}/${model.slug}`).join('\n');
+const modelLines = catalog.models.map((model) => `- ${registry.providers[model.provider].label}: ${model.name}${model.lifecycle === 'deprecated' ? ' (Deprecated)' : ''} — ${origin}/models/${model.provider}/${model.slug}`).join('\n');
 const providerLines = Object.keys(registry.providers).filter((id) => id !== 'meta').map((id) => `- ${registry.providers[id].label}: ${origin}/models/${id}`).join('\n');
-const policy = `The current public catalog contains ${catalog.models.length} models across 8 providers. Official reference rates were checked ${catalog.verifiedAt}. Displayed kineticRouter prices are official rates divided by 10 (90% off), including published cache, tiered, and image-token components. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
+const discountSummary = Object.entries(registry.providers).filter(([id]) => id !== 'meta').map(([id, provider]) => `${provider.label}: ${Math.round((1 - (catalog.providerSellMultipliers[id] ?? catalog.sellMultiplier)) * 100)}% off`).join('; ');
+const latestVerifiedAt = Object.values(catalog.profiles).map((profile) => profile.sourceVerifiedAt ?? catalog.verifiedAt).sort().at(-1);
+const deprecatedCount = catalog.models.filter((model) => model.lifecycle === 'deprecated').length;
+const policy = `The current public catalog contains ${catalog.models.length} listed models across 8 providers, including ${deprecatedCount} deprecated model. Official reference rates use verification dates from ${catalog.verifiedAt} through ${latestVerifiedAt}. Display discounts by provider: ${discountSummary}. These discounts apply to published input, output, cache, tiered, and image-token components. Deprecated models are marked explicitly instead of displaying a discount badge. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
 
 Every active provider uses the OpenAI-compatible https://api.kineticrouter.com/v1 base URL, or https://cdn-api.kineticrouter.com/v1. Use provider/model IDs and a kineticRouter API key. Meta support is planned and has no active catalog entries. Public display prices are separate from actual account billing; the authenticated customer console reports billed usage and account rates.`;
 const primary = ['/', '/models', '/pricing', '/docs', '/quickstart'].map((path) => `- ${origin}${path}`).join('\n');

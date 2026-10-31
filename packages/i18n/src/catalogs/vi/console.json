@@ -1598,5 +1598,7 @@
   "Unsaved changes": "Thay đổi chưa lưu",
   "s": "s",
   "{0} available for this key": "{0} khả dụng với khóa này",
-  "{0} enabled overall": "Tổng cộng {0} đã bật"
+  "{0} enabled overall": "Tổng cộng {0} đã bật",
+  "Deprecated": "Không còn khuyến nghị",
+  "Unknown model lifecycle: {0}": "Trạng thái vòng đời mô hình không xác định: {0}"
 }

@@ -15,8 +15,8 @@
   "Public reference prices": "公共参考価格",
   "Reference snapshot": "参考スナップショット",
   "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "要請はまだ、選択されたキーの通常のアカウント請求書を使用します。使用は記録されている請求額について有権です。",
-  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "モデルと価格ページを表示する kineticRouter 公式参照率の90%で表示価格、ソース確認日付と共に。オリジナル輸入アーカイブは別々のままです。モデル利用性およびアカウント価格が異なる可能性があります。",
   "Usage": "使用状況",
   "Verify the answer and billed usage": "回答と請求書の使用を確認する",
-  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground が有効になると、そこにあるキーとモデルを選択し、確認された最終トークン価格を表示するために View 率を開いてください。価格はそのユニットと観察時間を示します。"
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground が有効になると、そこにあるキーとモデルを選択し、確認された最終トークン価格を表示するために View 率を開いてください。価格はそのユニットと観察時間を示します。",
+  "The Models and Pricing pages compare kineticRouter display prices with official reference rates, with the source verification date. Discounts vary by provider and apply to all listed price components. Deprecated models are marked explicitly. The original imported archive remains separate. Model availability and account pricing can differ.": "モデルおよび価格ページでは、kineticRouterの表示価格と公式参照料金を比較し、情報源の確認日を表示しています。割引率はプロバイダーによって異なり、掲載されているすべての価格項目に適用されます。非推奨のモデルは明示されています。最初にインポートしたアーカイブは別途保存されています。モデルの利用可否やアカウント別の価格は異なる場合があります。"
 }

@@ -25,7 +25,7 @@ export function PricingComparison({ models }: { models: CatalogModel[] }) {
       <div className="mb-7 flex flex-col gap-4 lg:flex-row lg:items-end">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">Reference model pricing</h2>
-          <p className="mt-2 text-xs text-muted-foreground">kineticRouter prices are 90% off official reference rates. Prices shown per 1M tokens.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Discounts vary by provider. Prices shown per 1M tokens.</p>
         </div>
         <div className="flex flex-wrap gap-2 lg:ml-auto">
           {providers.map((item) => (

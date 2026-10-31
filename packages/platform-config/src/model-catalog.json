@@ -1,6 +1,14 @@
 {
   "verifiedAt": "2026-10-18",
   "sellMultiplier": 0.1,
+  "providerSellMultipliers": {
+    "openai": 0.2,
+    "anthropic": 0.15,
+    "moonshot": 0.2,
+    "deepseek": 0.2,
+    "zhipu": 0.2,
+    "gemini": 0.5
+  },
   "profiles": {
     "astra": {
       "sourceUrl": "https://developers.openai.com/api/docs/models/gpt-6-astra",
@@ -1028,6 +1036,83 @@
       "referenceModel": "gemini-3.8-flash",
       "pricingNote": "Official introductory standard rates apply through December 31, 2026.",
       "metadataSourceUrl": "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash"
+    },
+    "kimiK31Pro": {
+      "sourceUrl": "https://platform.kimi.ai/",
+      "metadataSourceUrl": "https://platform.kimi.ai/docs/guide/kimi-k3-1-pro-quickstart",
+      "sourceVerifiedAt": "2026-10-30",
+      "contextWindow": 1048576,
+      "maxOutput": 0,
+      "inputModalities": [
+        "text",
+        "image",
+        "video"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 10,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_creation",
+          "usd": 2,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
+    },
+    "glm53Flash": {
+      "sourceUrl": "https://docs.z.ai/guides/overview/pricing",
+      "metadataSourceUrl": "https://docs.z.ai/guides/vlm/glm-5.3-flash",
+      "sourceVerifiedAt": "2026-10-30",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "inputModalities": [
+        "text",
+        "image",
+        "video",
+        "file"
+      ],
+      "outputModalities": [
+        "text"
+      ],
+      "prices": [
+        {
+          "component": "input",
+          "usd": 0.15,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "output",
+          "usd": 0.5,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        },
+        {
+          "component": "cache_read",
+          "usd": 0.03,
+          "tierLabel": "",
+          "unit": "per_1m_tokens"
+        }
+      ]
     }
   },
   "models": [
@@ -1088,6 +1173,20 @@
       "tagline": "Reasoning and coding from Zhipu, available through the shared /v1 API."
     },
     {
+      "provider": "zhipu",
+      "slug": "glm-5.3-flash",
+      "name": "GLM-5.3-Flash",
+      "pricingProfile": "glm53Flash",
+      "tagline": "Fast multimodal coding and knowledge work with a one-million-token context."
+    },
+    {
+      "provider": "moonshot",
+      "slug": "kimi-k3.1-pro",
+      "name": "Kimi K3.1 Pro",
+      "pricingProfile": "kimiK31Pro",
+      "tagline": "Long-horizon coding and knowledge work with native visual understanding and a one-million-token context."
+    },
+    {
       "provider": "moonshot",
       "slug": "kimi-k3",
       "name": "Kimi K3",
@@ -1099,7 +1198,8 @@
       "slug": "kimi-k2.7-code",
       "name": "Kimi K2.7 Code",
       "pricingProfile": "kimiCode",
-      "tagline": "A coding-focused Kimi model for software development workflows."
+      "tagline": "A coding-focused Kimi model for software development workflows.",
+      "lifecycle": "deprecated"
     },
     {
       "provider": "grok",

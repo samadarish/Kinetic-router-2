@@ -1,5 +1,5 @@
 import {
-  catalogPriceMultiplier, catalogVerifiedAt, modelPriceProfiles,
+  getCatalogPriceMultiplier, catalogVerifiedAt, modelPriceProfiles,
   openAICompatibleExamples, publicModelChoices, publicModelDefinitions,
 } from '@kineticrouter/platform-config/models';
 import { getProviderDisplayStatus } from '@kineticrouter/platform-config/providers';
@@ -11,11 +11,12 @@ export const currentModels: Model[] = publicModelChoices.map((choice, index) => 
   const definition = publicModelDefinitions[index];
   const profile = modelPriceProfiles[definition.pricingProfile];
   const provider = getProviderDisplayStatus(choice.provider);
+  const sellMultiplier = getCatalogPriceMultiplier(choice.provider);
   const prices: ModelPrice[] = profile.prices.flatMap((price, priceIndex) => (['official', 'sell'] as const).map((role, roleIndex) => ({
     id: 10_000 + index * 100 + priceIndex * 2 + roleIndex,
     modelId: choice.id, role, billingMode: 'token', component: price.component,
     unit: price.unit, tierLabel: price.tierLabel,
-    priceMicroUsd: Math.round(price.usd * 1_000_000) * (role === 'sell' ? catalogPriceMultiplier : 1),
+    priceMicroUsd: Math.round(price.usd * 1_000_000) * (role === 'sell' ? sellMultiplier : 1),
     source: role === 'sell' ? 'kineticrouter_display_offer' : 'official_standard_reference',
     sourceRef: profile.sourceUrl, version: 1, active: true,
   })));
@@ -38,7 +39,7 @@ export const currentModels: Model[] = publicModelChoices.map((choice, index) => 
     codeExamples: (['python', 'node', 'curl'] as const).map((language) => ({ language, label: { python: 'Python', node: 'Node.js', curl: 'cURL' }[language], code: examples[language], source: 'kineticrouter' })),
     date: profile.releasedAt ?? '', compatIcons: ['OpenAI'], toolTags: [], hostedOn: 'kineticRouter', hostedOnOptions: ['kineticRouter'],
     family: choice.provider, inputModalities: profile.inputModalities, outputModalities: profile.outputModalities,
-    sourceUrl: profile.metadataSourceUrl ?? profile.sourceUrl, sourceVerifiedAt: catalogVerifiedAt, catalogCapturedAt: catalogVerifiedAt,
+    sourceUrl: profile.metadataSourceUrl ?? profile.sourceUrl, sourceVerifiedAt: profile.sourceVerifiedAt ?? catalogVerifiedAt, catalogCapturedAt: profile.sourceVerifiedAt ?? catalogVerifiedAt,
     availability: provider.modelAccessState,
     pricingNote: [referenceNote, profile.pricingNote].filter(Boolean).join(' '),
   };

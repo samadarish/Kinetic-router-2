@@ -15,8 +15,8 @@
   "Public reference prices": "공공 기준 가격",
   "Reference snapshot": "링크 스냅트",
   "Requests still use the selected key’s normal account billing. Usage is authoritative for recorded billed amounts.": "요청은 여전히 선택된 키의 정상 계좌 청구를 사용합니다.",
-  "The Models and Pricing pages show kineticRouter display prices at 90% off official reference rates, with the source verification date. The original imported archive remains separate. Model availability and account pricing can differ.": "모델 및 가격 페이지는 공식적인 참조 요금으로 90% 할인된 kineticRouter 표시 가격을 보여줍니다. 원본 가져온 아카이브는 분리되어 있습니다. 모델 이용 가능성과 계정 가격은 다를 수 있습니다.",
   "Usage": "사용량",
   "Verify the answer and billed usage": "응답 및 청구 사용을 확인하십시오",
-  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground이 활성화되면 키와 모델을 선택하고, 사용할 수 있는 경우 확인된 최종 토큰 가격을 볼 수 있는 시점에서 View 비율을 열어보십시오. 가격은 단위와 관찰 시간을 표시합니다. 최종 비율이 사용할 수 없는 것은 콘솔이 완전한 지원되는 가격 규칙을 얻을 수 없다는 것을 의미하지는 않습니다."
+  "When Playground is enabled, select your key and model there, then open View rates to see verified final token prices when available. Prices show their units and observation time. Final rates unavailable means the console cannot obtain a complete supported price rule; it does not mean the model is free.": "Playground이 활성화되면 키와 모델을 선택하고, 사용할 수 있는 경우 확인된 최종 토큰 가격을 볼 수 있는 시점에서 View 비율을 열어보십시오. 가격은 단위와 관찰 시간을 표시합니다. 최종 비율이 사용할 수 없는 것은 콘솔이 완전한 지원되는 가격 규칙을 얻을 수 없다는 것을 의미하지는 않습니다.",
+  "The Models and Pricing pages compare kineticRouter display prices with official reference rates, with the source verification date. Discounts vary by provider and apply to all listed price components. Deprecated models are marked explicitly. The original imported archive remains separate. Model availability and account pricing can differ.": "모델 및 가격 페이지에서는 kineticRouter 표시 가격과 공식 참조 요금을 비교하고 출처 확인 날짜를 표시합니다. 할인율은 제공업체에 따라 다르며 나열된 모든 가격 항목에 적용됩니다. 사용 중단 예정인 모델은 명확하게 표시됩니다. 원본 가져오기 아카이브는 별도로 보관됩니다. 모델 이용 가능 여부와 계정별 가격은 다를 수 있습니다."
 }

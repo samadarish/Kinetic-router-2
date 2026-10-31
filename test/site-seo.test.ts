@@ -23,7 +23,7 @@ describe('site SEO', () => {
 
   it('consolidates real duplicate views and keeps planned content out of both sitemaps', () => {
     const routes = indexableRoutes();
-    expect(routes).toHaveLength(102);
+    expect(routes).toHaveLength(104);
     expect(new Set(routes).size).toBe(routes.length);
     for (const [alias, canonical] of Object.entries(canonicalAliases)) {
       expect(routes).not.toContain(alias);
@@ -95,7 +95,7 @@ describe('site SEO', () => {
       const model = projected[index]!;
       for (const role of ['sell', 'official'] as const) for (const component of ['input', 'output']) expect(usdPrice(model, role, component)).toBe(usdPrice(original, role, component));
       expect(displayContextWindow(model)).toBe(displayContextWindow(original));
-      for (const key of ['name', 'id', 'slug', 'provider', 'tagline', 'date', 'capabilityFlags'] as const) expect(model[key]).toEqual(original[key]);
+      for (const key of ['name', 'id', 'slug', 'provider', 'tagline', 'date', 'capabilityFlags', 'lifecycle'] as const) expect(model[key]).toEqual(original[key]);
       expect(model).not.toHaveProperty('faq');
       expect(model).not.toHaveProperty('codeExamples');
     }

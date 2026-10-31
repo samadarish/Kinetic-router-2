@@ -4,7 +4,7 @@
 
 ## Catalog and availability
 
-The current public catalog contains 36 models across 8 providers. Official reference rates were checked 2026-10-18. Displayed kineticRouter prices are official rates divided by 10 (90% off), including published cache, tiered, and image-token components. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
+The current public catalog contains 38 listed models across 8 providers, including 1 deprecated model. Official reference rates use verification dates from 2026-10-18 through 2026-10-30. Display discounts by provider: OpenAI: 80% off; Anthropic: 85% off; Grok: 90% off; DeepSeek: 80% off; Zhipu: 80% off; Moonshot: 80% off; Gemini: 50% off; MiniMax: 90% off. These discounts apply to published input, output, cache, tiered, and image-token components. Deprecated models are marked explicitly instead of displaying a discount badge. Variants without separate official rates use their named base model's rates. The original August 30, 2026 archive is retained separately.
 
 Every active provider uses the OpenAI-compatible https://api.kineticrouter.com/v1 base URL, or https://cdn-api.kineticrouter.com/v1. Use provider/model IDs and a kineticRouter API key. Meta support is planned and has no active catalog entries. Public display prices are separate from actual account billing; the authenticated customer console reports billed usage and account rates.
 
@@ -38,8 +38,10 @@ Every active provider uses the OpenAI-compatible https://api.kineticrouter.com/v
 - DeepSeek: DeepSeek V4.1 Flash — https://kineticrouter.com/models/deepseek/deepseek-flash
 - DeepSeek: DeepSeek V4 Pro — https://kineticrouter.com/models/deepseek/deepseek-v4-pro
 - Zhipu: GLM-5.3 — https://kineticrouter.com/models/zhipu/glm-5.3
+- Zhipu: GLM-5.3-Flash — https://kineticrouter.com/models/zhipu/glm-5.3-flash
+- Moonshot: Kimi K3.1 Pro — https://kineticrouter.com/models/moonshot/kimi-k3.1-pro
 - Moonshot: Kimi K3 — https://kineticrouter.com/models/moonshot/kimi-k3
-- Moonshot: Kimi K2.7 Code — https://kineticrouter.com/models/moonshot/kimi-k2.7-code
+- Moonshot: Kimi K2.7 Code (Deprecated) — https://kineticrouter.com/models/moonshot/kimi-k2.7-code
 - Grok: Grok 4.7 — https://kineticrouter.com/models/grok/grok-4.7
 - MiniMax: MiniMax M3 — https://kineticrouter.com/models/minimax/minimax-m3
 - Gemini: Gemini 3.8 Flash — https://kineticrouter.com/models/gemini/gemini-3.8-flash

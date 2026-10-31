@@ -1605,5 +1605,7 @@
   "Unsaved changes": "저장되지 않은 변경 사항",
   "s": "s",
   "{0} available for this key": "이 키로 사용 가능: {0}",
-  "{0} enabled overall": "전체 활성화: {0}"
+  "{0} enabled overall": "전체 활성화: {0}",
+  "Deprecated": "사용 중단 예정",
+  "Unknown model lifecycle: {0}": "알 수 없는 모델 수명 주기 상태: {0}"
 }
